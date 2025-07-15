@@ -1,6 +1,7 @@
 // features/auth/screens/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/utils/localization.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -13,12 +14,14 @@ class LoginScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('ÉroVeca', style: AppStyles.headline1(context)),
+            Text(
+              AppLocalizations.of(context).translate("app.title"),
+              style: AppStyles.headline1(context)),
             const SizedBox(height: 40),
             TextField(
               decoration: AppStyles.inputDecoration(
                 context,
-                label: 'Matricule employé',
+                label: AppLocalizations.of(context).translate("auth.phone_number"),
               ),
             ),
             const SizedBox(height: 16),
@@ -26,7 +29,7 @@ class LoginScreen extends StatelessWidget {
               obscureText: true,
               decoration: AppStyles.inputDecoration(
                 context,
-                label: 'Mot de passe',
+                label: AppLocalizations.of(context).translate("auth.password"),
               ),
             ),
             const SizedBox(height: 8),
@@ -34,14 +37,14 @@ class LoginScreen extends StatelessWidget {
               children: [
                 Checkbox(value: true, onChanged: (value) {}),
                 Text(
-                  'Se souvenir de moi',
+                  AppLocalizations.of(context).translate("auth.remember_me"),
                   style: AppStyles.bodyMedium(context),
                 ),
                 const Spacer(),
                 TextButton(
                   onPressed: () {},
                   child: Text(
-                    'Mot de passe oublié?',
+                    AppLocalizations.of(context).translate("auth.forgot_password"),
                     style: AppStyles.bodyMedium(context),
                   ),
                 ),
@@ -53,12 +56,12 @@ class LoginScreen extends StatelessWidget {
               child: ElevatedButton(
                 style: AppStyles.primaryButton(context),
                 onPressed: () {},
-                child: const Text('Connexion'),
+                child:  Text(AppLocalizations.of(context).translate("auth.login")),
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              'Si vous n\'avez pas de compte, veuillez vous rapprocher de votre chef.',
+              AppLocalizations.of(context).translate("auth.login_message"),
               style: AppStyles.bodySmall(context),
               textAlign: TextAlign.center,
             ),

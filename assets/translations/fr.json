@@ -1,0 +1,25 @@
+{
+  "app": {
+    "title": "ProMéca",
+    "welcome": "Bienvenue !",
+    "start": "Commencer !"
+  },
+  "auth": {
+    "login": "Connexion",
+    "phone_number": "Numéro de téléphone",
+    "password": "Mot de passe",
+    "remember_me": "Se souvenir de moi",
+    "forgot_password": "Mot de passe oublié ?",
+    "login_message": "Si vous n\\'avez pas de compte, veuillez vous rapprocher de votre chef."
+  },
+  "common": {
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "next": "Suivant",
+    "back": "Retour"
+  },
+  "errors": {
+    "required_field": "Ce champ est obligatoire",
+    "invalid_email": "Email invalide"
+  }
+}

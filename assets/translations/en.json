@@ -1,0 +1,25 @@
+{
+  "app": {
+    "title": "ProMeca",
+    "welcome": "Welcome!",
+    "start": "Start !"
+  },
+  "auth": {
+    "login": "Login",
+    "phone_number": "Phone number",
+    "password": "Password",
+    "remember_me": "Remember me",
+    "forgot_password": "Forgot password?",
+    "login_message": "If you don't have an account, please contact your chef."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "next": "Next",
+    "back": "Back"
+  },
+  "errors": {
+    "required_field": "This field is required",
+    "invalid_email": "Invalid email"
+  }
+}

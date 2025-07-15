@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pro_meca/core/utils/localization.dart';
+import 'package:pro_meca/features/home_tech.dart';
 import 'package:provider/provider.dart';
 
 // Importez vos fichiers ici (dans le bon ordre selon votre structure)
@@ -18,6 +20,8 @@ void main() async {
   // Initialiser le Provider
   final themeProvider = ThemeProvider();
   await themeProvider.loadThemePrefs(); // Charger les préférences
+  final localeProvider = LocaleProvider();
+  await localeProvider.init(); // Charge la locale avant le runApp
   runApp(
     // MultiProvider pour gérer plusieurs états
     MultiProvider(
@@ -40,7 +44,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'ProMeca',
+      title: AppLocalizations.of(context).translate('app.title'),
 
       // Thèmes
       theme: AppThemes.lightTheme,
@@ -54,6 +58,7 @@ class MyApp extends StatelessWidget {
         const Locale('en', 'US'), // Anglais
       ],
       localizationsDelegates: [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -68,7 +73,7 @@ class MyApp extends StatelessWidget {
       },
 
       // Routage
-      home: const LoginScreen(),
+      home: const WelcomeScreen(),
 
       // Configuration générale
       builder: (context, child) {
@@ -98,7 +103,7 @@ class AppInitialization extends StatelessWidget {
       ]),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return const LoginScreen();
+          return const WelcomeScreen();
         } else {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
