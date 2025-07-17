@@ -1,0 +1,18 @@
+{
+  "@@locale": "en",
+  "appTitle": "ProMéca",
+  "appWelcome": "Welcome!",
+  "appStart": "Start!",
+  "authLogin": "Login",
+  "authPhoneNumber": "Phone number",
+  "authPassword": "Password",
+  "authRememberMe": "Remember me",
+  "authForgotPassword": "Forgot password?",
+  "authLoginMessage": "If you don't have an account, please contact your manager.",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonNext": "Next",
+  "commonBack": "Back",
+  "errorsRequiredField": "This field is required",
+  "errorsInvalidEmail": "Invalid email"
+}

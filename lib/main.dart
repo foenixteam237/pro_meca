@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'core/constants/app_themes.dart';
 import 'features/settings/providers/locale_provider.dart';
 import 'features/settings/providers/theme_provider.dart';
-import 'features/auth/screens/login_screen.dart';
 
 void main() async {
   // Assurez-vous que les bindings Flutter sont initialisés

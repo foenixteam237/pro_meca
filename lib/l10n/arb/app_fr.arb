@@ -1,0 +1,63 @@
+{
+  "@@locale": "fr",
+  "appTitle": "ProMéca",
+  "@appTitle": {
+    "description": "Titre principal de l'application"
+  },
+  "appWelcome": "Bienvenue !",
+  "@appWelcome": {
+    "description": "Message d'accueil"
+  },
+  "appStart": "Commencer !",
+  "@appStart": {
+    "description": "Bouton de démarrage"
+  },
+  "authLogin": "Connexion",
+  "@authLogin": {
+    "description": "Bouton de connexion"
+  },
+  "authPhoneNumber": "Numéro de téléphone",
+  "@authPhoneNumber": {
+    "description": "Champ de saisie du numéro de téléphone"
+  },
+  "authPassword": "Mot de passe",
+  "@authPassword": {
+    "description": "Champ de saisie du mot de passe"
+  },
+  "authRememberMe": "Se souvenir de moi",
+  "@authRememberMe": {
+    "description": "Case à cocher pour la session persistante"
+  },
+  "authForgotPassword": "Mot de passe oublié ?",
+  "@authForgotPassword": {
+    "description": "Lien pour réinitialiser le mot de passe"
+  },
+  "authLoginMessage": "Si vous n'avez pas de compte, veuillez vous rapprocher de votre chef.",
+  "@authLoginMessage": {
+    "description": "Message d'information sous le formulaire"
+  },
+  "commonCancel": "Annuler",
+  "@commonCancel": {
+    "description": "Bouton d'annulation"
+  },
+  "commonSave": "Enregistrer",
+  "@commonSave": {
+    "description": "Bouton de sauvegarde"
+  },
+  "commonNext": "Suivant",
+  "@commonNext": {
+    "description": "Bouton de progression"
+  },
+  "commonBack": "Retour",
+  "@commonBack": {
+    "description": "Bouton de retour"
+  },
+  "errorsRequiredField": "Ce champ est obligatoire",
+  "@errorsRequiredField": {
+    "description": "Message d'erreur pour champ requis"
+  },
+  "errorsInvalidEmail": "Email invalide",
+  "@errorsInvalidEmail": {
+    "description": "Message d'erreur pour email invalide"
+  }
+}
