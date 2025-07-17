@@ -59,5 +59,17 @@
   "errorsInvalidEmail": "Email invalide",
   "@errorsInvalidEmail": {
     "description": "Message d'erreur pour email invalide"
-  }
+  },
+  "completedVehicles": "Véhicule terminé",
+  "ongoingVehicles": "Véhicule en cours",
+  "repair": "Réparation",
+  "clientValidation": "Validation client",
+  "diagnostic": "Diagnostique",
+  "seeInvoice": "Voir la facture",
+  "vehicleRegistrationHint": "Immatriculation du véhicule",
+  "viewMore": "Voir plus",
+  "home": "Accueil",
+  "parts": "Pièces",
+  "dashboard": "Tableau de bord",
+  "profile": "Profil"
 }

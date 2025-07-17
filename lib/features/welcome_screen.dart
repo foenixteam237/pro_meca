@@ -6,7 +6,7 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/features/settings/providers/locale_provider.dart';
 
-import '../l10n/app_localizations.dart';
+import '../l10n/arb/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -24,7 +24,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void initState() {
     super.initState();
     _localeProvider = Provider.of<LocaleProvider>(context, listen: false);
-    _checkFirstLaunch();
+    _checkFirstLaunch().then((_) {
+      if (!_isFirstLaunch) {
+        // Si ce n'est pas le premier démarrage, attendre un instant puis naviguer
+        Future.delayed(const Duration(milliseconds: 1500), _navigateToHome);
+      }
+    });
   }
 
   Future<void> _checkFirstLaunch() async {
@@ -44,12 +49,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void _navigateToHome() {
     if (!mounted) return;
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    });
+    Navigator.pushReplacementNamed(context, '/technician-home');
   }
 
   @override
@@ -59,39 +59,55 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/promeca_logo.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-
           // Language selector (top-right)
           Positioned(top: 40, right: 20, child: _buildLanguageSwitcher()),
 
-          // Main content
-          Center(
+          // Main content column
+          SafeArea(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo
-                Image.asset(
-                  'assets/images/promeca_logo.png',
-                  width: Responsive.responsiveValue(
-                    context,
-                    mobile: MediaQuery.of(context).size.width * 0.6,
-                    tablet: MediaQuery.of(context).size.width * 0.4,
+                // Logo en haut centré
+                Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Image.asset(
+                    'assets/images/promeca_logo.png',
+                    width: Responsive.responsiveValue(
+                      context,
+                      mobile: MediaQuery.of(context).size.width * 0.4,
+                      tablet: MediaQuery.of(context).size.width * 0.3,
+                    ),
+                    fit: BoxFit.contain,
                   ),
-                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 40),
 
-                // Start button or loader
-                if (_isFirstLaunch && !_isLoading)
-                  _buildStartButton(l10n)
-                else
-                  _buildProgressIndicator(),
+                // Espace flexible pour pousser le contenu vers le bas
+                const Spacer(),
+
+                // Image principale au centre
+                Center(
+                  child: Image.asset(
+                    'assets/images/welcome_image.png',
+                    width: Responsive.responsiveValue(
+                      context,
+                      mobile: MediaQuery.of(context).size.width * 0.8,
+                      tablet: MediaQuery.of(context).size.width * 0.6,
+                    ),
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
+                // Espace flexible pour pousser le bouton vers le bas
+                const Spacer(),
+
+                // Bouton Start ou indicateur de chargement en bas
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: Responsive.isMobile(context) ? 40 : 60,
+                  ),
+                  child: _isFirstLaunch
+                      ? _buildStartButton(l10n)
+                      : _buildProgressIndicator(),
+                ),
               ],
             ),
           ),
@@ -120,10 +136,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
         onPressed: () {
           _setFirstLaunchDone();
+          setState(() => _isLoading = true);
           _navigateToHome();
         },
         child: Text(
-          l10n.appStart, // Utilisation directe de la traduction générée
+          l10n.appStart,
           style: AppStyles.buttonText(context).copyWith(
             fontSize: Responsive.responsiveValue(
               context,

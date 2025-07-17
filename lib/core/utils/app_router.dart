@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/features/TechnicianHome.dart';
 import 'package:pro_meca/features/auth/screens/login_screen.dart';
-import 'package:pro_meca/features/home_tech.dart';
+import 'package:pro_meca/features/welcome_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
@@ -8,6 +9,7 @@ class AppRouter {
   // Noms de routes
   static const String login = '/login';
   static const String welcome = '/welcome';
+  static const String technicianHome = '/technician-home';
 
   // Générateur de routes
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -16,6 +18,8 @@ class AppRouter {
         return _fadeRoute(const LoginScreen(), settings);
       case welcome:
         return _fadeRoute(const WelcomeScreen(), settings);
+      case technicianHome:
+        return _fadeRoute(const TechnicianHomeScreen(), settings);
       default:
         return _fadeRoute(
           Scaffold(

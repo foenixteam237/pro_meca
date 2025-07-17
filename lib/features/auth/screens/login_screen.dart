@@ -19,9 +19,7 @@ class LoginScreen extends StatelessWidget {
       body: Stack(
         children: [
           // Fond d'écran optionnel (si nécessaire)
-          Positioned.fill(
-            child: Container(color: AppColors.background),
-          ),
+          Positioned.fill(child: Container(color: AppColors.background)),
 
           // Contenu principal
           Padding(
@@ -80,24 +78,26 @@ class LoginScreen extends StatelessWidget {
                 Row(
                   children: [
                     Checkbox(
-                      value: true,
+                      value: false,
                       onChanged: (value) {},
-                      fillColor: WidgetStateProperty.resolveWith<Color>(
-                            (Set<WidgetState> states) {
-                          return AppColors.primary;
-                        },
-                      ),
+                      fillColor: WidgetStateProperty.resolveWith<Color>((
+                        Set<WidgetState> states,
+                      ) {
+                        return AppColors.primary;
+                      }),
                     ),
-                    Text(l10n.authRememberMe,
-                        style: AppStyles.bodyMedium(context)),
+                    Text(
+                      l10n.authRememberMe,
+                      style: AppStyles.bodyMedium(context),
+                    ),
                     const Spacer(),
                     TextButton(
                       onPressed: () {},
                       child: Text(
                         l10n.authForgotPassword,
-                        style: AppStyles.bodyMedium(context).copyWith(
-                          color: AppColors.primary,
-                        ),
+                        style: AppStyles.bodyMedium(
+                          context,
+                        ).copyWith(color: AppColors.primary),
                       ),
                     ),
                   ],
@@ -134,9 +134,9 @@ class LoginScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: Text(
                     l10n.authLoginMessage,
-                    style: AppStyles.bodySmall(context).copyWith(
-                      color: Colors.grey,
-                    ),
+                    style: AppStyles.bodySmall(
+                      context,
+                    ).copyWith(color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
                 ),

@@ -53,4 +53,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorsInvalidEmail => 'Invalid email';
+
+  @override
+  String get completedVehicles => 'Completed Vehicles';
+
+  @override
+  String get ongoingVehicles => 'Ongoing Vehicles';
+
+  @override
+  String get repair => 'Repair';
+
+  @override
+  String get clientValidation => 'Client Validation';
+
+  @override
+  String get diagnostic => 'Diagnostic';
+
+  @override
+  String get seeInvoice => 'See Invoice';
+
+  @override
+  String get vehicleRegistrationHint => 'Vehicle Registration';
+
+  @override
+  String get viewMore => 'View More';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get parts => 'Parts';
+
+  @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get profile => 'Profile';
 }

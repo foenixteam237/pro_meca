@@ -187,6 +187,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid email'**
   String get errorsInvalidEmail;
+
+  /// No description provided for @completedVehicles.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Vehicles'**
+  String get completedVehicles;
+
+  /// No description provided for @ongoingVehicles.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing Vehicles'**
+  String get ongoingVehicles;
+
+  /// No description provided for @repair.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair'**
+  String get repair;
+
+  /// No description provided for @clientValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Client Validation'**
+  String get clientValidation;
+
+  /// No description provided for @diagnostic.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic'**
+  String get diagnostic;
+
+  /// No description provided for @seeInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'See Invoice'**
+  String get seeInvoice;
+
+  /// No description provided for @vehicleRegistrationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Registration'**
+  String get vehicleRegistrationHint;
+
+  /// No description provided for @viewMore.
+  ///
+  /// In en, this message translates to:
+  /// **'View More'**
+  String get viewMore;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @parts.
+  ///
+  /// In en, this message translates to:
+  /// **'Parts'**
+  String get parts;
+
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
 }
 
 class _AppLocalizationsDelegate

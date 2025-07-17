@@ -53,4 +53,40 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorsInvalidEmail => 'Email invalide';
+
+  @override
+  String get completedVehicles => 'Véhicule terminé';
+
+  @override
+  String get ongoingVehicles => 'Véhicule en cours';
+
+  @override
+  String get repair => 'Réparation';
+
+  @override
+  String get clientValidation => 'Validation client';
+
+  @override
+  String get diagnostic => 'Diagnostique';
+
+  @override
+  String get seeInvoice => 'Voir la facture';
+
+  @override
+  String get vehicleRegistrationHint => 'Immatriculation du véhicule';
+
+  @override
+  String get viewMore => 'Voir plus';
+
+  @override
+  String get home => 'Accueil';
+
+  @override
+  String get parts => 'Pièces';
+
+  @override
+  String get dashboard => 'Tableau de bord';
+
+  @override
+  String get profile => 'Profil';
 }

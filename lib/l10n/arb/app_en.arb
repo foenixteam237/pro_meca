@@ -60,5 +60,17 @@
   "errorsInvalidEmail": "Invalid email",
   "@errorsInvalidEmail": {
     "description": "Email validation error"
-  }
+  },
+   "completedVehicles": "Completed Vehicles",
+  "ongoingVehicles": "Ongoing Vehicles",
+  "repair": "Repair",
+  "clientValidation": "Client Validation",
+  "diagnostic": "Diagnostic",
+  "seeInvoice": "See Invoice",
+  "vehicleRegistrationHint": "Vehicle Registration",
+  "viewMore": "View More",
+  "home": "Home",
+  "parts": "Parts",
+  "dashboard": "Dashboard",
+  "profile": "Profile"
 }
