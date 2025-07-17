@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:pro_meca/features/settings/providers/locale_provider.dart';
 
-import '../core/constants/app_colors.dart';
-import '../core/constants/app_styles.dart';
-import '../core/utils/localization.dart';
-import '../core/utils/responsive.dart';
+import '../l10n/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -16,10 +18,12 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isFirstLaunch = true;
   bool _isLoading = false;
+  late final LocaleProvider _localeProvider;
 
   @override
   void initState() {
     super.initState();
+    _localeProvider = Provider.of<LocaleProvider>(context, listen: false);
     _checkFirstLaunch();
   }
 
@@ -33,18 +37,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Future<void> _setFirstLaunchDone() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_launch', false);
-    setState(() => _isFirstLaunch = false);
+    if (mounted) {
+      setState(() => _isFirstLaunch = false);
+    }
   }
 
   void _navigateToHome() {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     Future.delayed(const Duration(milliseconds: 500), () {
-      Navigator.pushReplacementNamed(context, '/home');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -56,7 +67,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
           ),
 
-          // Content
+          // Language selector (top-right)
+          Positioned(top: 40, right: 20, child: _buildLanguageSwitcher()),
+
+          // Main content
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -64,14 +78,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 // Logo
                 Image.asset(
                   'assets/images/promeca_logo.png',
-                  width: MediaQuery.of(context).size.width * 0.6,
+                  width: Responsive.responsiveValue(
+                    context,
+                    mobile: MediaQuery.of(context).size.width * 0.6,
+                    tablet: MediaQuery.of(context).size.width * 0.4,
+                  ),
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 40),
 
-                // Bouton Start ou Loading
+                // Start button or loader
                 if (_isFirstLaunch && !_isLoading)
-                  _buildStartButton(context)
+                  _buildStartButton(l10n)
                 else
                   _buildProgressIndicator(),
               ],
@@ -82,9 +100,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  Widget _buildStartButton(BuildContext context) {
+  Widget _buildStartButton(AppLocalizations l10n) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.6,
+      width: Responsive.responsiveValue(
+        context,
+        mobile: MediaQuery.of(context).size.width * 0.6,
+        tablet: MediaQuery.of(context).size.width * 0.4,
+      ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -101,7 +123,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           _navigateToHome();
         },
         child: Text(
-          AppLocalizations.of(context).translate('start'),
+          l10n.appStart, // Utilisation directe de la traduction générée
           style: AppStyles.buttonText(context).copyWith(
             fontSize: Responsive.responsiveValue(
               context,
@@ -118,6 +140,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return CircularProgressIndicator(
       valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
       strokeWidth: 3,
+    );
+  }
+
+  Widget _buildLanguageSwitcher() {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.language, color: AppColors.primary),
+      onSelected: (code) => _localeProvider.setLocale(Locale(code)),
+      itemBuilder: (context) => [
+        PopupMenuItem(value: 'fr', child: Text('Français 🇫🇷')),
+        PopupMenuItem(value: 'en', child: Text('English 🇬🇧')),
+      ],
     );
   }
 }

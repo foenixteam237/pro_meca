@@ -1,18 +1,64 @@
 {
   "@@locale": "en",
+  "@@context": "ProMéca Application",
   "appTitle": "ProMéca",
+  "@appTitle": {
+    "description": "Main application title"
+  },
   "appWelcome": "Welcome!",
-  "appStart": "Start!",
+  "@appWelcome": {
+    "description": "Welcome message"
+  },
+  "appStart": "Get Started!",
+  "@appStart": {
+    "description": "Start button text"
+  },
   "authLogin": "Login",
+  "@authLogin": {
+    "description": "Login button text"
+  },
   "authPhoneNumber": "Phone number",
+  "@authPhoneNumber": {
+    "description": "Phone number input label"
+  },
   "authPassword": "Password",
+  "@authPassword": {
+    "description": "Password input label"
+  },
   "authRememberMe": "Remember me",
+  "@authRememberMe": {
+    "description": "Persistent session checkbox"
+  },
   "authForgotPassword": "Forgot password?",
+  "@authForgotPassword": {
+    "description": "Password reset link"
+  },
   "authLoginMessage": "If you don't have an account, please contact your manager.",
+  "@authLoginMessage": {
+    "description": "Information text below form"
+  },
   "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Cancel button"
+  },
   "commonSave": "Save",
+  "@commonSave": {
+    "description": "Save button"
+  },
   "commonNext": "Next",
+  "@commonNext": {
+    "description": "Next step button"
+  },
   "commonBack": "Back",
+  "@commonBack": {
+    "description": "Back button"
+  },
   "errorsRequiredField": "This field is required",
-  "errorsInvalidEmail": "Invalid email"
+  "@errorsRequiredField": {
+    "description": "Required field error"
+  },
+  "errorsInvalidEmail": "Invalid email",
+  "@errorsInvalidEmail": {
+    "description": "Email validation error"
+  }
 }
