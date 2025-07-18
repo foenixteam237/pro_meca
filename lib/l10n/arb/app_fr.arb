@@ -71,5 +71,7 @@
   "home": "Accueil",
   "parts": "Pièces",
   "dashboard": "Tableau de bord",
-  "profile": "Profil"
+  "profile": "Profil",
+  "technicianRole" : "Technicien",
+  "add": "Ajouter"
 }

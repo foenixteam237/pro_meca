@@ -259,6 +259,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile'**
   String get profile;
+
+  /// No description provided for @technicianRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Technician'**
+  String get technicianRole;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'add'**
+  String get add;
 }
 
 class _AppLocalizationsDelegate

@@ -55,7 +55,7 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.background,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -69,7 +69,7 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.background,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -115,11 +115,13 @@ class LoginScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/technician-home');
+                    },
                     child: Text(
                       l10n.authLogin,
                       style: AppStyles.bodyLarge(context).copyWith(
-                        color: Colors.white,
+                        color: AppColors.background,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -136,7 +138,7 @@ class LoginScreen extends StatelessWidget {
                     l10n.authLoginMessage,
                     style: AppStyles.bodySmall(
                       context,
-                    ).copyWith(color: Colors.grey),
+                    ).copyWith(color: AppColors.primary),
                     textAlign: TextAlign.center,
                   ),
                 ),

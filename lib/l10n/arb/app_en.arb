@@ -72,5 +72,7 @@
   "home": "Home",
   "parts": "Parts",
   "dashboard": "Dashboard",
-  "profile": "Profile"
+  "profile": "Profile",
+  "technicianRole" : "Technician",
+  "add": "add"
 }

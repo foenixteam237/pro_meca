@@ -19,7 +19,7 @@ class AppRouter {
       case welcome:
         return _fadeRoute(const WelcomeScreen(), settings);
       case technicianHome:
-        return _fadeRoute(const TechnicianHomeScreen(), settings);
+        return _fadeRoute( TechnicianHomeScreen(), settings);
       default:
         return _fadeRoute(
           Scaffold(

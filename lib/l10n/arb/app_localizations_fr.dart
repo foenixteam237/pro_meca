@@ -89,4 +89,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profile => 'Profil';
+
+  @override
+  String get technicianRole => 'Technicien';
+
+  @override
+  String get add => 'Ajouter';
 }
