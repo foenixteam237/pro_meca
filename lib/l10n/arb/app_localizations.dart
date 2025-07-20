@@ -271,6 +271,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'add'**
   String get add;
+
+  /// No description provided for @immatVehicule.
+  ///
+  /// In en, this message translates to:
+  /// **'vehicle registration'**
+  String get immatVehicule;
+
+  /// No description provided for @validation.
+  ///
+  /// In en, this message translates to:
+  /// **'In validation'**
+  String get validation;
 }
 
 class _AppLocalizationsDelegate

@@ -15,7 +15,7 @@ class AppThemes {
     ),
     scaffoldBackgroundColor: AppColors.background,
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.white,
       foregroundColor: AppColors.text,
       elevation: 0,
       titleTextStyle: GoogleFonts.roboto(

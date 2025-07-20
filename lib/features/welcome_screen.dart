@@ -50,6 +50,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void _navigateToHome() {
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
+
   }
 
   @override

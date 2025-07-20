@@ -95,4 +95,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get add => 'Ajouter';
+
+  @override
+  String get immatVehicule => 'vehicle registration';
+
+  @override
+  String get validation => 'En validation';
 }

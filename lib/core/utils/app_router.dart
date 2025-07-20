@@ -9,7 +9,7 @@ class AppRouter {
   // Noms de routes
   static const String login = '/login';
   static const String welcome = '/welcome';
-  static const String technicianHome = '/technician-home';
+  static const String technicianHome = '/technician_home';
 
   // Générateur de routes
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -19,7 +19,7 @@ class AppRouter {
       case welcome:
         return _fadeRoute(const WelcomeScreen(), settings);
       case technicianHome:
-        return _fadeRoute( TechnicianHomeScreen(), settings);
+        return _fadeRoute(TechnicianHomeScreen(), settings);
       default:
         return _fadeRoute(
           Scaffold(

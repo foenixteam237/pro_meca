@@ -74,5 +74,7 @@
   "dashboard": "Dashboard",
   "profile": "Profile",
   "technicianRole" : "Technician",
-  "add": "add"
+  "add": "add",
+  "immatVehicule": "vehicle registration",
+  "validation" : "In validation"
 }

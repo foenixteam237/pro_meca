@@ -42,13 +42,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final fontSizeName = max(14, min(18, screenWidth * 0.035)); // Entre 14 et 18
 
     return AppBar(
-      shape: Border(
-        bottom: BorderSide(
-          color: Colors.grey[300]!,
-          width: 1.0,
-        ),
-      ),
-      backgroundColor: appBarColor,
+      backgroundColor: AppBarTheme.of(context).backgroundColor,
       elevation: 1,
       automaticallyImplyLeading: false,
       titleSpacing: 0,

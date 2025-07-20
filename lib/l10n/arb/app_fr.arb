@@ -73,5 +73,6 @@
   "dashboard": "Tableau de bord",
   "profile": "Profil",
   "technicianRole" : "Technicien",
-  "add": "Ajouter"
+  "add": "Ajouter",
+  "validation": "En validation"
 }

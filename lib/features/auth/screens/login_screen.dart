@@ -17,25 +17,22 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
+        alignment: Alignment.bottomCenter,
         children: [
-          // Fond d'écran optionnel (si nécessaire)
-          Positioned.fill(child: Container(color: AppColors.background)),
-
           // Contenu principal
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(30.0),
             child: Column(
               children: [
                 // Logo en haut
                 Padding(
-                  padding: const EdgeInsets.only(top: 40.0),
+                  padding: const EdgeInsets.only(top: 70.0),
                   child: Image.asset(
                     'assets/images/promeca_logo.png', // Remplacez par votre chemin d'image
-                    height: 80,
+                    height: 200,
                     fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 40),
 
                 // Titre "Bienvenue !"
                 Text(
@@ -55,7 +52,6 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     filled: true,
-                    fillColor: AppColors.background,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -69,7 +65,6 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     filled: true,
-                    fillColor: AppColors.background,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -116,7 +111,10 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/technician-home');
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/technician_home',
+                      );
                     },
                     child: Text(
                       l10n.authLogin,
@@ -158,13 +156,16 @@ class LoginScreen extends StatelessWidget {
   }
 
   Widget _buildLanguageSwitcher(BuildContext context, LocaleProvider provider) {
-    return PopupMenuButton<String>(
-      icon: Icon(Icons.language, color: AppColors.primary),
-      onSelected: (code) => provider.setLocale(Locale(code)),
-      itemBuilder: (context) => [
-        PopupMenuItem(value: 'fr', child: Text('Français 🇫🇷')),
-        PopupMenuItem(value: 'en', child: Text('English 🇬🇧')),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: PopupMenuButton<String>(
+        icon: Icon(Icons.language, color: AppColors.primary),
+        onSelected: (code) => provider.setLocale(Locale(code)),
+        itemBuilder: (context) => [
+          PopupMenuItem(value: 'fr', child: Text('Français 🇫🇷')),
+          PopupMenuItem(value: 'en', child: Text('English 🇬🇧')),
+        ],
+      ),
     );
   }
 }
