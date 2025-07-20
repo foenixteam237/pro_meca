@@ -74,5 +74,17 @@
   "profile": "Profil",
   "technicianRole" : "Technicien",
   "add": "Ajouter",
-  "validation": "En validation"
+  "validation": "En validation",
+  "userProfile": "Profil utilisateur",
+  "administratorRole": "Administrateur",
+  "updateProfile": "Mettre à jour",
+  "nameLabel": "Nom",
+  "biographyLabel": "Biographie",
+  "certifiedTechnician": "Technicien certifié",
+  "phoneNumberLabel": "Numéro de téléphone",
+  "certificationsLabel": "Certifications et/ou diplômes",
+  "roleLabel": "Rôle",
+  "permissionsLabel": "Permissions",
+  "permissionsDetails": "Détails des permissions"
+
 }

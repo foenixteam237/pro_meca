@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @parts.
   ///
   /// In en, this message translates to:
-  /// **'Parts'**
+  /// **'Engine parts'**
   String get parts;
 
   /// No description provided for @dashboard.
@@ -269,7 +269,7 @@ abstract class AppLocalizations {
   /// No description provided for @add.
   ///
   /// In en, this message translates to:
-  /// **'add'**
+  /// **'Add'**
   String get add;
 
   /// No description provided for @immatVehicule.
@@ -281,8 +281,74 @@ abstract class AppLocalizations {
   /// No description provided for @validation.
   ///
   /// In en, this message translates to:
-  /// **'In validation'**
+  /// **'Pending validation'**
   String get validation;
+
+  /// No description provided for @userProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'User Profile'**
+  String get userProfile;
+
+  /// No description provided for @administratorRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get administratorRole;
+
+  /// No description provided for @updateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateProfile;
+
+  /// No description provided for @nameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameLabel;
+
+  /// No description provided for @biographyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Biography'**
+  String get biographyLabel;
+
+  /// No description provided for @certifiedTechnician.
+  ///
+  /// In en, this message translates to:
+  /// **'Certified Technician'**
+  String get certifiedTechnician;
+
+  /// No description provided for @phoneNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumberLabel;
+
+  /// No description provided for @certificationsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Certifications/Degrees'**
+  String get certificationsLabel;
+
+  /// No description provided for @roleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get roleLabel;
+
+  /// No description provided for @permissionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get permissionsLabel;
+
+  /// No description provided for @permissionsDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission details'**
+  String get permissionsDetails;
 }
 
 class _AppLocalizationsDelegate

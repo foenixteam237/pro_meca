@@ -27,7 +27,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize {
     // Hauteur responsive basée sur la hauteur de l'écran (5% de la hauteur totale)
     final screenHeight = MediaQueryData.fromView(WidgetsBinding.instance.window).size.height;
-    return Size.fromHeight(screenHeight * 0.07); // 7% de la hauteur d'écran
+    return Size.fromHeight(screenHeight * 0.06); // 7% de la hauteur d'écran
   }
 
   @override
@@ -73,7 +73,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Text(
                   role,
                   style: TextStyle(
-                    color: roleColor,
+                    color: AppColors.customText(context),
                     fontSize: fontSizeRole,
                   ),
                 ),

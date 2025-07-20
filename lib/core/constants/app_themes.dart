@@ -84,7 +84,7 @@ class AppThemes {
       error: AppColors.alert,
       surface: const Color(0xFF1E1E1E),
     ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
+    scaffoldBackgroundColor: const Color(0xFF1E1E1E),
     appBarTheme: AppBarTheme(
       backgroundColor: const Color(0xFF1E1E1E),
       foregroundColor: Colors.white,

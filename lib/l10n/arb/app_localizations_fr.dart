@@ -101,4 +101,37 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get validation => 'En validation';
+
+  @override
+  String get userProfile => 'Profil utilisateur';
+
+  @override
+  String get administratorRole => 'Administrateur';
+
+  @override
+  String get updateProfile => 'Mettre à jour';
+
+  @override
+  String get nameLabel => 'Nom';
+
+  @override
+  String get biographyLabel => 'Biographie';
+
+  @override
+  String get certifiedTechnician => 'Technicien certifié';
+
+  @override
+  String get phoneNumberLabel => 'Numéro de téléphone';
+
+  @override
+  String get certificationsLabel => 'Certifications et/ou diplômes';
+
+  @override
+  String get roleLabel => 'Rôle';
+
+  @override
+  String get permissionsLabel => 'Permissions';
+
+  @override
+  String get permissionsDetails => 'Détails des permissions';
 }

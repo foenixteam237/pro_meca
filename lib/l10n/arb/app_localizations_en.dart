@@ -82,7 +82,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home => 'Home';
 
   @override
-  String get parts => 'Parts';
+  String get parts => 'Engine parts';
 
   @override
   String get dashboard => 'Dashboard';
@@ -94,11 +94,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get technicianRole => 'Technician';
 
   @override
-  String get add => 'add';
+  String get add => 'Add';
 
   @override
   String get immatVehicule => 'vehicle registration';
 
   @override
-  String get validation => 'In validation';
+  String get validation => 'Pending validation';
+
+  @override
+  String get userProfile => 'User Profile';
+
+  @override
+  String get administratorRole => 'Administrator';
+
+  @override
+  String get updateProfile => 'Update';
+
+  @override
+  String get nameLabel => 'Name';
+
+  @override
+  String get biographyLabel => 'Biography';
+
+  @override
+  String get certifiedTechnician => 'Certified Technician';
+
+  @override
+  String get phoneNumberLabel => 'Phone Number';
+
+  @override
+  String get certificationsLabel => 'Certifications/Degrees';
+
+  @override
+  String get roleLabel => 'Role';
+
+  @override
+  String get permissionsLabel => 'Permissions';
+
+  @override
+  String get permissionsDetails => 'Permission details';
 }
