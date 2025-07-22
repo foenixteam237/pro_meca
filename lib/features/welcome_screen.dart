@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/features/settings/services/api_services.dart';
+import 'package:pro_meca/features/settings/services/networkService.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
@@ -18,6 +20,10 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isFirstLaunch = true;
   bool _isLoading = false;
+  bool _isConnected = false;
+  String _connectionMessage = "";
+  final ApiService _apiService = ApiService();
+
   late final LocaleProvider _localeProvider;
 
   @override
@@ -26,10 +32,71 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     _localeProvider = Provider.of<LocaleProvider>(context, listen: false);
     _checkFirstLaunch().then((_) {
       if (!_isFirstLaunch) {
+        _testConnection();
         // Si ce n'est pas le premier démarrage, attendre un instant puis naviguer
-        Future.delayed(const Duration(milliseconds: 1500), _navigateToHome);
+        // Future.delayed(const Duration(milliseconds: 1500), _navigateToHome);
       }
     });
+  }
+
+  Future<void> _testConnection() async {
+    // Vérification simple
+    bool isConnected = await NetworkService.hasInternetAccess();
+
+    // Écoute des changements
+
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _connectionMessage = '';
+      });
+    }
+    // Si pas de connexion, afficher un message et ne pas continuer
+    if (!isConnected) {
+      setState(() {
+        _isConnected = false;
+        _connectionMessage = AppLocalizations.of(context).noInternetConnection;
+        _isLoading = false;
+      });
+      return;
+    } else {
+      setState(() {
+        _isConnected = true;
+        _connectionMessage = AppLocalizations.of(context).connexionOk;
+        Future.delayed(const Duration(seconds: 10));
+      });
+    }
+
+    try {
+      final isConnected = await _apiService.testConnection();
+
+      if (mounted) {
+        setState(() {
+          _isConnected = isConnected;
+          _connectionMessage = isConnected
+              ? AppLocalizations.of(context).connectionSuccess
+              : AppLocalizations.of(context).connectionFailed;
+        });
+      }
+
+      // Si connecté, naviguer après un délai
+      if (isConnected) {
+        await Future.delayed(const Duration(seconds: 5));
+        _navigateToHome();
+      } else {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isConnected = false;
+          _connectionMessage = AppLocalizations.of(context).connectionError;
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _checkFirstLaunch() async {
@@ -50,7 +117,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void _navigateToHome() {
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
-
   }
 
   @override
@@ -61,7 +127,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       body: Stack(
         children: [
           // Language selector (top-right)
-          Positioned(top: 40, right: 20, child: _buildLanguageSwitcher()),
+          /// Positioned(top: 40, right: 20, child: _buildLanguageSwitcher()), decommenter pour avoir le bouton de switch de langue
 
           // Main content column
           SafeArea(
@@ -69,7 +135,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               children: [
                 // Logo en haut centré
                 Padding(
-                  padding: const EdgeInsets.only(top: 40),
+                  padding: const EdgeInsets.only(top: 20),
                   child: Image.asset(
                     'assets/images/promeca_logo.png',
                     width: Responsive.responsiveValue(
@@ -135,10 +201,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        onPressed: () {
+        onPressed: () async {
           _setFirstLaunchDone();
           setState(() => _isLoading = true);
-          _navigateToHome();
+          await _testConnection();
         },
         child: Text(
           l10n.appStart,
@@ -155,9 +221,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Widget _buildProgressIndicator() {
-    return CircularProgressIndicator(
-      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-      strokeWidth: 3,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_connectionMessage.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              _connectionMessage,
+              style: AppStyles.titleMedium(
+                context,
+              ).copyWith(color: _isConnected ? Colors.green : Colors.red),
+            ),
+          ),
+        CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          strokeWidth: 3,
+        ),
+      ],
     );
   }
 

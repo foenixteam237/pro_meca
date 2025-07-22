@@ -54,7 +54,8 @@ class MyApp extends StatelessWidget {
             // Fallback vers français si langue non supportée
             for (final locale in supportedLocales) {
               if (locale.languageCode == deviceLocale?.languageCode) {
-                return deviceLocale;
+                //return deviceLocale; à decommenter afin de permettre la gestion des langues dans l'application
+                return const Locale('fr');
               }
             }
             return const Locale('fr');

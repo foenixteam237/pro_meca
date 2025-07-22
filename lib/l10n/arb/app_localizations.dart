@@ -269,7 +269,7 @@ abstract class AppLocalizations {
   /// No description provided for @add.
   ///
   /// In en, this message translates to:
-  /// **'Add'**
+  /// **'add'**
   String get add;
 
   /// No description provided for @immatVehicule.
@@ -281,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @validation.
   ///
   /// In en, this message translates to:
-  /// **'Pending validation'**
+  /// **'In validation'**
   String get validation;
 
   /// No description provided for @userProfile.
@@ -349,6 +349,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Permission details'**
   String get permissionsDetails;
+
+  /// No description provided for @connectionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Server connection successful'**
+  String get connectionSuccess;
+
+  /// No description provided for @connectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to connect to server'**
+  String get connectionFailed;
+
+  /// No description provided for @connectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error checking connection'**
+  String get connectionError;
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get noInternetConnection;
+
+  /// No description provided for @connexionOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Your internet connection is OK'**
+  String get connexionOk;
+
+  /// No description provided for @authLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed, please check your credentials'**
+  String get authLoginFailed;
 }
 
 class _AppLocalizationsDelegate

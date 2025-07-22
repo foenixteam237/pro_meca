@@ -94,13 +94,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get technicianRole => 'Technician';
 
   @override
-  String get add => 'Add';
+  String get add => 'add';
 
   @override
   String get immatVehicule => 'vehicle registration';
 
   @override
-  String get validation => 'Pending validation';
+  String get validation => 'In validation';
 
   @override
   String get userProfile => 'User Profile';
@@ -134,4 +134,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionsDetails => 'Permission details';
+
+  @override
+  String get connectionSuccess => 'Server connection successful';
+
+  @override
+  String get connectionFailed => 'Failed to connect to server';
+
+  @override
+  String get connectionError => 'Error checking connection';
+
+  @override
+  String get noInternetConnection => 'No internet connection';
+
+  @override
+  String get connexionOk => 'Your internet connection is OK';
+
+  @override
+  String get authLoginFailed => 'Login failed, please check your credentials';
 }

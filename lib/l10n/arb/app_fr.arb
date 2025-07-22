@@ -85,6 +85,12 @@
   "certificationsLabel": "Certifications et/ou diplômes",
   "roleLabel": "Rôle",
   "permissionsLabel": "Permissions",
-  "permissionsDetails": "Détails des permissions"
+  "permissionsDetails": "Détails des permissions",
+    "connectionSuccess": "Connexion au serveur réussie",
+  "connectionFailed": "Échec de connexion au serveur",
+  "connectionError": "Erreur lors de la vérification de la connexion",
+  "noInternetConnection": "Pas de connexion Internet",
+  "connexionOk": "Connexion internet OK",
+  "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants"
 
 }

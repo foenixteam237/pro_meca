@@ -77,8 +77,6 @@
   "add": "add",
   "immatVehicule": "vehicle registration",
   "validation" : "In validation",
-  "add": "Add",
-  "validation": "Pending validation",
   "userProfile": "User Profile",
   "administratorRole": "Administrator",
   "updateProfile": "Update",
@@ -88,7 +86,12 @@
   "phoneNumberLabel": "Phone Number",
   "certificationsLabel": "Certifications/Degrees",
   "roleLabel": "Role",
-  "technicianRole": "Technician",
   "permissionsLabel": "Permissions",
-  "permissionsDetails": "Permission details"
+  "permissionsDetails": "Permission details",
+   "connectionSuccess": "Server connection successful",
+  "connectionFailed": "Failed to connect to server",
+  "connectionError": "Error checking connection",
+  "noInternetConnection": "No internet connection",
+  "connexionOk": "Your internet connection is OK",
+  "authLoginFailed": "Login failed, please check your credentials"
 }

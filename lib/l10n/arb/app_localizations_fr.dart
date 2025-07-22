@@ -134,4 +134,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get permissionsDetails => 'Détails des permissions';
+
+  @override
+  String get connectionSuccess => 'Connexion au serveur réussie';
+
+  @override
+  String get connectionFailed => 'Échec de connexion au serveur';
+
+  @override
+  String get connectionError =>
+      'Erreur lors de la vérification de la connexion';
+
+  @override
+  String get noInternetConnection => 'Pas de connexion Internet';
+
+  @override
+  String get connexionOk => 'Connexion internet OK';
+
+  @override
+  String get authLoginFailed =>
+      'Échec de la connexion, veuillez vérifier vos identifiants';
 }

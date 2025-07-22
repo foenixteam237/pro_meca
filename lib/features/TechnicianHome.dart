@@ -27,15 +27,13 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       buildHomeContent(context),
       const Center(child: Text('Pièces Screen')),
       const Center(child: Text('Dashboard Screen')),
-      buildProfil(context)
+      buildProfil(context),
     ];
   }
 
   List<PersistentBottomNavBarItem> _navBarsItems(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDarkMode = Theme
-        .of(context)
-        .brightness == Brightness.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return [
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.home),
@@ -64,22 +62,17 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     ];
   }
 
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final screenSize = MediaQuery
-        .of(context)
-        .size;
+    final screenSize = MediaQuery.of(context).size;
     final isMobile = screenSize.width < 600;
-    final isDarkMode = Theme
-        .of(context)
-        .brightness == Brightness.dark;
-
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    //Comment recuper?
     return Scaffold(
       appBar: CustomAppBar(
         profileImagePath: "assets/images/images.jpeg",
-        name: "Dilane",
+        name: "Dilane ",
         role: l10n.technicianRole,
       ),
       backgroundColor: AppColors.customBackground(context),
@@ -92,8 +85,9 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
                 padding: const EdgeInsets.only(top: 5),
                 controller: _controller,
                 screens: _buildScreens(),
-                navBarHeight: isMobile ? screenSize.height * 0.07 : screenSize
-                    .height * 0.08,
+                navBarHeight: isMobile
+                    ? screenSize.height * 0.07
+                    : screenSize.height * 0.08,
                 items: _navBarsItems(context),
                 confineToSafeArea: true,
                 handleAndroidBackButtonPress: true,
@@ -107,7 +101,6 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
                 ),
                 navBarStyle: NavBarStyle.style1,
               ),
-
             ],
           );
         },
