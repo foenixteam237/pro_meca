@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/features/settings/services/api_services.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -31,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
       User? user = ApiService().getSavedUser() as User?;
       if (user != null) {
         // Rediriger vers la page d'accueil si l'utilisateur est déjà connecté
+        print("Il existe un utilisateur: $user");
         Navigator.pushReplacementNamed(context, '/technician_home');
       }
     }

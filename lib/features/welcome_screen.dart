@@ -7,7 +7,6 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/features/settings/providers/locale_provider.dart';
-
 import '../l10n/arb/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -23,42 +22,37 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isConnected = false;
   String _connectionMessage = "";
   final ApiService _apiService = ApiService();
-
   late final LocaleProvider _localeProvider;
 
+  late final SharedPreferences _prefs;
+  bool _isCheck = false;
+  String? _accessToken;
+  int _expireAt = 0;
   @override
   void initState() {
     super.initState();
     _localeProvider = Provider.of<LocaleProvider>(context, listen: false);
-    _checkFirstLaunch().then((_) {
-      if (!_isFirstLaunch) {
-        _testConnection();
-        // Si ce n'est pas le premier démarrage, attendre un instant puis naviguer
-        // Future.delayed(const Duration(milliseconds: 1500), _navigateToHome);
-      }
-    });
+    _initializePreferences();
+  }
+
+  Future<void> _initializePreferences() async {
+    _prefs = await SharedPreferences.getInstance();
+    _isFirstLaunch = _prefs.getBool('first_launch') ?? true;
+    _isCheck = _prefs.getBool('remember_me') ?? false;
+    _accessToken = _prefs.getString("accessToken");
+    _expireAt = _prefs.getInt("expiresAt") ?? 0;
+    if (!_isFirstLaunch) {
+      await _testConnection();
+    }
+    setState(() {});
   }
 
   Future<void> _testConnection() async {
-
-    final pref =  await SharedPreferences.getInstance();
-
-    bool isCheck = pref.getBool('remember_me') ?? false;
-    String? accessToken =  pref.getString("accessToken");
-
-    print("Test de connexion en cours et verification ischek $isCheck");
-    // Vérification simple
+    setState(() {
+      _isLoading = true;
+      _connectionMessage = '';
+    });
     bool isConnected = await NetworkService.hasInternetAccess();
-
-    // Écoute des changements
-
-    if (mounted) {
-      setState(() {
-        _isLoading = true;
-        _connectionMessage = '';
-      });
-    }
-    // Si pas de connexion, afficher un message et ne pas continuer
     if (!isConnected) {
       setState(() {
         _isConnected = false;
@@ -66,65 +60,42 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         _isLoading = false;
       });
       return;
-    } else {
-      setState(() {
-        _isConnected = true;
-        _connectionMessage = AppLocalizations.of(context).connexionOk;
-        Future.delayed(const Duration(seconds: 5));
-      });
     }
-
+    // Test de la connexion à l'API
     try {
       final isConnected = await _apiService.testConnection();
-
-      if (mounted) {
-        setState(() {
-          _isConnected = isConnected;
-          _connectionMessage = isConnected
-              ? AppLocalizations.of(context).connectionSuccess
-              : AppLocalizations.of(context).connectionFailed;
-        });
-      }
-
-      // Si connecté, naviguer après un délai
+      setState(() {
+        _isConnected = isConnected;
+        _connectionMessage = isConnected
+            ? AppLocalizations.of(context).connectionSuccess
+            : AppLocalizations.of(context).connectionFailed;
+      });
       if (isConnected) {
         await Future.delayed(const Duration(seconds: 3));
-        if(isCheck){
-          //Si l'utilisateur a choisi se souvenir de moi au préalabe
-          if(accessToken != null){
-            //Tester la validité du token
-            _navigateToTechHome();
-          }
-        }
-        _navigateToHome();
-      } else {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+        _navigateToNextScreen();
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isConnected = false;
-          _connectionMessage = AppLocalizations.of(context).connectionError;
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isConnected = false;
+        _connectionMessage = AppLocalizations.of(context).connectionError;
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  Future<void> _checkFirstLaunch() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isFirstLaunch = prefs.getBool('first_launch') ?? true;
-    });
-  }
-
-  Future<void> _setFirstLaunchDone() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('first_launch', false);
-    if (mounted) {
-      setState(() => _isFirstLaunch = false);
+  void _navigateToNextScreen() {
+    if (_isCheck &&
+        _accessToken != null &&
+        _expireAt > DateTime.now().millisecondsSinceEpoch ~/ 1000) {
+      print("Connecté avec un token valide");
+      _navigateToTechHome();
+    } else {
+      //Faire une demande de token avec le refresh token
+      print("Pas de token valide ou session expirée ");
+      _navigateToHome();
     }
   }
 
@@ -134,25 +105,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _navigateToTechHome() {
-    //if(!mounted) return;
     Navigator.pushReplacementNamed(context, '/technician_home');
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-
     return Scaffold(
       body: Stack(
         children: [
-          // Language selector (top-right)
-          /// Positioned(top: 40, right: 20, child: _buildLanguageSwitcher()), decommenter pour avoir le bouton de switch de langue
-
-          // Main content column
           SafeArea(
             child: Column(
               children: [
-                // Logo en haut centré
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
                   child: Image.asset(
@@ -165,11 +129,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     fit: BoxFit.contain,
                   ),
                 ),
-
-                // Espace flexible pour pousser le contenu vers le bas
                 const Spacer(),
-
-                // Image principale au centre
                 Center(
                   child: Image.asset(
                     'assets/images/welcome_image.png',
@@ -181,11 +141,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     fit: BoxFit.contain,
                   ),
                 ),
-
-                // Espace flexible pour pousser le bouton vers le bas
                 const Spacer(),
-
-                // Bouton Start ou indicateur de chargement en bas
                 Padding(
                   padding: EdgeInsets.only(
                     bottom: Responsive.isMobile(context) ? 40 : 60,
@@ -221,8 +177,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
         ),
         onPressed: () async {
-          _setFirstLaunchDone();
-          setState(() => _isLoading = true);
+          await _setFirstLaunchDone();
           await _testConnection();
         },
         child: Text(
@@ -237,6 +192,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _setFirstLaunchDone() async {
+    await _prefs.setBool('first_launch', false);
+    setState(() => _isFirstLaunch = false);
   }
 
   Widget _buildProgressIndicator() {

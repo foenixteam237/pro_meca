@@ -43,13 +43,12 @@ class ApiService {
         'phone': identifier,
         'mail': mail,
         'password': password,
-        'remember_me': rememberMe,
+        'rememberMe': rememberMe,
       }),
     );
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
-
       // Conversion des données utilisateur en modèle User
       final data = Data.fromJson(responseData['data']);
       //print("Fetch data ok");
@@ -61,11 +60,11 @@ class ApiService {
       await _saveAuthData(
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
+        refreshExpiresAt: data.refreshExpiresAt,
+        expiresAt: data.expiresAt,
         user: data.user,
         rememberMe: rememberMe,
       );
-      print("\n Données utilisateur : ${data.user.toJson()}");
-      print("Données utilisateur sauvegardées avec succès");
       return responseData;
     } else {
       print("Échec de connexion : ${response.body.toString()}");
@@ -76,6 +75,8 @@ class ApiService {
   Future<void> _saveAuthData({
     required String accessToken,
     required String refreshToken,
+    required int refreshExpiresAt,
+    required int expiresAt,
     required User user,
     required bool rememberMe,
   }) async {
@@ -83,6 +84,8 @@ class ApiService {
 
     await prefs.setString('accessToken', accessToken);
     await prefs.setString('refreshToken', refreshToken);
+    await prefs.setInt("refreshExpiresAt", refreshExpiresAt);
+    await prefs.setInt("expiresAt", expiresAt);
     // Conversion du modèle User en JSON avant sauvegarde
     await prefs.setString('user_data', json.encode(user));
     await prefs.setBool('remember_me', rememberMe);
@@ -96,7 +99,6 @@ class ApiService {
   Future<User?> getSavedUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
-    print(userData);
     if (userData != null) {
       return User.fromJson(json.decode(userData));
     }
@@ -141,6 +143,8 @@ class ApiService {
         await _saveAuthData(
           accessToken: accessToken!,
           refreshToken: prefs.getString('refreshToken')!,
+          refreshExpiresAt: prefs.getInt('refreshExpiresAt')!,
+          expiresAt: prefs.getInt('expiresAt')!,
           user: updatedUser,
           rememberMe: prefs.getBool('remember_me') ?? false,
         );

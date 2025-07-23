@@ -37,10 +37,7 @@ class _EditableTextFieldState extends State<EditableTextField> {
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
         suffixIcon: IconButton(
-          icon: Icon(
-            _isEditable ? Icons.check : Icons.edit,
-            color: Colors.black26,
-          ),
+          icon: Icon(_isEditable ? Icons.check : Icons.edit),
           onPressed: () {
             setState(() {
               _isEditable = !_isEditable;
@@ -53,7 +50,9 @@ class _EditableTextFieldState extends State<EditableTextField> {
         ),
       ),
       style: TextStyle(
-        color: _isEditable ? Colors.black12 : AppStyles.titleLarge(context).color,
+        color: _isEditable
+            ? Colors.black12
+            : AppStyles.titleMedium(context).color,
       ),
     );
   }
