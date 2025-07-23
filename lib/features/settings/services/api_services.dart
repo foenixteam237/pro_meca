@@ -64,6 +64,7 @@ class ApiService {
         user: data.user,
         rememberMe: rememberMe,
       );
+      print("\n Données utilisateur : ${data.user.toJson()}");
       print("Données utilisateur sauvegardées avec succès");
       return responseData;
     } else {
@@ -95,7 +96,7 @@ class ApiService {
   Future<User?> getSavedUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
-
+    print(userData);
     if (userData != null) {
       return User.fromJson(json.decode(userData));
     }
@@ -104,7 +105,7 @@ class ApiService {
 
   Future<User> getUserProfile(String userId) async {
     final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
+    final accessToken = prefs.getString('accessToken');
 
     final response = await http.get(
       Uri.parse('$_baseUrl/users/$userId'),
@@ -123,7 +124,7 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
+    final accessToken = prefs.getString('accessToken');
 
     final response = await http.put(
       Uri.parse('$_baseUrl/users/$userId'),
@@ -139,7 +140,7 @@ class ApiService {
       if (currentUser != null && currentUser.id == updatedUser.id) {
         await _saveAuthData(
           accessToken: accessToken!,
-          refreshToken: prefs.getString('refresh_token')!,
+          refreshToken: prefs.getString('refreshToken')!,
           user: updatedUser,
           rememberMe: prefs.getBool('remember_me') ?? false,
         );

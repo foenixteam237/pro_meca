@@ -18,6 +18,6 @@ class Company {
     }
   }
   Map<String, dynamic> toJson() {
-    return {name: name, email: email, id: id};
+    return {"name": name, "email": email, "id": id};
   }
 }

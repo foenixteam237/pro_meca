@@ -39,7 +39,7 @@ class User {
     this.lastLogin,
   });
   factory User.fromJson(Map<String, dynamic> json) {
-    print("Les données user sont: " + json.values.toString());
+    //print("Les données user sont: " + json.values.toString());
     return switch (json) {
       {
         'id': String id,
@@ -97,7 +97,7 @@ class User {
       'updatedAt': updatedAt,
       'companyId': companyId,
       'company': company?.toJson(),
-      //'role': role.toJson(),
+      'role': role.toJson(),
       'roleId': roleId,
       'lastLogin': lastLogin,
     };

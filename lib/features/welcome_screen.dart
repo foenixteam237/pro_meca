@@ -40,6 +40,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> _testConnection() async {
+
+    final pref =  await SharedPreferences.getInstance();
+
+    bool isCheck = pref.getBool('remember_me') ?? false;
+    String? accessToken =  pref.getString("accessToken");
+
+    print("Test de connexion en cours et verification ischek $isCheck");
     // Vérification simple
     bool isConnected = await NetworkService.hasInternetAccess();
 
@@ -63,7 +70,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       setState(() {
         _isConnected = true;
         _connectionMessage = AppLocalizations.of(context).connexionOk;
-        Future.delayed(const Duration(seconds: 10));
+        Future.delayed(const Duration(seconds: 5));
       });
     }
 
@@ -81,7 +88,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
       // Si connecté, naviguer après un délai
       if (isConnected) {
-        await Future.delayed(const Duration(seconds: 5));
+        await Future.delayed(const Duration(seconds: 3));
+        if(isCheck){
+          //Si l'utilisateur a choisi se souvenir de moi au préalabe
+          if(accessToken != null){
+            //Tester la validité du token
+            _navigateToTechHome();
+          }
+        }
         _navigateToHome();
       } else {
         if (mounted) {
@@ -117,6 +131,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void _navigateToHome() {
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  void _navigateToTechHome() {
+    //if(!mounted) return;
+    Navigator.pushReplacementNamed(context, '/technician_home');
   }
 
   @override

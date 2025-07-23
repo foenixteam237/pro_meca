@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/features/auth/screens/user_profile_screen.dart';
+import 'package:pro_meca/features/settings/services/api_services.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/widgets/buildHomeContent.dart';
 
@@ -72,7 +77,8 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         profileImagePath: "assets/images/images.jpeg",
-        name: "Dilane ",
+        name:
+            "Dilanes ${ApiService().getSavedUser().then((user) => user?.name ?? '')}",
         role: l10n.technicianRole,
       ),
       backgroundColor: AppColors.customBackground(context),

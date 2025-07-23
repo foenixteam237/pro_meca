@@ -27,14 +27,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isChecked) {
       // Si l'utilisateur a choisi de se souvenir de lui, on charge les données
       // de connexion ici
+
       User? user = ApiService().getSavedUser() as User?;
       if (user != null) {
         // Rediriger vers la page d'accueil si l'utilisateur est déjà connecté
-        Navigator.pushReplacementNamed(
-          context,
-          '/technician_home',
-          arguments: user,
-        );
+        Navigator.pushReplacementNamed(context, '/technician_home');
       }
     }
   }
@@ -42,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   _loadCheckboxState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isChecked = prefs.getBool('rememberMe') ?? false;
+      _isChecked = prefs.getBool('remember_me') ?? false;
     });
   }
 
@@ -51,13 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isChecked = value ?? false;
     });
-    await prefs.setBool('rememberMe', _isChecked);
+    await prefs.setBool('remember_me', _isChecked);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
