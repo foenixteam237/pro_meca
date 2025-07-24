@@ -118,13 +118,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 20),
+                  padding: const EdgeInsets.only(top: 5),
                   child: Image.asset(
                     'assets/images/promeca_logo.png',
                     width: Responsive.responsiveValue(
                       context,
-                      mobile: MediaQuery.of(context).size.width * 0.4,
-                      tablet: MediaQuery.of(context).size.width * 0.3,
+                      mobile: MediaQuery.of(context).size.width * 0.3,
+                      tablet: MediaQuery.of(context).size.width * 0.4,
                     ),
                     fit: BoxFit.contain,
                   ),
@@ -135,8 +135,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     'assets/images/welcome_image.png',
                     width: Responsive.responsiveValue(
                       context,
-                      mobile: MediaQuery.of(context).size.width * 0.8,
-                      tablet: MediaQuery.of(context).size.width * 0.6,
+                      mobile: MediaQuery.of(context).size.width * 0.6,
+                      tablet: MediaQuery.of(context).size.width * 0.8,
                     ),
                     fit: BoxFit.contain,
                   ),

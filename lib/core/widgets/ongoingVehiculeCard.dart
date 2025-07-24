@@ -1,28 +1,26 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../l10n/arb/app_localizations.dart';
 import '../constants/app_colors.dart';
 
-Widget ongoingVehicleCard({required String date, required String status, required BuildContext context}) {
+Widget ongoingVehicleCard({
+  required String date,
+  required String status,
+  required BuildContext context,
+}) {
   final l10n = AppLocalizations.of(context);
   final screenWidth = MediaQuery.of(context).size.width;
   final isMobile = screenWidth < 600;
 
   return Container(
     margin: EdgeInsets.symmetric(vertical: 8, horizontal: isMobile ? 8 : 16),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-
-    ),
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
     child: Row(
       children: [
         Container(
           width: isMobile ? screenWidth * 0.2 : 80,
           height: isMobile ? screenWidth * 0.2 : 80,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
           child: ClipRRect(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(10),
@@ -46,9 +44,7 @@ Widget ongoingVehicleCard({required String date, required String status, require
               SizedBox(height: 2),
               Text(
                 "Toyota Corolla LE",
-                style: TextStyle(
-                  fontSize: isMobile ? 12 : 16,
-                ),
+                style: TextStyle(fontSize: isMobile ? 12 : 16),
               ),
               SizedBox(height: 8),
               Container(
@@ -92,4 +88,3 @@ Color _getStatusColor(String status, AppLocalizations l10n) {
     return AppColors.primary;
   }
 }
-

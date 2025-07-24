@@ -275,7 +275,7 @@ abstract class AppLocalizations {
   /// No description provided for @immatVehicule.
   ///
   /// In en, this message translates to:
-  /// **'vehicle registration'**
+  /// **'vehicle plate'**
   String get immatVehicule;
 
   /// No description provided for @validation.
@@ -385,6 +385,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Login failed, please check your credentials'**
   String get authLoginFailed;
+
+  /// No description provided for @modele.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get modele;
+
+  /// No description provided for @property.
+  ///
+  /// In en, this message translates to:
+  /// **'Property'**
+  String get property;
 }
 
 class _AppLocalizationsDelegate

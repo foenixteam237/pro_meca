@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/features/auth/screens/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
@@ -82,12 +83,18 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
             children: [
               PersistentTabView(
                 context,
-                padding: const EdgeInsets.only(top: 5),
+                padding: EdgeInsets.only(
+                  top: Responsive.responsiveValue(
+                    context,
+                    mobile: screenSize.height * 0.01,
+                    tablet: screenSize.height * 0.04,
+                  ),
+                ),
                 controller: _controller,
                 screens: _buildScreens(),
                 navBarHeight: isMobile
-                    ? screenSize.height * 0.07
-                    : screenSize.height * 0.08,
+                    ? screenSize.height * 0.09
+                    : screenSize.height * 0.1,
                 items: _navBarsItems(context),
                 confineToSafeArea: true,
                 handleAndroidBackButtonPress: true,

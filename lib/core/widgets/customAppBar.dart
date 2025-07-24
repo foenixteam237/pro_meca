@@ -32,13 +32,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       // ignore: deprecated_member_use
       WidgetsBinding.instance.window,
     ).size.height;
-    return Size.fromHeight(screenHeight * 0.06); // 7% de la hauteur d'écran
+    return Size.fromHeight(screenHeight * 0.07); // 7% de la hauteur d'écran
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     // Tailles responsive
     final horizontalPadding = screenWidth * 0.03; // 3% de la largeur d'écran
@@ -47,10 +46,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       20,
       min(30, screenWidth * 0.045),
     ); // Entre 20 et 30
-    final fontSizeName = max(
-      14,
-      min(18, screenWidth * 0.035),
-    ); // Entre 14 et 18
+    final fontSizeName = max(14, min(16, screenWidth * 0.04)); // Entre 14 et 18
 
     return AppBar(
       backgroundColor: AppBarTheme.of(context).backgroundColor,

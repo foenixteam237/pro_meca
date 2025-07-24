@@ -75,7 +75,7 @@
   "profile": "Profile",
   "technicianRole" : "Technician",
   "add": "add",
-  "immatVehicule": "vehicle registration",
+  "immatVehicule": "vehicle plate",
   "validation" : "In validation",
   "userProfile": "User Profile",
   "administratorRole": "Administrator",
@@ -93,5 +93,7 @@
   "connectionError": "Error checking connection",
   "noInternetConnection": "No internet connection",
   "connexionOk": "Your internet connection is OK",
-  "authLoginFailed": "Login failed, please check your credentials"
+  "authLoginFailed": "Login failed, please check your credentials",
+  "modele": "Model",
+  "property":"Property"
 }

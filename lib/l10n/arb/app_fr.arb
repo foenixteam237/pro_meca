@@ -74,6 +74,7 @@
   "profile": "Profil",
   "technicianRole" : "Technicien",
   "add": "Ajouter",
+  "immatVehicule": "Immatriculation",
   "validation": "En validation",
   "userProfile": "Profil utilisateur",
   "administratorRole": "Administrateur",
@@ -91,6 +92,8 @@
   "connectionError": "Erreur lors de la vérification de la connexion",
   "noInternetConnection": "Pas de connexion Internet",
   "connexionOk": "Connexion internet OK",
-  "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants"
+  "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants",
+  "modele": "Modèle",
+  "property":"Propriétaire"
 
 }

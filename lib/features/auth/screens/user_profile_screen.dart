@@ -9,6 +9,8 @@ import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import '../../../core/widgets/editable_textField.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }

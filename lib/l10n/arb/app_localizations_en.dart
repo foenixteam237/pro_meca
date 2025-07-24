@@ -97,7 +97,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get add => 'add';
 
   @override
-  String get immatVehicule => 'vehicle registration';
+  String get immatVehicule => 'vehicle plate';
 
   @override
   String get validation => 'In validation';
@@ -152,4 +152,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authLoginFailed => 'Login failed, please check your credentials';
+
+  @override
+  String get modele => 'Model';
+
+  @override
+  String get property => 'Property';
 }
