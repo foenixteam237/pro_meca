@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/features/choseBrand.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'vehicule_info.dart';
@@ -118,38 +118,18 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
       context: context,
       pageListBuilder: (modalSheetContext) => [
         WoltModalSheetPage(
-          topBarTitle: const Text('Ajouter un véhicule'),
-          child: const Center(child: Text("Pas disponible pour le moment")),
-          stickyActionBar: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Annuler'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      await _loadVehicles();
-                    },
-                    child: const Text('Enregistrer'),
-                  ),
-                ),
-              ],
-            ),
+          trailingNavBarWidget: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
           ),
+          child:  BrandPickerWidget(onBrandSelected: (brand){}),
         ),
       ],
       modalTypeBuilder: (context) {
         final screenWidth = MediaQuery.of(context).size.width;
         return screenWidth > 700
             ? WoltModalType.alertDialog()
-            : WoltModalType.alertDialog();
+            : WoltModalType.dialog();
       },
       onModalDismissedWithBarrierTap: () => Navigator.pop(context),
     );
@@ -159,30 +139,33 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   Widget build(BuildContext context) {
     print('Step 4 building ');
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Row(
             children: [
               Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Rechercher un véhicule...',
-                    hintStyle: TextStyle(color: Theme.of(context).hintColor),
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.grey),
-                      onPressed: () {
-                        _searchController.clear();
-                        _searchVehicles('');
-                      },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher un véhicule...',
+                      hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed: () {
+                          _searchController.clear();
+                          _searchVehicles('');
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -204,7 +187,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: Responsive.responsiveValue(context, mobile: 10, tablet: 20)),
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
           else if (_filteredVehicles.isEmpty)
@@ -226,14 +209,12 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
               ],
             )
           else
-            Container(
-              child: ListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: _filteredVehicles.map((vehicle) {
-                  return VehicleInfoCard(vehicle: vehicle);
-                }).toList(),
-              ),
+            ListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: _filteredVehicles.map((vehicle) {
+                return VehicleInfoCard(vehicle: vehicle);
+              }).toList(),
             ),
         ],
       ),

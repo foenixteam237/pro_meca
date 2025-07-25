@@ -19,7 +19,7 @@ void showVehicleSelectionModal(BuildContext context) {
       final screenWidth = MediaQuery.of(context).size.width;
       return screenWidth > 700
           ? WoltModalType.alertDialog()
-          : WoltModalType.bottomSheet();
+          : WoltModalType.dialog();
     },
     onModalDismissedWithBarrierTap: () => Navigator.pop(context),
   );

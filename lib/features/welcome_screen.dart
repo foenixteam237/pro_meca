@@ -124,7 +124,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     width: Responsive.responsiveValue(
                       context,
                       mobile: MediaQuery.of(context).size.width * 0.3,
-                      tablet: MediaQuery.of(context).size.width * 0.4,
+                      tablet: MediaQuery.of(context).size.width * 0.04,
                     ),
                     fit: BoxFit.contain,
                   ),
