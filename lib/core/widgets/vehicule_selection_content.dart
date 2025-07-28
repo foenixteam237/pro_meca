@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
-import 'package:pro_meca/features/choseBrand.dart';
+import 'package:pro_meca/core/views/choseBrandScreen.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'vehicule_info.dart';
@@ -114,24 +114,34 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   }
 
   void _showAddVehicleDialog() {
+    String selectedBrand = '';
+    String selectedModel = '';
+    final clientInfoFormKey = GlobalKey<FormState>();
+    final vehicleDetailsFormKey = GlobalKey<FormState>();
+
     WoltModalSheet.show(
       context: context,
-      pageListBuilder: (modalSheetContext) => [
+      pageListBuilder: (modalContext) => [
+        // Étape 1: Choix de la marque
         WoltModalSheetPage(
+          topBarTitle: const Text('Choisir la marque'),
           trailingNavBarWidget: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(modalContext),
           ),
-          child:  BrandPickerWidget(onBrandSelected: (brand){}),
+          child: BrandPickerWidget(
+            onBrandSelected: (brand) {
+              selectedBrand = brand;
+            },
+          ),
         ),
       ],
       modalTypeBuilder: (context) {
         final screenWidth = MediaQuery.of(context).size.width;
         return screenWidth > 700
-            ? WoltModalType.alertDialog()
+            ? WoltModalType.dialog()
             : WoltModalType.dialog();
       },
-      onModalDismissedWithBarrierTap: () => Navigator.pop(context),
     );
   }
 
@@ -182,12 +192,16 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                   ),
                 ),
                 onPressed: () {
-                  _showAddVehicleDialog();
+                  //_showAddVehicleDialog();
+                  // Redirige vers l'écran de sélection de marque
+                  Navigator.pushReplacementNamed(context, "/brand_picker");
                 },
               ),
             ],
           ),
-          SizedBox(height: Responsive.responsiveValue(context, mobile: 10, tablet: 20)),
+          SizedBox(
+            height: Responsive.responsiveValue(context, mobile: 10, tablet: 20),
+          ),
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
           else if (_filteredVehicles.isEmpty)

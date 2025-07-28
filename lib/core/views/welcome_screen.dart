@@ -7,7 +7,8 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/features/settings/providers/locale_provider.dart';
-import '../l10n/arb/app_localizations.dart';
+
+import '../../l10n/arb/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});

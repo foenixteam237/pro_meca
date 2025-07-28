@@ -3,10 +3,12 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
+import 'package:pro_meca/core/widgets/screenPart/buildPiecesContent.dart';
 import 'package:pro_meca/features/auth/screens/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 
-import '../core/widgets/buildHomeContent.dart';
+import '../widgets/screenPart/buildHomeContent.dart';
+import '../widgets/screenPart/dashboardTech.dart';
 
 class TechnicianHomeScreen extends StatefulWidget {
   const TechnicianHomeScreen({super.key});
@@ -26,8 +28,8 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   List<Widget> _buildScreens() {
     return [
       buildHomeContent(context),
-      const Center(child: Text('Pièces Screen')),
-      const Center(child: Text('Dashboard Screen')),
+      CategoriesPage(),
+      VehicleDashboardPage(),
       ProfileScreen(),
     ];
   }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/widgets/showVehicleSelectionModal.dart';
-import '../../l10n/arb/app_localizations.dart';
-import '../constants/app_colors.dart';
-import 'completeVehiculeCard.dart';
-import 'ongoingVehiculeCard.dart';
+import '../../../l10n/arb/app_localizations.dart';
+import '../../constants/app_colors.dart';
+import '../completeVehiculeCard.dart';
+import '../ongoingVehiculeCard.dart';
 
 Widget buildHomeContent(BuildContext context) {
   final l10n = AppLocalizations.of(context);

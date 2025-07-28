@@ -67,6 +67,13 @@ class AppStyles {
     );
   }
 
+  static TextStyle caption(BuildContext context) {
+    return Theme.of(context).textTheme.labelSmall!.copyWith(
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+      color: AppColors.primary,
+    );
+  }
   static TextStyle buttonText(BuildContext context) {
     return Theme.of(context).textTheme.labelLarge!.copyWith(
       fontSize: 16,

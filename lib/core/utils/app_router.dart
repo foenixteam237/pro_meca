@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/features/TechnicianHome.dart';
 import 'package:pro_meca/features/auth/screens/login_screen.dart';
-import 'package:pro_meca/features/welcome_screen.dart';
+import 'package:pro_meca/core/views/choseBrandScreen.dart';
+
+import '../views/TechnicianHome.dart';
+import '../views/welcome_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
@@ -10,6 +12,8 @@ class AppRouter {
   static const String login = '/login';
   static const String welcome = '/welcome';
   static const String technicianHome = '/technician_home';
+  static const String brandPicker = '/brand_picker';
+  static const String modelPicker = "/model_picker";
 
   // Générateur de routes
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -20,10 +24,19 @@ class AppRouter {
         return _fadeRoute(const WelcomeScreen(), settings);
       case technicianHome:
         return _fadeRoute(TechnicianHomeScreen(), settings);
+      case brandPicker:
+        return _fadeRoute(
+          BrandPickerScreen(
+            onBrandSelected: (selectedBrand) {
+              // Logique pour gérer la marque sélectionnée
+            },
+          ),
+          settings,
+        );
       default:
         return _fadeRoute(
           Scaffold(
-            body: Center(child: Text('Page ${settings.name} introuvable')),
+            body: Center(child: Text('Page ${settings.name} introuvables')),
           ),
           settings,
         );

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/models/dataLogin.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,87 @@ class ApiService {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
+
+  Future<Map<String, String>> _getAuthHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+    return {
+      ..._headers,
+      'Authorization': 'Bearer $accessToken',
+    };
+  }
+
+  Future<bool> _checkAndRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiresAt = prefs.getInt('expiresAt');
+    final refreshExpiresAt = prefs.getInt('refreshExpiresAt');
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    // 1. Vérifier si le refresh token est expiré
+    if (refreshExpiresAt == null || currentTime >= refreshExpiresAt) {
+      await _logoutUser();
+      throw Exception('Session expirée, veuillez vous reconnecter');
+    }
+
+    // 2. Vérifier si l'access token est expiré
+    if (expiresAt == null || currentTime >= expiresAt) {
+      try {
+        final refreshToken = prefs.getString('refreshToken');
+        final response = await http.post(
+          Uri.parse('$_baseUrl/auth/refresh'),
+          headers: _headers,
+          body: json.encode({'refreshToken': refreshToken}),
+        );
+
+        if (response.statusCode == 200) {
+          final responseData = json.decode(response.body);
+          await _saveAuthData(
+            accessToken: responseData['accessToken'],
+            refreshToken: responseData['refreshToken'],
+            refreshExpiresAt: responseData['refreshExpiresAt'],
+            expiresAt: responseData['expiresAt'],
+            user: User.fromJson(responseData['user']),
+            rememberMe: prefs.getBool('remember_me') ?? false,
+          );
+          return true;
+        } else {
+          await _logoutUser();
+          throw Exception('Échec du rafraîchissement du token');
+        }
+      } catch (e) {
+        await _logoutUser();
+        throw Exception('Erreur lors du rafraîchissement: ${e.toString()}');
+      }
+    }
+
+    return false;
+  }
+
+  Future<void> _logoutUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    // Vous pouvez aussi ajouter une navigation vers l'écran de login ici
+    // Ex: Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  // Méthode générique pour les requêtes avec gestion automatique des tokens
+  Future<http.Response> _authenticatedRequest(
+      Future<http.Response> Function() requestFn,
+      ) async {
+    // 1. Vérifier et rafraîchir le token si nécessaire
+    await _checkAndRefreshToken();
+
+    // 2. Exécuter la requête initiale
+    final response = await requestFn();
+
+    // 3. Si le token a expiré pendant la requête, rafraîchir et réessayer
+    if (response.statusCode == 401) {
+      await _checkAndRefreshToken();
+      return await requestFn();
+    }
+
+    return response;
+  }
 
   Future<bool> testConnection() async {
     try {
@@ -36,6 +118,7 @@ class ApiService {
     required String? mail,
     bool rememberMe = false,
   }) async {
+
     final response = await http.post(
       Uri.parse('$_baseUrl/auth/login'),
       headers: _headers,
@@ -153,6 +236,23 @@ class ApiService {
       return updatedUser;
     } else {
       throw Exception('Failed to update profile');
+    }
+  }
+
+  //Methode pour recuperer les marques
+  Future<List<Brand>> getAllBrands() async {
+    final response = await _authenticatedRequest(
+          () async => await http.get(
+        Uri.parse('$_baseUrl/brands'),
+        headers: await _getAuthHeaders(),
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> brandsJson = json.decode(response.body);
+      return brandsJson.map((json) => Brand.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load brands');
     }
   }
 }
