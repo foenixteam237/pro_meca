@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../l10n/arb/app_localizations.dart';
-import '../constants/app_colors.dart';
+import '../../../../l10n/arb/app_localizations.dart';
+import '../../../constants/app_colors.dart';
 
 Widget ongoingVehicleCard({
   required String date,

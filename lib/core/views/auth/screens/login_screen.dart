@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'package:pro_meca/features/settings/services/dio_api_services.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
-import 'package:pro_meca/features/settings/providers/locale_provider.dart';
-import '../../../l10n/arb/app_localizations.dart';
+import 'package:pro_meca/core/providers/locale_provider.dart';
+import '../../../../l10n/arb/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

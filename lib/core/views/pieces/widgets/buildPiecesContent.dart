@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../constants/app_styles.dart';
-import '../../utils/responsive.dart';
+import '../../../constants/app_styles.dart';
+import '../../../utils/responsive.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});

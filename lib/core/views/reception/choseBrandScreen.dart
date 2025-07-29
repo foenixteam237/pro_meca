@@ -3,9 +3,9 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'package:pro_meca/features/settings/services/dio_api_services.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 
-import '../widgets/shimmerRound.dart';
+import '../../widgets/shimmerRound.dart';
 import 'ModelSelectedScreen.dart'; // Ajoutez cette dépendance dans pubspec.yaml
 
 class BrandPickerScreen extends StatefulWidget {

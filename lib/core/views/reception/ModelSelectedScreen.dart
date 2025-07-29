@@ -7,8 +7,8 @@ import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/settings/services/api_services.dart';
-import '../widgets/shimmerRound.dart';
+import '../../services/api_services.dart';
+import '../../widgets/shimmerRound.dart';
 import 'clientVehicleFormPage.dart';
 
 class ModelSelectionScreen extends StatefulWidget {
@@ -47,9 +47,11 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   }
 
   Future<void> _loadModels() async {
-    try{
+    try {
       setState(() => _isLoading = true);
-      final List<Modele>? models = await apiService.getModelsByBrand(_idSelectedBrand);
+      final List<Modele>? models = await apiService.getModelsByBrand(
+        _idSelectedBrand,
+      );
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
 
@@ -59,14 +61,13 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
         _accessToken = accessToken!;
         _isLoading = false;
       });
-    } catch(e){
+    } catch (e) {
       print(e);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
     }
   }
-
 
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -77,13 +78,13 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
 
   void _filterModels() {
     setState(() {
-
       _filteredModeles = _allModeles
-      .where(
-        (model) => model.name.toLowerCase().contains(
-          _searchController.text.toLowerCase(),
-        ),
-      ).toList();
+          .where(
+            (model) => model.name.toLowerCase().contains(
+              _searchController.text.toLowerCase(),
+            ),
+          )
+          .toList();
       print(_selectedModel);
     });
   }
@@ -97,8 +98,6 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       // Ajout d'un Scaffold
       resizeToAvoidBottomInset: false,
@@ -154,9 +153,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
             ),
             const SizedBox(height: 16),
             // Grille des modèles
-            Expanded(
-              child: _buildModelGrid()
-            ),
+            Expanded(child: _buildModelGrid()),
             // Boutons en bas
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 8),
@@ -183,11 +180,15 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
                           ? () {
                               // Ajoutez ici la logique pour passer à l'étape suivante
                               // Par exemple, appeler widget.onNext();
-                        print("l'id du modèle est : $_selectedModelId et celle de la marque est : ${widget.selectedBrand}");
+                              print(
+                                "l'id du modèle est : $_selectedModelId et celle de la marque est : ${widget.selectedBrand}",
+                              );
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      ClientVehicleFormPage(idBrand: widget.selectedBrand, idModel: _selectedModelId!),
+                                  builder: (context) => ClientVehicleFormPage(
+                                    idBrand: widget.selectedBrand,
+                                    idModel: _selectedModelId!,
+                                  ),
                                 ),
                               );
                             }
@@ -211,14 +212,11 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
     );
   }
 
-Widget _buildImage(String? logo){
-    
-    if(logo != null){
-     return Image.network(
+  Widget _buildImage(String? logo) {
+    if (logo != null) {
+      return Image.network(
         logo,
-        headers: {
-          'Authorization': 'Bearer $_accessToken',
-        },
+        headers: {'Authorization': 'Bearer $_accessToken'},
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => Container(
           color: Colors.grey,
@@ -226,7 +224,7 @@ Widget _buildImage(String? logo){
         ),
       );
     }
-    
+
     return Image.asset(
       "assets/images/v1.jpg",
       fit: BoxFit.cover,
@@ -235,11 +233,10 @@ Widget _buildImage(String? logo){
         child: const Icon(Icons.directions_car),
       ),
     );
-}
+  }
 
   Widget _buildModelGrid() {
-
-    if(_isLoading){
+    if (_isLoading) {
       return BrandShimmerWidget();
     }
 
@@ -278,9 +275,7 @@ Widget _buildImage(String? logo){
                     width: 2,
                   ),
                 ),
-                child: ClipOval(
-                  child: _buildImage(model.logo)
-                ),
+                child: ClipOval(child: _buildImage(model.logo)),
               ),
               const SizedBox(height: 2),
               // Nom du modèle

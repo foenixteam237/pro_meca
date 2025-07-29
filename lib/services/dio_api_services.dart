@@ -4,17 +4,21 @@ import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/models/dataLogin.dart';
 import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/models/user.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/models/client.dart';
-import '../../../core/models/vehicle.dart';
+import '../core/models/client.dart';
+import '../core/models/vehicle.dart';
 
 class ApiDioService {
-  static const String _baseUrl = 'https://promeca.api.blasco.top';
+  String get apiUrl {
+    return dotenv.env['API_URL'] ?? '';
+  }
+
   final Dio _dio;
   ApiDioService()
     : _dio = Dio(
         BaseOptions(
-          baseUrl: _baseUrl,
+          baseUrl: dotenv.env['API_URL'] ?? '',
           contentType: 'application/json',
           responseType: ResponseType.json,
         ),
@@ -257,7 +261,7 @@ class ApiDioService {
   Future<String?> createVehicle(FormData formData) async {
     final response = await _authenticatedRequest(
       () async => await _dio.post(
-        '$_baseUrl/vehicles/create',
+        '$apiUrl/vehicles/create',
         data: formData,
         options: Options(headers: await _getAuthHeaders()),
       ),
@@ -270,9 +274,7 @@ class ApiDioService {
     } else {
       final errorData = response.data;
       print(formData.fields.toString());
-      throw Exception(
-        'Failed to create vehicle: ${errorData['message']}',
-      );
+      throw Exception('Failed to create vehicle: ${errorData['message']}');
     }
   }
 

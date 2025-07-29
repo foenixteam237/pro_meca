@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
-import 'package:pro_meca/features/settings/services/dio_api_services.dart';
+import 'package:pro_meca/core/services/api_services.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_styles.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
 
 class ClientVehicleFormPage extends StatefulWidget {
   final String idBrand;

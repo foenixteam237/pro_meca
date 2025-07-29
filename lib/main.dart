@@ -5,8 +5,8 @@ import 'package:pro_meca/core/utils/app_router.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pro_meca/core/constants/app_themes.dart';
-import 'package:pro_meca/features/settings/providers/theme_provider.dart';
-import 'package:pro_meca/features/settings/providers/locale_provider.dart';
+import 'package:pro_meca/core/providers/theme_provider.dart';
+import 'package:pro_meca/core/providers/locale_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {

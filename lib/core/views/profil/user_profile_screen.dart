@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
-import 'package:pro_meca/features/settings/services/dio_api_services.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
-import 'package:pro_meca/features/settings/providers/theme_provider.dart';
+import 'package:pro_meca/core/providers/theme_provider.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
-import '../../../core/widgets/editable_textField.dart';
+import '../../widgets/editable_textField.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

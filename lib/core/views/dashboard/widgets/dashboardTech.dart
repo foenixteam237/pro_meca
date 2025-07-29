@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 
-import '../../../l10n/arb/app_localizations.dart';
-import '../../constants/app_colors.dart';
-import '../../constants/app_styles.dart';
+import '../../../../l10n/arb/app_localizations.dart';
+import '../../../constants/app_colors.dart';
+import '../../../constants/app_styles.dart';
 
 class VehicleDashboardPage extends StatelessWidget {
   final BuildContext context;
@@ -127,7 +127,6 @@ class VehicleDashboardPage extends StatelessWidget {
                   maxLines: 2, // Autoriser 2 lignes
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
-
                 ),
               ),
             ],

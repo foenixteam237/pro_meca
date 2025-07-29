@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/features/auth/screens/login_screen.dart';
-import 'package:pro_meca/core/views/choseBrandScreen.dart';
+import 'package:pro_meca/core/views/auth/screens/login_screen.dart';
+import 'package:pro_meca/core/views/reception/choseBrandScreen.dart';
 
-import '../views/TechnicianHome.dart';
+import '../views/home/TechnicianHome.dart';
 import '../views/welcome_screen.dart';
 
 class AppRouter {

@@ -1,8 +1,7 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
-import '../constants/app_colors.dart';
+import '../../../constants/app_colors.dart';
 
 Widget completedVehicleCard(BuildContext context) {
   final l10n = AppLocalizations.of(context);

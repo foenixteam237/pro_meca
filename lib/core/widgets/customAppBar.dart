@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
-import 'package:pro_meca/features/settings/services/dio_api_services.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import '../constants/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
