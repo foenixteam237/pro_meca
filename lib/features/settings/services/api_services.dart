@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/models/dataLogin.dart';
@@ -11,7 +12,10 @@ import '../../../core/models/client.dart';
 import '../../../core/models/vehicle.dart';
 
 class ApiService {
-  static const String _baseUrl = 'https://promeca.api.blasco.top';
+  String get apiUrl {
+    return dotenv.env['API_URL'] ?? '';
+  }
+
   static const Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -20,10 +24,7 @@ class ApiService {
   Future<Map<String, String>> _getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
-    return {
-      ..._headers,
-      'Authorization': 'Bearer $accessToken',
-    };
+    return {..._headers, 'Authorization': 'Bearer $accessToken'};
   }
 
   Future<bool> _checkAndRefreshToken() async {
@@ -43,7 +44,7 @@ class ApiService {
       try {
         final refreshToken = prefs.getString('refreshToken');
         final response = await http.post(
-          Uri.parse('$_baseUrl/auth/refresh'),
+          Uri.parse('$apiUrl/auth/refresh'),
           headers: _headers,
           body: json.encode({'refreshToken': refreshToken}),
         );
@@ -81,8 +82,8 @@ class ApiService {
 
   // Méthode générique pour les requêtes avec gestion automatique des tokens
   Future<http.Response> _authenticatedRequest(
-      Future<http.Response> Function() requestFn,
-      ) async {
+    Future<http.Response> Function() requestFn,
+  ) async {
     // 1. Vérifier et rafraîchir le token si nécessaire
     await _checkAndRefreshToken();
 
@@ -100,10 +101,10 @@ class ApiService {
 
   Future<bool> testConnection() async {
     try {
-      print("Testing connection to $_baseUrl");
+      print("Testing connection to $apiUrl");
       // Envoi d'une requête GET à l'endpoint de ping
       final response = await http
-          .get(Uri.parse('$_baseUrl/ping'))
+          .get(Uri.parse('$apiUrl/ping'))
           .timeout(const Duration(seconds: 10));
       print("Response status code: ${response.statusCode}");
       return response.statusCode == 200 &&
@@ -123,9 +124,8 @@ class ApiService {
     required String? mail,
     bool rememberMe = false,
   }) async {
-
     final response = await http.post(
-      Uri.parse('$_baseUrl/auth/login'),
+      Uri.parse('$apiUrl/auth/login'),
       headers: _headers,
       body: json.encode({
         'phone': identifier,
@@ -199,7 +199,7 @@ class ApiService {
     final accessToken = prefs.getString('accessToken');
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/users/$userId'),
+      Uri.parse('$apiUrl/users/$userId'),
       headers: {..._headers, 'Authorization': 'Bearer $accessToken'},
     );
 
@@ -218,7 +218,7 @@ class ApiService {
     final accessToken = prefs.getString('accessToken');
 
     final response = await http.put(
-      Uri.parse('$_baseUrl/users/$userId'),
+      Uri.parse('$apiUrl/users/$userId'),
       headers: {..._headers, 'Authorization': 'Bearer $accessToken'},
       body: json.encode(data),
     );
@@ -245,7 +245,6 @@ class ApiService {
     }
   }
 
-
   //Et si on gérait les clients ici?
   Future<String> createClient({
     required String firstName,
@@ -263,22 +262,22 @@ class ApiService {
     final _companyId = prefs.getString('companyId');
 
     final response = await _authenticatedRequest(
-        () async => await http.post(
-          Uri.parse('$_baseUrl/clients/create'),
-          headers: await _getAuthHeaders(),
-          body: json.encode({
-            'firstName': firstName,
-            'lastName': lastName,
-            'phone': phone,
-            'companyId': _companyId,
-            if (email != null) 'email': email,
-            if (address != null) 'address': address,
-            if (city != null) 'city': city,
-            if (logo != null) 'logo': logo,
-            if (userId != null) 'userId': userId,
-            if (clientCompany != null) 'clientCompany': clientCompany,
-          }),
-        )
+      () async => await http.post(
+        Uri.parse('$apiUrl/clients/create'),
+        headers: await _getAuthHeaders(),
+        body: json.encode({
+          'firstName': firstName,
+          'lastName': lastName,
+          'phone': phone,
+          'companyId': _companyId,
+          if (email != null) 'email': email,
+          if (address != null) 'address': address,
+          if (city != null) 'city': city,
+          if (logo != null) 'logo': logo,
+          if (userId != null) 'userId': userId,
+          if (clientCompany != null) 'clientCompany': clientCompany,
+        }),
+      ),
     );
 
     if (response.statusCode == 201) {
@@ -286,18 +285,39 @@ class ApiService {
       return Client.fromJson(responseData['data']).id;
     } else {
       final errorData = json.decode(response.body);
-      throw Exception('Failed to create client: ${errorData['message'] ?? 'Unknown error'}');
+      throw Exception(
+        'Failed to create client: ${errorData['message'] ?? 'Unknown error'}',
+      );
     }
   }
-//Création d'un véhicule
+  //Création d'un véhicule
 
+  Future<String?> createVehicle(Vehicle vehicule) async {
+    final response = await _authenticatedRequest(
+      () async => await http.post(
+        Uri.parse('$_baseUrl/vehicles/create'),
+        headers: await _getAuthHeaders(),
+        body: json.encode(vehicule.toJson()),
+      ),
+    );
 
+    if (response.statusCode == 201) {
+      print(response.statusCode);
+      final responseData = json.decode(response.body);
+      return Vehicle.fromJson(responseData['data']).id;
+    } else {
+      final errorData = json.decode(response.body);
+      throw Exception(
+        'Failed to create vehicle: ${errorData['message'] ?? 'Unknown error'}',
+      );
+    }
+  }
 
   //Methode pour recuperer les marques
   Future<List<Brand>> getAllBrands() async {
     final response = await _authenticatedRequest(
-          () async => await http.get(
-        Uri.parse('$_baseUrl/brands'),
+      () async => await http.get(
+        Uri.parse('$apiUrl/brands'),
         headers: await _getAuthHeaders(),
       ),
     );
@@ -315,8 +335,8 @@ class ApiService {
   Future<List<Modele>?> getModelsByBrand(String brandId) async {
     try {
       final response = await _authenticatedRequest(
-            () async => await http.get(
-          Uri.parse('$_baseUrl/brands/$brandId'),
+        () async => await http.get(
+          Uri.parse('$apiUrl/brands/$brandId'),
           headers: await _getAuthHeaders(),
         ),
       );

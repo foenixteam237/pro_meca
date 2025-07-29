@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
+import 'package:pro_meca/features/settings/services/api_services.dart';
 import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
@@ -172,7 +173,9 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       );
       print(await vehicule.toJson(_selectedImage));
       // Création du FormData
-      FormData formData = FormData.fromMap(await vehicule.toJson(_selectedImage));
+      FormData formData = FormData.fromMap(
+        await vehicule.toJson(_selectedImage),
+      );
       // Affiche les champs de formData
       // Appel à l'API
       final vehicle = await ApiDioService().createVehicle(formData);

@@ -7,8 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:pro_meca/core/constants/app_themes.dart';
 import 'package:pro_meca/features/settings/providers/theme_provider.dart';
 import 'package:pro_meca/features/settings/providers/locale_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final themeProvider = ThemeProvider();
   final localeProvider = LocaleProvider();
@@ -16,6 +17,7 @@ void main() async {
     themeProvider.loadThemePrefs(),
     localeProvider.loadLocalePrefs(),
   ]);
+  await dotenv.load(fileName: ".env");
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           // Contenu principal avec SingleChildScrollView pour le scroll
           Padding(
-            padding: EdgeInsets.all(isMobile ? height * 0.03 : height * 0.05),
+            padding: EdgeInsets.all(isMobile ? width * 0.03 : height * 0.05),
             child: SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
