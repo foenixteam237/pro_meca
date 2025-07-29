@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/features/settings/services/api_services.dart';
 import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import 'package:pro_meca/features/settings/services/networkService.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +35,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     _localeProvider = Provider.of<LocaleProvider>(context, listen: false);
     _initializePreferences();
+    print(ApiService().apiUrl);
   }
 
   Future<void> _initializePreferences() async {
