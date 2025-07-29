@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
 import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
@@ -155,7 +154,6 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       'entryDate': selectedDate?.toIso8601String(),
     };
 
-    debugPrint('Vehicle Data: $vehicleData');
     try {
       final prefs = await SharedPreferences.getInstance();
       final _companyId = prefs.getString('companyId') ?? '';
@@ -172,18 +170,12 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         clientId: "115c58ac-4355-4381-b3fa-fd6d8cccb41f",
         companyId: _companyId,
       );
+      print(await vehicule.toJson(_selectedImage));
       // Création du FormData
-      FormData formData = FormData.fromMap({
-        ...vehicule.toJson(),
-        'logo': _selectedImage != null
-            ? await MultipartFile.fromFile(_selectedImage!.path)
-            : null,
-      });
-      debugPrint(
-        "Le formdata: ${formData.fields}",
-      ); // Affiche les champs de formData
+      FormData formData = FormData.fromMap(await vehicule.toJson(_selectedImage));
+      // Affiche les champs de formData
       // Appel à l'API
-      //final vehicle = await ApiDioService().createVehicle(formData);
+      final vehicle = await ApiDioService().createVehicle(formData);
       // debugPrint('Vehicle Data: $vehicle');
       // Navigation ou message de succès
     } catch (e) {

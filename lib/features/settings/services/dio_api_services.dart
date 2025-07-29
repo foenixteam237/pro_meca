@@ -262,13 +262,16 @@ class ApiDioService {
         options: Options(headers: await _getAuthHeaders()),
       ),
     );
+
+    print('Response Status Code: ${formData.fields}');
     if (response.statusCode == 201) {
       final responseData = response.data;
       return Vehicle.fromJson(responseData['data']).id;
     } else {
       final errorData = response.data;
+      print(formData.fields.toString());
       throw Exception(
-        'Failed to create vehicle: ${errorData['message'] ?? 'Unknown error'}',
+        'Failed to create vehicle: ${errorData['message']}',
       );
     }
   }

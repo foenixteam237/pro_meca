@@ -291,28 +291,6 @@ class ApiService {
   }
 //Création d'un véhicule
 
-  Future <String?> createVehicle(Vehicle vehicule) async{
-
-    final response = await _authenticatedRequest(
-        () async => await http.post(
-          Uri.parse('$_baseUrl/vehicles/create'),
-          headers: await _getAuthHeaders(),
-          body: json.encode(vehicule.toJson())
-    )
-    );
-
-    if (response.statusCode == 201) {
-
-      print(response.statusCode);
-      final responseData = json.decode(response.body);
-      return Vehicle.fromJson(responseData['data']).id;
-    } else {
-      final errorData = json.decode(response.body);
-      throw Exception('Failed to create vehicle: ${errorData['message'] ?? 'Unknown error'}');
-    }
-
-  }
-  
 
 
   //Methode pour recuperer les marques

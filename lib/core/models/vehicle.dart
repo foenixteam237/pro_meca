@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+
 import 'client.dart';
 
 class Vehicle {
@@ -52,7 +56,7 @@ class Vehicle {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Future<Map<String, dynamic>> toJson(File? logo) async {
     return {
       'marqueId': marqueId,
       'modelId': modelId,
@@ -63,9 +67,12 @@ class Vehicle {
       'kilometrage': kilometrage,
       'clientId': clientId,
       'companyId': companyId,
-      'createdAt': DateTime.now().toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
-      'client': client?.toJson(),
+      'logo': logo != null
+    ? await MultipartFile.fromFile(logo.path)
+    : null,
+      'createdAt': DateTime.now().toIso8601String().toString(),
+      //'updatedAt': updatedAt?.toIso8601String(),
+      //'client': client?.toJson(),
     };
   }
 }
