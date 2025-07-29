@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
+import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -27,7 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _fetchUser() async {
     try {
-      final user = await ApiService().getSavedUser();
+      final user = await ApiDioService().getSavedUser();
       setState(() {
         _user = user;
         _isLoading = false;

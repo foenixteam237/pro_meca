@@ -29,7 +29,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     return [
       buildHomeContent(context),
       CategoriesPage(),
-      VehicleDashboardPage(),
+      VehicleDashboardPage(context: context,),
       ProfileScreen(),
     ];
   }
@@ -78,6 +78,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         name: "Dilane",
         role: l10n.technicianRole,
       ),
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppColors.customBackground(context),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -100,7 +101,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
                 items: _navBarsItems(context),
                 confineToSafeArea: true,
                 handleAndroidBackButtonPress: true,
-                resizeToAvoidBottomInset: true,
+                resizeToAvoidBottomInset: false,
                 backgroundColor: isDarkMode
                     ? const Color(0xFF1E1E1E)
                     : AppColors.background,

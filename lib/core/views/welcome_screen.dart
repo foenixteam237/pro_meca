@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
+import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import 'package:pro_meca/features/settings/services/networkService.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +22,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isLoading = false;
   bool _isConnected = false;
   String _connectionMessage = "";
-  final ApiService _apiService = ApiService();
+  final ApiDioService _apiService = ApiDioService();
   late final LocaleProvider _localeProvider;
 
   late final SharedPreferences _prefs;
@@ -113,6 +113,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           SafeArea(

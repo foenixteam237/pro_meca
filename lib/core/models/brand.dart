@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 
+import 'modele.dart';
+
 @immutable
 class Brand {
   final String id;
   final String name;
   final String slug;
   final String? logoUrl;
+  final List<Modele>? modeles;
   final bool isSelected;
 
   const Brand({
@@ -13,6 +16,7 @@ class Brand {
     required this.name,
     required this.slug,
     this.logoUrl,
+    this.modeles,
     this.isSelected = false,
   });
 
@@ -23,6 +27,9 @@ class Brand {
         name: json['name']?.toString() ?? '',
         slug: json['slug']?.toString() ?? '',
         logoUrl: json['logo']?.toString(),
+        modeles: (json['modeles'] as List<dynamic>?)
+            ?.map((e) => Modele.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
     } catch (e) {
       throw FormatException('Invalid JSON format for Brand', json);

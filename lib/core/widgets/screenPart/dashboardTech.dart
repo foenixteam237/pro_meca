@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
+
+import '../../../l10n/arb/app_localizations.dart';
+import '../../constants/app_colors.dart';
+import '../../constants/app_styles.dart';
 
 class VehicleDashboardPage extends StatelessWidget {
-  const VehicleDashboardPage({super.key});
+  final BuildContext context;
+  const VehicleDashboardPage({super.key, required this.context});
 
   Widget _buildSearchBar() {
     return Padding(
@@ -25,14 +31,17 @@ class VehicleDashboardPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          const Text(
+          Text(
             "Véhicules entrés depuis le",
-            style: TextStyle(fontWeight: FontWeight.w500),
+            style: AppStyles.titleLarge(context),
           ),
           const Spacer(),
           const Text(
             "01/01/2025",
-            style: TextStyle(fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: AppColors.primary,
+            ),
           ),
         ],
       ),
@@ -44,7 +53,7 @@ class VehicleDashboardPage extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue),
+        border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -59,9 +68,9 @@ class VehicleDashboardPage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
-              "En attente diagnostic",
+              AppLocalizations.of(context).waitingDiagnotics,
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
@@ -82,11 +91,18 @@ class VehicleDashboardPage extends StatelessWidget {
     required int total,
   }) {
     return Container(
-      width: 150,
-      margin: const EdgeInsets.all(6),
-      padding: const EdgeInsets.all(12),
+      width: Responsive.responsiveValue(
+        context,
+        mobile: MediaQuery.of(context).size.width * 0.45, // Réduit légèrement
+        tablet: MediaQuery.of(context).size.width * 0.22,
+      ),
+      constraints: BoxConstraints(
+        minHeight: 100, // Hauteur minimale
+        maxHeight: 120, // Hauteur maximale
+      ),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue),
+        border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -94,28 +110,56 @@ class VehicleDashboardPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: Colors.blue),
+              Icon(icon, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               Expanded(
+                // Wrap avec Expanded
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: Responsive.responsiveValue(
+                      context,
+                      mobile: 12,
+                      tablet: 14,
+                    ),
                   ),
+                  maxLines: 2, // Autoriser 2 lignes
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Ce jour", style: TextStyle(fontSize: 12)),
+              Text('$today', style: TextStyle(fontSize: 12)),
+            ],
+          ),
           const SizedBox(height: 10),
-          Text("Ce jour    $today"),
-          Text("Ce mois  $month"),
-          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Ce mois", style: TextStyle(fontSize: 12)),
+              Text("$month", style: TextStyle(fontSize: 12)),
+            ],
+          ),
+          const Spacer(),
           Align(
-            alignment: Alignment.bottomRight,
-            child: Text(
-              "$total",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Total", style: TextStyle(fontSize: 18)),
+                Text(
+                  "$total",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ],
             ),
           ),
         ],
@@ -125,34 +169,39 @@ class VehicleDashboardPage extends StatelessWidget {
 
   Widget _buildStatusGrid() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Wrap(
-        alignment: WrapAlignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.count(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        shrinkWrap: true,
+        physics:
+            const NeverScrollableScrollPhysics(), // important pour éviter le scroll interne
         children: [
           _buildSmallCard(
             icon: Icons.access_time_outlined,
-            title: "Attente validation\ndiagnostic",
+            title: AppLocalizations.of(context).waitingValidationDiagnostic,
             today: 10,
             month: 5,
             total: 15,
           ),
           _buildSmallCard(
             icon: Icons.rule_folder_outlined,
-            title: "En attente validation\nintervention",
+            title: AppLocalizations.of(context).waitingValidation,
             today: 20,
             month: 3,
             total: 23,
           ),
           _buildSmallCard(
             icon: Icons.settings,
-            title: "En cours de réparation",
+            title: AppLocalizations.of(context).repairing,
             today: 10,
             month: 4,
             total: 14,
           ),
           _buildSmallCard(
             icon: Icons.directions_car_filled,
-            title: "Terminés",
+            title: AppLocalizations.of(context).finished,
             today: 10,
             month: 4,
             total: 14,
@@ -171,12 +220,11 @@ class VehicleDashboardPage extends StatelessWidget {
     required String imageUrl,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.grey),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.07),
@@ -231,12 +279,18 @@ class VehicleDashboardPage extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
-          ).copyWith(top: 12, bottom: 4),
+          ).copyWith(top: 20, bottom: 4),
           child: Row(
-            children: const [
-              Text("Historique", style: TextStyle(fontWeight: FontWeight.bold)),
+            children: [
+              Text("Historique", style: AppStyles.titleLarge(context)),
               Spacer(),
-              Text("voir plus", style: TextStyle(color: Colors.blue)),
+              Text(
+                "voir plus",
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
@@ -247,7 +301,7 @@ class VehicleDashboardPage extends StatelessWidget {
           date: "07/02/2025",
           statusColor: Colors.red,
           imageUrl:
-              "https://www.toyota.com/content/dam/toyota/vehicles/2025/crownsignia/mlp/owners-video/CRS_MY25_LCH_WelcomeMat_TCOM_Desktop_1920x79.mp4?wid=1920",
+              "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0018_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024",
         ),
         _buildHistoryItem(
           plate: "N0567AZ",
@@ -256,7 +310,7 @@ class VehicleDashboardPage extends StatelessWidget {
           date: "07/02/2025",
           statusColor: Colors.orange,
           imageUrl:
-              "https://www.toyota.com/content/dam/toyota/vehicles/2025/crownsignia/mlp/owners-video/CRS_MY25_LCH_WelcomeMat_TCOM_Desktop_1920x79.mp4?wid=1920",
+              "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0009_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024",
         ),
         _buildHistoryItem(
           plate: "N0567AZ",
@@ -265,7 +319,7 @@ class VehicleDashboardPage extends StatelessWidget {
           date: "07/02/2025",
           statusColor: Colors.green,
           imageUrl:
-              "https://www.toyota.com/content/dam/toyota/vehicles/2025/crownsignia/mlp/owners-video/CRS_MY25_LCH_WelcomeMat_TCOM_Desktop_1920x79.mp4?wid=1920",
+              "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/mlp/mosiac/CRS_MY25_0012_V001.png?wid=1440&hei=810&fmt=jpg&fit=crop",
         ),
       ],
     );
@@ -274,7 +328,6 @@ class VehicleDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

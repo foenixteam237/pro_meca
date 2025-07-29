@@ -1,9 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/models/dataLogin.dart';
+import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/models/client.dart';
+import '../../../core/models/vehicle.dart';
 
 class ApiService {
   static const String _baseUrl = 'https://promeca.api.blasco.top';
@@ -172,6 +177,7 @@ class ApiService {
     // Conversion du modèle User en JSON avant sauvegarde
     await prefs.setString('user_data', json.encode(user));
     await prefs.setBool('remember_me', rememberMe);
+    await prefs.setString("companyId", user.role.companyId);
 
     if (!rememberMe) {
       await prefs.setBool('session_only', true);
@@ -239,6 +245,76 @@ class ApiService {
     }
   }
 
+
+  //Et si on gérait les clients ici?
+  Future<String> createClient({
+    required String firstName,
+    required String lastName,
+    required String phone,
+    String? companyId,
+    String? email,
+    String? address,
+    String? city,
+    String? logo,
+    String? userId,
+    String? clientCompany,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final _companyId = prefs.getString('companyId');
+
+    final response = await _authenticatedRequest(
+        () async => await http.post(
+          Uri.parse('$_baseUrl/clients/create'),
+          headers: await _getAuthHeaders(),
+          body: json.encode({
+            'firstName': firstName,
+            'lastName': lastName,
+            'phone': phone,
+            'companyId': _companyId,
+            if (email != null) 'email': email,
+            if (address != null) 'address': address,
+            if (city != null) 'city': city,
+            if (logo != null) 'logo': logo,
+            if (userId != null) 'userId': userId,
+            if (clientCompany != null) 'clientCompany': clientCompany,
+          }),
+        )
+    );
+
+    if (response.statusCode == 201) {
+      final responseData = json.decode(response.body);
+      return Client.fromJson(responseData['data']).id;
+    } else {
+      final errorData = json.decode(response.body);
+      throw Exception('Failed to create client: ${errorData['message'] ?? 'Unknown error'}');
+    }
+  }
+//Création d'un véhicule
+
+  Future <String?> createVehicle(Vehicle vehicule) async{
+
+    final response = await _authenticatedRequest(
+        () async => await http.post(
+          Uri.parse('$_baseUrl/vehicles/create'),
+          headers: await _getAuthHeaders(),
+          body: json.encode(vehicule.toJson())
+    )
+    );
+
+    if (response.statusCode == 201) {
+
+      print(response.statusCode);
+      final responseData = json.decode(response.body);
+      return Vehicle.fromJson(responseData['data']).id;
+    } else {
+      final errorData = json.decode(response.body);
+      throw Exception('Failed to create vehicle: ${errorData['message'] ?? 'Unknown error'}');
+    }
+
+  }
+  
+
+
   //Methode pour recuperer les marques
   Future<List<Brand>> getAllBrands() async {
     final response = await _authenticatedRequest(
@@ -253,6 +329,43 @@ class ApiService {
       return brandsJson.map((json) => Brand.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load brands');
+    }
+  }
+
+  //Recuperer toutes les models d'une marque
+
+  Future<List<Modele>?> getModelsByBrand(String brandId) async {
+    try {
+      final response = await _authenticatedRequest(
+            () async => await http.get(
+          Uri.parse('$_baseUrl/brands/$brandId'),
+          headers: await _getAuthHeaders(),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic responseData = json.decode(response.body);
+
+        // Cas 1: Si la réponse contient directement la liste des modèles
+        if (responseData is List) {
+          return responseData.map((json) => Modele.fromJson(json)).toList();
+        }
+        // Cas 2: Si la réponse contient un objet Brand avec une propriété modeles
+        else if (responseData is Map<String, dynamic>) {
+          final brand = Brand.fromJson(responseData);
+          return brand.modeles;
+        }
+        // Cas 3: Format inattendu
+        else {
+          throw FormatException('Unexpected response format');
+        }
+      } else {
+        throw HttpException('Failed to load models');
+      }
+    } on http.ClientException catch (e) {
+      throw HttpException('Network error: ${e.message}');
+    } on FormatException catch (e) {
+      throw FormatException('Data parsing error: ${e.message}');
     }
   }
 }

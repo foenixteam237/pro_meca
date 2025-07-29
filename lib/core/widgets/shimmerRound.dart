@@ -13,13 +13,19 @@ class BrandShimmerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final baseColor = isDarkMode ? Colors.grey[700]! : Colors.grey[300]!;
+    final highlightColor = isDarkMode ? Colors.grey[500]! : Colors.grey[100]!;
+
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: baseColor,
+      highlightColor: highlightColor,
       child: GridView.builder(
-        scrollDirection: scrollDirection,
         itemCount: itemCount,
         padding: const EdgeInsets.symmetric(horizontal: 8),
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           crossAxisSpacing: 12,
@@ -28,7 +34,6 @@ class BrandShimmerWidget extends StatelessWidget {
         ),
         itemBuilder: (context, index) {
           return Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 60,

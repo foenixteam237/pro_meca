@@ -1,63 +1,456 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:pro_meca/core/models/vehicle.dart';
+import 'package:pro_meca/features/settings/services/api_services.dart';
+import 'package:pro_meca/features/settings/services/dio_api_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 
 class ClientVehicleFormPage extends StatefulWidget {
-  const ClientVehicleFormPage({super.key});
-
+  final String idBrand;
+  final String idModel;
+  const ClientVehicleFormPage({
+    super.key,
+    required this.idBrand,
+    required this.idModel,
+  });
   @override
   State<ClientVehicleFormPage> createState() => _ClientVehicleFormPageState();
 }
 
 class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   DateTime? selectedDate;
-
-  // Éléments à bord
+  File? _selectedImage;
+  bool isSelected = false;
+  final ImagePicker _picker = ImagePicker();
+  // Contrôleurs pour les champs du client et du véhicule
+  final Map<String, TextEditingController> controllers = {
+    'firstName': TextEditingController(),
+    'lastName': TextEditingController(),
+    'email': TextEditingController(),
+    'phone': TextEditingController(),
+    'chassis': TextEditingController(),
+    'licensePlate': TextEditingController(),
+    'year': TextEditingController(),
+    'color': TextEditingController(),
+    'mileage': TextEditingController(),
+    'reportedProblem': TextEditingController(),
+    'otherItems': TextEditingController(),
+  };
   final Map<String, bool> onboardItems = {
     "Extincteur": false,
-    "Papier du": false,
+    "Papier du véhicule": false,
     "Cric": false,
     "Kit médical": false,
     "Boîte à outil": false,
   };
 
-  final TextEditingController otherItemsController = TextEditingController();
+  Future<void> _selectImageSource() async {
+    final action = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choisir une source d\'image'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, ImageSource.camera),
+            child: const Text('Caméra'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, ImageSource.gallery),
+            child: const Text('Galerie'),
+          ),
+        ],
+      ),
+    );
+    if (action != null) {
+      if (action == ImageSource.camera) {
+        await _takePhoto();
+      } else {
+        await _pickImage();
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    if (await Permission.photos.request().isGranted) {
+      final image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      if (image != null) {
+        if (mounted) {
+          setState(() {
+            isSelected = true;
+            _selectedImage = File(image.path);
+          });
+        }
+      }
+    } else if (await Permission.photos.isDenied) {
+      //openAppSettings();
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    if (await Permission.camera.request().isGranted) {
+      final photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+      isSelected = true;
+      if (photo != null) {
+        if (mounted) {
+          setState(() {
+            _selectedImage = File(photo.path);
+          });
+        }
+      }
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(1990),
       lastDate: DateTime(2100),
     );
-
     if (picked != null && picked != selectedDate) {
-      setState(() => selectedDate = picked);
+      if (mounted) {
+        setState(() => selectedDate = picked);
+      }
     }
+  }
+
+  void _submitForm() async {
+    // Récupération des données du client et du véhicule
+    final clientData = {
+      'firstName': controllers['firstName']!.text,
+      'lastName': controllers['lastName']!.text,
+      'email': controllers['email']!.text.isNotEmpty
+          ? controllers['email']!.text
+          : null,
+      'phone': controllers['phone']!.text,
+    };
+    final vehicleData = {
+      'chassis': controllers['chassis']!.text,
+      'licensePlate': controllers['licensePlate']!.text,
+      'year': int.tryParse(controllers['year']!.text) ?? 0,
+      'color': controllers['color']!.text,
+      'kilometrage': int.tryParse(controllers['mileage']!.text) ?? 0,
+      'onboardItems': {
+        ...onboardItems,
+        if (controllers['otherItems']!.text.isNotEmpty)
+          'Autres': controllers['otherItems']!.text,
+      },
+      'reportedProblem': controllers['reportedProblem']!.text,
+      'entryDate': selectedDate?.toIso8601String(),
+    };
+
+    debugPrint('Vehicle Data: $vehicleData');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final _companyId = prefs.getString('companyId') ?? '';
+
+      // Création de l'objet Vehicle
+      final vehicule = Vehicle(
+        marqueId: widget.idBrand,
+        modelId: widget.idModel,
+        year: int.tryParse(controllers['year']!.text) ?? 0,
+        chassis: controllers['chassis']!.text,
+        licensePlate: controllers['licensePlate']!.text,
+        color: controllers['color']!.text,
+        kilometrage: int.tryParse(controllers['mileage']!.text) ?? 0,
+        clientId: "115c58ac-4355-4381-b3fa-fd6d8cccb41f",
+        companyId: _companyId,
+      );
+      // Création du FormData
+      FormData formData = FormData.fromMap({
+        ...vehicule.toJson(),
+        'logo': _selectedImage != null
+            ? await MultipartFile.fromFile(_selectedImage!.path)
+            : null,
+      });
+      debugPrint(
+        "Le formdata: ${formData.fields}",
+      ); // Affiche les champs de formData
+      // Appel à l'API
+      //final vehicle = await ApiDioService().createVehicle(formData);
+      // debugPrint('Vehicle Data: $vehicle');
+      // Navigation ou message de succès
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
+    }
+  }
+
+  @override
+  void dispose() {
+    controllers.forEach((key, controller) => controller.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Reception du véhicule")),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ... (votre code existant pour les indicateurs de progression)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  3,
+                  (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 30,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: index < 3 ? AppColors.primary : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Information du client",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ..._buildInputFields(),
+              const SizedBox(height: 20),
+              const Text(
+                "Détail du véhicule",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              ..._buildVehicleInputFields(),
+              // Image du véhicule
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: InkWell(
+                  onTap: _selectImageSource,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.green.withOpacity(0.1)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            isSelected
+                                ? "Image déjà selectionnée "
+                                : "Selectionné une image",
+                          ),
+                        ),
+                        Icon(
+                          Icons.photo_camera_outlined,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Éléments à bord",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 0,
+                children: onboardItems.keys
+                    .map((label) => _buildCheckBoxRow(label))
+                    .toList(),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: TextFormField(
+                  controller: controllers['otherItems'],
+                  decoration: InputDecoration(
+                    hintText: "Autres éléments déclarés à bord",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.green),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildInputField(
+                hint: "Problème signalé",
+                controller: controllers['reportedProblem']!,
+                isMultiline: true,
+              ),
+              const SizedBox(height: 16),
+              // Date d'entrée
+              InkWell(
+                onTap: () => _selectDate(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          selectedDate != null
+                              ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
+                              : "Date d'entrée",
+                          style: const TextStyle(color: Colors.black87),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.calendar_today,
+                        color: AppColors.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              // Boutons bas
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.withOpacity(0.7),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        "Retour",
+                        style: AppStyles.buttonText(context),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        "Terminé",
+                        style: AppStyles.buttonText(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildInputFields() {
+    return [
+      _buildInputField(
+        hint: "Nom du client",
+        controller: controllers['lastName']!,
+        icon: Icons.person,
+      ),
+      _buildInputField(
+        hint: "Prénom du client",
+        controller: controllers['firstName']!,
+        icon: Icons.person,
+      ),
+      _buildInputField(
+        hint: "Mail",
+        controller: controllers['email']!,
+        icon: Icons.email,
+        keyboardType: TextInputType.emailAddress,
+      ),
+      _buildInputField(
+        hint: "Téléphone",
+        controller: controllers['phone']!,
+        icon: Icons.phone,
+        keyboardType: TextInputType.phone,
+      ),
+    ];
+  }
+
+  List<Widget> _buildVehicleInputFields() {
+    return [
+      _buildInputField(
+        hint: "Numéro du chassis",
+        controller: controllers['chassis']!,
+      ),
+      _buildInputField(
+        hint: "Immatriculation",
+        controller: controllers['licensePlate']!,
+      ),
+      _buildInputField(
+        hint: "Année de sortie",
+        controller: controllers['year']!,
+        keyboardType: TextInputType.number,
+      ),
+      _buildInputField(hint: "Couleur", controller: controllers['color']!),
+      _buildInputField(
+        hint: "Kilométrage",
+        controller: controllers['mileage']!,
+        keyboardType: TextInputType.number,
+      ),
+    ];
   }
 
   Widget _buildInputField({
     required String hint,
+    required TextEditingController controller,
     IconData? icon,
     bool isMultiline = false,
     bool isReadOnly = false,
     VoidCallback? onTap,
+    TextInputType? keyboardType,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: TextFormField(
+        controller: controller,
         readOnly: isReadOnly,
         onTap: onTap,
         maxLines: isMultiline ? 5 : 1,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
-          prefixIcon: icon != null ? Icon(icon, color: AppColors.primary) : null,
+          prefixIcon: icon != null
+              ? Icon(icon, color: AppColors.primary)
+              : null,
           hintText: hint,
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.green),
+            borderSide: BorderSide(color: Colors.green.withOpacity(0.1)),
             borderRadius: BorderRadius.circular(12),
           ),
           focusedBorder: OutlineInputBorder(
@@ -73,177 +466,15 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Radio<bool>(
-          value: true,
-          groupValue: onboardItems[label],
-          onChanged: (_) {
-            setState(() => onboardItems[label] = !(onboardItems[label] ?? false));
+        Checkbox(
+          value: onboardItems[label],
+          onChanged: (value) {
+            setState(() => onboardItems[label] = value ?? false);
           },
           activeColor: Colors.green,
         ),
         Text(label, style: const TextStyle(fontSize: 13)),
       ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
-      appBar:AppBar(
-        title: const Text("Informations du client"),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  3,
-                      (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 30,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: index < 3 ? AppColors.primary : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildInputField(hint: "Nom du client", icon: Icons.person),
-              _buildInputField(hint: "Mail", icon: Icons.email),
-              _buildInputField(hint: "Téléphone", icon: Icons.phone),
-
-              const SizedBox(height: 20),
-              const Text("Détail du véhicule",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-
-              _buildInputField(hint: "Numéro du chassis"),
-              _buildInputField(hint: "Immatriculation"),
-              _buildInputField(hint: "Année de sortie"),
-              _buildInputField(hint: "Couleur"),
-              _buildInputField(hint: "Kilométrage"),
-
-              /// Image du véhicule
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: InkWell(
-                  onTap: () {
-                    // Image picker logique
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.green),
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                    ),
-                    child: Row(
-                      children: const [
-                        Expanded(child: Text("Image du véhicule")),
-                        Icon(Icons.photo_camera_outlined, color: AppColors.primary),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-              const Text("Éléments à bord", style: TextStyle(fontWeight: FontWeight.bold)),
-
-              Wrap(
-                spacing: 8,
-                runSpacing: 0,
-                children: onboardItems.keys.map((label) => _buildCheckBoxRow(label)).toList(),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: TextFormField(
-                  controller: otherItemsController,
-                  decoration: InputDecoration(
-                    hintText: "Autres éléments déclarés à bord",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.green),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-              const Text("Problème signalé", style: TextStyle(fontWeight: FontWeight.bold)),
-
-              _buildInputField(hint: "", isMultiline: true),
-
-              const SizedBox(height: 16),
-              /// Date d'entrée
-              InkWell(
-                onTap: () => _selectDate(context),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          selectedDate != null
-                              ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
-                              : "Date d'entrée",
-                          style: const TextStyle(color: Colors.black87),
-                        ),
-                      ),
-                      const Icon(Icons.calendar_today, color: AppColors.primary),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              /// Boutons bas
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Action retour
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child:  Text("Retour", style: AppStyles.buttonText(context),),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Action terminé
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child:  Text("Terminé", style: AppStyles.buttonText(context)),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

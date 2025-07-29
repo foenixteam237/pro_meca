@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
+import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import '../constants/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -54,7 +54,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       titleSpacing: 0,
       title: FutureBuilder<User?>(
-        future: ApiService().getSavedUser(),
+        future: ApiDioService().getSavedUser(),
         builder: (context, asyncSnapshot) {
           final user = asyncSnapshot.data;
           return Padding(
@@ -75,7 +75,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     Text(
                       user?.name ?? name,
                       style: TextStyle(
-                        color: nameColor,
+                        color: AppColors.customText(context),
                         fontWeight: FontWeight.w600,
                         fontSize: fontSizeName.toDouble(),
                       ),
@@ -84,6 +84,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       user?.role.name ?? role,
                       style: TextStyle(
                         color: AppColors.customText(context),
+                        fontWeight: FontWeight.bold,
                         fontSize: fontSizeRole,
                       ),
                     ),

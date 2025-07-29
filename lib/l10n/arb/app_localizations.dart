@@ -218,6 +218,36 @@ abstract class AppLocalizations {
   /// **'Diagnostic'**
   String get diagnostic;
 
+  /// No description provided for @waitingDiagnotics.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting diagnostics'**
+  String get waitingDiagnotics;
+
+  /// No description provided for @waitingValidationDiagnostic.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting validation diagnostic'**
+  String get waitingValidationDiagnostic;
+
+  /// No description provided for @waitingValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Wainting intervention validation'**
+  String get waitingValidation;
+
+  /// No description provided for @repairing.
+  ///
+  /// In en, this message translates to:
+  /// **'Repairing in progress'**
+  String get repairing;
+
+  /// No description provided for @finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get finished;
+
   /// No description provided for @seeInvoice.
   ///
   /// In en, this message translates to:

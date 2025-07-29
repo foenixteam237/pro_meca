@@ -3,9 +3,7 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'package:pro_meca/core/views/clientVehicleFormPage.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 
 import '../widgets/shimmerRound.dart';
 import 'ModelSelectedScreen.dart'; // Ajoutez cette dépendance dans pubspec.yaml
@@ -44,7 +42,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
   final TextEditingController _searchController = TextEditingController();
   List<Brand> _filteredBrand = [];
   List<Brand> _brands = [];
-  final apiService = ApiService();
+  final apiService = ApiDioService();
   bool _isLoading = true;
 
   Future<void> _loadBrands() async {
@@ -58,12 +56,11 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
         _filteredBrand = _brands;
         _isLoading = false;
       });
-
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
     }
   }
 
@@ -77,7 +74,9 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
   void _filterBrands() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredBrand = _brands.where((brand) => brand.name.toLowerCase().contains(query)).toList();
+      _filteredBrand = _brands
+          .where((brand) => brand.name.toLowerCase().contains(query))
+          .toList();
     });
   }
 
@@ -89,7 +88,8 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
 
   Widget _buildBrandGrid() {
     if (_isLoading) {
-      BrandShimmerWidget();
+      print("En cours de chargement");
+      return BrandShimmerWidget();
     }
 
     return GridView.builder(
@@ -119,16 +119,18 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
                 backgroundColor: isSelected
                     ? AppColors.primary
                     : Colors.grey[300],
-                child: brand.logoUrl.toString().isNotEmpty && brand.logoUrl != null
+                child:
+                    brand.logoUrl.toString().isNotEmpty && brand.logoUrl != null
                     ? Image.network(
-                  brand.logoUrl.toString(),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Icon(Icons.directions_car),
-                )
+                        brand.logoUrl.toString(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Icon(Icons.directions_car),
+                      )
                     : Image.asset(
-                  'assets/images/welcome_image.png',
-                  fit: BoxFit.fill,
-                ),
+                        'assets/images/welcome_image.png',
+                        fit: BoxFit.fill,
+                      ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -173,7 +175,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               3,
-                  (index) => Container(
+              (index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 30,
                 height: 5,
@@ -232,33 +234,32 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _selectedBrand != null
+                    backgroundColor: _selectedBrandObject?.name != null
                         ? AppColors.primary
                         : Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  onPressed: _selectedBrand != null && !_isLoading
+                  onPressed: _selectedBrandObject?.name != null && !_isLoading
                       ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => ModelSelectionScreen(
-                          selectedBrand: _selectedBrandObject!.id,
-                          onModelSelected: (model) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => ClientVehicleFormPage(),
+                          print(_selectedBrandObject?.id);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ModelSelectionScreen(
+                                selectedBrand: _selectedBrandObject!.id,
+                                onModelSelected: (model) {
+                                  print(model);
+                                },
+                                onBack: () => Navigator.pop(context),
                               ),
-                            );
-                          },
-                          onBack: () => Navigator.pop(context),
-                        ),
-                      ),
-                    );
-                  }
+                            ),
+                          );
+                        }
                       : null,
                   child: Text(
                     'Suivant',
-                    style: AppStyles.buttonText(context)?.copyWith(color: Colors.white),
+                    style: AppStyles.buttonText(
+                      context,
+                    ).copyWith(color: Colors.white),
                   ),
                 ),
               ),
@@ -266,7 +267,6 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
           ),
         ],
       ),
-
     );
   }
 }

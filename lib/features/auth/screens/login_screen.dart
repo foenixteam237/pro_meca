@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'package:pro_meca/features/settings/services/api_services.dart';
+import 'package:pro_meca/features/settings/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -26,9 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     _loadCheckboxState();
     if (_isChecked) {
-      User? user = ApiService().getSavedUser() as User?;
+      User? user = ApiDioService().getSavedUser() as User?;
       if (user != null) {
-        print("Il existe un utilisateur: $user");
         Navigator.pushReplacementNamed(context, '/technician_home');
       }
     }
@@ -183,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   String password = _passwordController.text;
                                   try {
                                     Map<String, dynamic> response =
-                                        await ApiService().authenticateUser(
+                                        await ApiDioService().authenticateUser(
                                           identifier: phoneNumber,
                                           password: password,
                                           mail: phoneNumber,

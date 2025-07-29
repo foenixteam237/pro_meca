@@ -70,6 +70,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get diagnostic => 'Diagnostique';
 
   @override
+  String get waitingDiagnotics => 'En attente de diagnostic';
+
+  @override
+  String get waitingValidationDiagnostic => 'En attente validation diagnostic';
+
+  @override
+  String get waitingValidation => 'En attente validation\nintervention';
+
+  @override
+  String get repairing => 'Réparation en cours';
+
+  @override
+  String get finished => 'Terminé';
+
+  @override
   String get seeInvoice => 'Voir la facture';
 
   @override
