@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/views/auth/screens/login_screen.dart';
-import 'package:pro_meca/core/views/reception/choseBrandScreen.dart';
+import 'package:pro_meca/core/features/auth/screens/login_screen.dart';
+import 'package:pro_meca/core/features/reception/choseBrandScreen.dart';
 
-import '../views/home/TechnicianHome.dart';
-import '../views/welcome_screen.dart';
+import '../features/home/TechnicianHome.dart';
+import '../features/welcome_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();

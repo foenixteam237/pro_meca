@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
-import 'package:pro_meca/core/views/reception/choseBrandScreen.dart';
+import 'package:pro_meca/core/features/reception/choseBrandScreen.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'widgets/vehicule_info.dart';

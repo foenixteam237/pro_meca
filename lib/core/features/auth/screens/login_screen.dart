@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/features/auth/services/auth_services.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
@@ -182,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   String password = _passwordController.text;
                                   try {
                                     Map<String, dynamic> response =
-                                        await ApiDioService().authenticateUser(
+                                        await AuthServices().authenticateUser(
                                           identifier: phoneNumber,
                                           password: password,
                                           mail: phoneNumber,
@@ -242,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const Spacer(),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 20.0),
+                        padding: const EdgeInsets.only(bottom: 10.0),
                         child: Text(
                           l10n.authLoginMessage,
                           style: AppStyles.bodySmall(
