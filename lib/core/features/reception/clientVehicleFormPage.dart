@@ -3,8 +3,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pro_meca/core/features/reception/services/reception_services.dart';
+import 'package:pro_meca/core/models/client.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
-import 'package:pro_meca/core/services/api_services.dart';
+import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_colors.dart';
@@ -47,9 +49,21 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
     "Cric": false,
     "Kit médical": false,
     "Boîte à outil": false,
+    "Essuie Glace": false,
   };
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    await Permission.photos.request();
+    await Permission.camera.request();
+  }
 
   Future<void> _selectImageSource() async {
+    print("Allons chercher notre picture");
     final action = await showDialog<ImageSource>(
       context: context,
       builder: (context) => AlertDialog(
@@ -76,7 +90,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   }
 
   Future<void> _pickImage() async {
-    if (await Permission.photos.request().isGranted) {
+    if (await Permission.photos.isGranted) {
       final image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 800,
@@ -84,20 +98,16 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         imageQuality: 85,
       );
       if (image != null) {
-        if (mounted) {
-          setState(() {
-            isSelected = true;
-            _selectedImage = File(image.path);
-          });
-        }
+        setState(() {
+          isSelected = true;
+          _selectedImage = File(image.path);
+        });
       }
-    } else if (await Permission.photos.isDenied) {
-      //openAppSettings();
     }
   }
 
   Future<void> _takePhoto() async {
-    if (await Permission.camera.request().isGranted) {
+    if (await Permission.camera.isGranted) {
       final photo = await _picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.rear,
@@ -105,13 +115,11 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         maxHeight: 800,
         imageQuality: 85,
       );
-      isSelected = true;
       if (photo != null) {
-        if (mounted) {
-          setState(() {
-            _selectedImage = File(photo.path);
-          });
-        }
+        setState(() {
+          isSelected = true;
+          _selectedImage = File(photo.path);
+        });
       }
     }
   }
@@ -124,63 +132,106 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       lastDate: DateTime(2100),
     );
     if (picked != null && picked != selectedDate) {
-      if (mounted) {
-        setState(() => selectedDate = picked);
-      }
+      setState(() => selectedDate = picked);
     }
   }
 
+  bool isYearValid(int year) {
+    int currentYear = DateTime.now().year;
+    return (year <= currentYear && year != 0);
+  }
+
   void _submitForm() async {
-    // Récupération des données du client et du véhicule
-    final clientData = {
-      'firstName': controllers['firstName']!.text,
-      'lastName': controllers['lastName']!.text,
-      'email': controllers['email']!.text.isNotEmpty
-          ? controllers['email']!.text
-          : null,
-      'phone': controllers['phone']!.text,
-    };
-    final vehicleData = {
-      'chassis': controllers['chassis']!.text,
-      'licensePlate': controllers['licensePlate']!.text,
-      'year': int.tryParse(controllers['year']!.text) ?? 0,
-      'color': controllers['color']!.text,
-      'kilometrage': int.tryParse(controllers['mileage']!.text) ?? 0,
-      'onboardItems': {
-        ...onboardItems,
-        if (controllers['otherItems']!.text.isNotEmpty)
-          'Autres': controllers['otherItems']!.text,
-      },
-      'reportedProblem': controllers['reportedProblem']!.text,
-      'entryDate': selectedDate?.toIso8601String(),
-    };
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final _companyId = prefs.getString('companyId') ?? '';
+      final companyId = prefs.getString('companyId') ?? '';
+      if (controllers['firstName']!.text.isNotEmpty &&
+          controllers['lastName']!.text.isNotEmpty &&
+          controllers['phone']!.text.isNotEmpty &&
+          controllers['email']!.text.isNotEmpty &&
+          controllers['chassis']!.text.isNotEmpty &&
+          controllers['licensePlate']!.text.isNotEmpty &&
+          isYearValid(int.tryParse(controllers['year']!.text) ?? 0) &&
+          controllers['color']!.text.isNotEmpty &&
+          controllers['mileage']!.text.isNotEmpty &&
+          selectedDate != null &&
+          controllers['reportedProblem']!.text.isNotEmpty) {
+        // Récupération des données du client et du véhicule
+        final client = Client(
+          id: "",
+          firstName: controllers['firstName']!.text,
+          lastName: controllers['lastName']!.text,
+          phone: controllers['phone']!.text,
+          email: controllers['email']!.text,
+          companyId: companyId,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        final clientId = await ReceptionServices().createClient(client.toMap(),context, );
 
-      // Création de l'objet Vehicle
-      final vehicule = Vehicle(
-        marqueId: widget.idBrand,
-        modelId: widget.idModel,
-        year: int.tryParse(controllers['year']!.text) ?? 0,
-        chassis: controllers['chassis']!.text,
-        licensePlate: controllers['licensePlate']!.text,
-        color: controllers['color']!.text,
-        kilometrage: int.tryParse(controllers['mileage']!.text) ?? 0,
-        clientId: "115c58ac-4355-4381-b3fa-fd6d8cccb41f",
-        companyId: _companyId,
-      );
-      print(await vehicule.toJson(_selectedImage));
-      // Création du FormData
-      FormData formData = FormData.fromMap(
-        await vehicule.toJson(_selectedImage),
-      );
-      // Affiche les champs de formData
-      // Appel à l'API
-      final vehicle = await ApiDioService().createVehicle(formData);
-      // debugPrint('Vehicle Data: $vehicle');
-      // Navigation ou message de succès
+        if (clientId.isNotEmpty) {
+          // Création de l'objet Vehicle
+          final vehicule = Vehicle(
+            marqueId: widget.idBrand,
+            modelId: widget.idModel,
+            year: int.tryParse(controllers['year']!.text) ?? 0,
+            chassis: controllers['chassis']!.text,
+            licensePlate: controllers['licensePlate']!.text,
+            color: controllers['color']!.text,
+            kilometrage: int.tryParse(controllers['mileage']!.text) ?? 0,
+            clientId: clientId,
+            companyId: companyId,
+          );
+          // Création du FormData
+          FormData formData = FormData.fromMap(
+            await vehicule.toJson(_selectedImage),
+          );
+          // Appel à l'API
+          final vehicle = await ReceptionServices().createVehicle(formData);
+
+          if (vehicle != null) {
+            final ext = onboardItems['Extincteur'] ?? false;
+            final papier = onboardItems['Papier du véhicule'] ?? false;
+            final crics = onboardItems['Cric'] ?? false;
+            final boitePharmacie = onboardItems['Kit médical'] ?? false;
+            final boiteOutils = onboardItems['Boîte à outil'] ?? false;
+            final essuieGlace = onboardItems['Essuie Glace'] ?? false;
+
+            final visite = Visite(
+              id: "",
+              dateEntree: selectedDate ?? DateTime.now(),
+              vehicleId: vehicle,
+              status: "ATTENTE_DIAGNOSTIC",
+              constatClient: controllers["reportedProblem"]!.text,
+              elementsBord: ElementsBord(
+                extincteur: ext,
+                dossier: papier,
+                cric: crics,
+                boitePharmacie: boitePharmacie,
+                boiteOutils: boiteOutils,
+                essuieGlace: essuieGlace,
+              ),
+              companyId: companyId,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+           var rep = await ReceptionServices().createVisite(visite.toJson(), context);
+
+            if (rep != null && rep == 201) {
+              Navigator.pushNamed(context, '/confirm_screen');
+            }
+          }
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Veuillez remplir tous les champs et respecter les formats des champs. ',
+            ),
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -252,8 +303,8 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                         Expanded(
                           child: Text(
                             isSelected
-                                ? "Image déjà selectionnée "
-                                : "Selectionné une image",
+                                ? "Image déjà sélectionnée "
+                                : "Sélectionnez une image",
                           ),
                         ),
                         Icon(
@@ -397,7 +448,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   List<Widget> _buildVehicleInputFields() {
     return [
       _buildInputField(
-        hint: "Numéro du chassis",
+        hint: "Numéro du châssis",
         controller: controllers['chassis']!,
       ),
       _buildInputField(
@@ -407,7 +458,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       _buildInputField(
         hint: "Année de sortie",
         controller: controllers['year']!,
-        keyboardType: TextInputType.number,
+        keyboardType: TextInputType.datetime,
       ),
       _buildInputField(hint: "Couleur", controller: controllers['color']!),
       _buildInputField(
@@ -464,7 +515,10 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         Checkbox(
           value: onboardItems[label],
           onChanged: (value) {
-            setState(() => onboardItems[label] = value ?? false);
+            setState(() {
+              onboardItems[label] = value ?? false;
+              print(" le $label est $value");
+            });
           },
           activeColor: Colors.green,
         ),

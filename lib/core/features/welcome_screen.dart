@@ -66,7 +66,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
     // Test de la connexion à l'API
     try {
-      final isConnected = await _apiService.testConnection();
+      var isConnected = await _apiService.testConnection();
       setState(() {
         _isConnected = isConnected;
         _connectionMessage = isConnected

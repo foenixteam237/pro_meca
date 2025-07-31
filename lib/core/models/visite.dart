@@ -1,3 +1,6 @@
+import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
+
 class Visite {
   final String id;
   final DateTime dateEntree;
@@ -43,16 +46,18 @@ class Visite {
   }
 
   Map<String, dynamic> toJson() {
+
+    DateTime nowUtc = dateEntree;
+    DateTime camerounDate = nowUtc.add(const Duration(hours: 1)); // GMT+1
+
+    String formattedDate = DateFormat('yyyy-MM-ddTHH:mm:ss+01:00').format(camerounDate);
     return {
-      'dateEntree': dateEntree.toIso8601String(),
-      'dateSortie': dateSortie?.toIso8601String(),
+      'dateEntree': formattedDate,
       'vehicleId': vehicleId,
       'status': status,
       'constatClient': constatClient,
       'elementsBord': elementsBord.toJson(),
       'companyId': companyId,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 }

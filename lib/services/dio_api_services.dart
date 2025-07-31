@@ -23,7 +23,7 @@ class ApiDioService {
           responseType: ResponseType.json,
         ),
       );
-  Future<Map<String, String>> _getAuthHeaders() async {
+  Future<Map<String, String>> getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
     return {'Authorization': 'Bearer $accessToken'};
@@ -73,7 +73,7 @@ class ApiDioService {
     await prefs.clear();
   }
 
-  Future<Response> _authenticatedRequest(
+  Future<Response> authenticatedRequest(
     Future<Response> Function() requestFn,
   ) async {
     await _checkAndRefreshToken();
@@ -214,56 +214,12 @@ class ApiDioService {
     }
   }
 
-  Future<String> createClient({
-    required String firstName,
-    required String lastName,
-    required String phone,
-    String? companyId,
-    String? email,
-    String? address,
-    String? city,
-    String? logo,
-    String? userId,
-    String? clientCompany,
-  }) async {
-    final _companyId = (await SharedPreferences.getInstance()).getString(
-      'companyId',
-    );
-    final response = await _authenticatedRequest(
-      () async => await _dio.post(
-        '/clients/create',
-        data: json.encode({
-          'firstName': firstName,
-          'lastName': lastName,
-          'phone': phone,
-          'companyId': _companyId,
-          if (email != null) 'email': email,
-          if (address != null) 'address': address,
-          if (city != null) 'city': city,
-          if (logo != null) 'logo': logo,
-          if (userId != null) 'userId': userId,
-          if (clientCompany != null) 'clientCompany': clientCompany,
-        }),
-        options: Options(headers: await _getAuthHeaders()),
-      ),
-    );
-    if (response.statusCode == 201) {
-      final responseData = response.data;
-      return Client.fromJson(responseData['data']).id;
-    } else {
-      final errorData = response.data;
-      throw Exception(
-        'Failed to create client: ${errorData['message'] ?? 'Unknown error'}',
-      );
-    }
-  }
-
   Future<String?> createVehicle(FormData formData) async {
-    final response = await _authenticatedRequest(
+    final response = await authenticatedRequest(
       () async => await _dio.post(
         '$apiUrl/vehicles/create',
         data: formData,
-        options: Options(headers: await _getAuthHeaders()),
+        options: Options(headers: await getAuthHeaders()),
       ),
     );
 
@@ -279,10 +235,10 @@ class ApiDioService {
   }
 
   Future<List<Brand>> getAllBrands() async {
-    final response = await _authenticatedRequest(
+    final response = await authenticatedRequest(
       () async => await _dio.get(
         '/brands',
-        options: Options(headers: await _getAuthHeaders()),
+        options: Options(headers: await getAuthHeaders()),
       ),
     );
     if (response.statusCode == 200) {
@@ -294,10 +250,10 @@ class ApiDioService {
   }
 
   Future<List<Modele>?> getModelsByBrand(String brandId) async {
-    final response = await _authenticatedRequest(
+    final response = await authenticatedRequest(
       () async => await _dio.get(
         '/brands/$brandId',
-        options: Options(headers: await _getAuthHeaders()),
+        options: Options(headers: await getAuthHeaders()),
       ),
     );
     if (response.statusCode == 200) {

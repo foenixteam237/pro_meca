@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pro_meca/core/models/client.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
+import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,35 +21,51 @@ class ReceptionServices {
       );
 
   //#################################--CREATION D'UN NOUVEAU CLIENT LORS DE LA RECEPTION--###############################
-  Future<String> createClient(Map<String, dynamic> clientData) async {
+  Future<String> createClient(
+    Map<String, dynamic> clientData,
+    BuildContext context,
+  ) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.post(
+          '/clients/create',
+          data: FormData.fromMap(clientData),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
 
-    final response = await ApiDioService().authenticatedRequest(
-      () async => await _dio.post(
-        '/clients/create',
-        data: clientData,
-        options: Options(headers: await ApiDioService().getAuthHeaders()),
-      ),
-    );
-    print("On arrive ici avec la reponse ${response.toString()} ");
-    switch (response.statusCode) {
-      case 201:
-        final responseData = response.data;
-        return Client.fromJson(responseData['data']).id;
-      case 400:
-        final errorData = response.data;
-        debugPrint(
-          'Failed to create client: ${errorData['message'] ?? 'Unknown error'}',
+      switch (response.statusCode) {
+        case 201:
+          final responseData = response.data;
+          return Client.fromJson(responseData['data']).id;
+        default:
+          debugPrint("Erreur non reconnue");
+          return "";
+      }
+    } on DioException catch (e) {
+      // Gestion des erreurs spécifiques à Dio
+      if (e.response != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              // ignore: prefer_interpolation_to_compose_strings
+              "Nous n'avons pas créer l'utilisateur car " +
+                  e.response?.data['message'],
+            ),
+          ),
         );
+
+        debugPrint('Erreur ${e.response?.statusCode}: ${e.response?.data}');
         return "";
-      case 422:
-        final errorData = response.data;
-        debugPrint(
-          'Failed to create client: ${errorData['message'] ?? 'Unknown error'}',
-        );
+      } else {
+        // Si aucune réponse n'a été reçue, c'est un problème de connexion ou autre
+        debugPrint('Erreur de connexion : ${e.message}');
         return "";
-      default:
-        debugPrint("Erreur non reconnu");
-        return "";
+      }
+    } catch (e) {
+      // Gestion des autres exceptions
+      debugPrint('Une erreur est survenue : ${e.toString()}');
+      return "";
     }
   }
 
@@ -87,6 +105,65 @@ class ReceptionServices {
     } catch (e) {
       // Gérer d'autres types d'erreurs
       print('Erreur inconnue: $e');
+    }
+  }
+
+  //#################################"-CREATION D'UNE VISITE-"#############################"
+  Future<int?> createVisite(
+    Map<String, dynamic> visiteData,
+    BuildContext context,
+  ) async {
+    try {
+      print(
+        "Les données de la visite sont" + json.encode(visiteData.toString()),
+      );
+
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.post(
+          '/visites/create',
+          data: visiteData,
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      print("La reponse du serveur est " + response.toString());
+      switch (response.statusCode) {
+        case 201:
+          final responseData = response.data;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Votre véhicule est enregistré, merci de passer au diagnostic.",
+              ),
+            ),
+          );
+          return response.statusCode;
+        default:
+          debugPrint("Erreur non reconnue");
+          return 0;
+      }
+    } on DioException catch (e) {
+      // Gestion des erreurs spécifiques à Dio
+      if (e.response != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Nous n'avons pas pu créer la visite car " +
+                  (e.response?.data['message'] ?? 'Erreur inconnue'),
+            ),
+          ),
+        );
+        debugPrint('Erreur ${e.response?.statusCode}: ${e.response?.data}');
+        return 0;
+      } else {
+        // Si aucune réponse n'a été reçue, c'est un problème de connexion ou autre
+        debugPrint('Erreur de connexion : ${e.message}');
+        return e.response!.statusCode;
+      }
+    } catch (e) {
+      // Gestion des autres exceptions
+      debugPrint('Une erreur est survenue : ${e.toString()}');
+      return 0;
     }
   }
 }

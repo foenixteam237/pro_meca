@@ -49,20 +49,27 @@ class Client {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'firstName': firstName,
       'lastName': lastName,
-      'email': email,
-      'phone': phone,
-      'address': address,
-      'city': city,
-      'logo': logo,
-      'userId': userId,
-      'clientCompany': clientCompany,
+      'email': email.toString(),
+      if (address != null) 'address': address,
+      if (city != null) 'city': city,
+      if (logo != null) 'logo': logo,
+      if (userId != null) 'userId': userId,
+      if (clientCompany != null) 'clientCompany': clientCompany,
       'companyId': companyId,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
+  Map<String, dynamic> toMap() {
+    return{
+      'id': id,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'phone': phone,
+    };
+  }
 }
