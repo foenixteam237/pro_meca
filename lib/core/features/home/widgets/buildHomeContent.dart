@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/views/reception/widgets/showVehicleSelectionModal.dart';
+import 'package:pro_meca/core/features/reception/widgets/showVehicleSelectionModal.dart';
 import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_colors.dart';
 import 'completeVehiculeCard.dart';

@@ -7,9 +7,11 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/providers/theme_provider.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import '../../widgets/editable_textField.dart';
+import '../auth/screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final BuildContext con;
+  const ProfileScreen({super.key, required this.con});
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -23,6 +25,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _fetchUser();
+  }
+
+  void _navigateToHome() {
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(widget.con, '/login');
   }
 
   Future<void> _fetchUser() async {
@@ -78,6 +85,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       },
                       child: Text(
                         l10n.updateProfile,
+                        style: AppStyles.buttonText(context),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  // Bouton de déconnexion
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.alert,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: () async {
+                        await ApiDioService().logoutUser();
+                        _navigateToHome();
+                      },
+                      child: Text(
+                        l10n.logout,
                         style: AppStyles.buttonText(context),
                       ),
                     ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 
 class VehicleInfoCard extends StatelessWidget {
-  final Map<String, dynamic> vehicle;
+  final Vehicle vehicle;
 
   const VehicleInfoCard({super.key, required this.vehicle});
 
@@ -34,7 +35,7 @@ class VehicleInfoCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${l10n.immatVehicule}: ${vehicle['immatriculation']}",
+                  "${l10n.immatVehicule}: ${vehicle.licensePlate}",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: isMobile ? 14 : 18,
@@ -42,14 +43,14 @@ class VehicleInfoCard extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  "${l10n.modele}: ${vehicle['modele']}",
+                  "${l10n.modele}: ${vehicle.chassis}",
                   style: TextStyle(fontSize: isMobile ? 12 : 16),
                 ),
                 SizedBox(height: 2),
                 Container(
                   padding: EdgeInsets.only(top: 3),
                   child: Text(
-                    "${l10n.property}: ${vehicle['proprietaire']}",
+                    "${l10n.property}: ${vehicle.client?.lastName}",
                     style: TextStyle(
                       fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w500,
@@ -64,7 +65,7 @@ class VehicleInfoCard extends StatelessWidget {
             padding: EdgeInsets.only(right: 20),
             alignment: Alignment.topRight,
             child: Text(
-              vehicle['type'].toString(),
+              vehicle.color.toString(),
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: isMobile ? 12 : 14,

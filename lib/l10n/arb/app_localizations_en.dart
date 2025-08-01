@@ -173,4 +173,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get property => 'Property';
+
+  @override
+  String get logout => 'Logout!';
 }
