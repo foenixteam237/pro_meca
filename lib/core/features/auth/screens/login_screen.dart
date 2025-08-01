@@ -202,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           );
                                         },
                                       );
-                                    } else if (user.role.name == "Technician" ||
+                                    } else if (user.role.name == "technicien" ||
                                         user.role.name == "receptionniste") {
                                       Navigator.pushReplacementNamed(
                                         context,

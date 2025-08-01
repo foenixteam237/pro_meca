@@ -1,13 +1,12 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/commonUi/validationScreen.dart';
+import 'package:pro_meca/core/features/reception/views/diagnosticScreen.dart';
 import 'package:pro_meca/core/models/client.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ReceptionServices {
   final Dio _dio;
@@ -45,6 +44,7 @@ class ReceptionServices {
     } on DioException catch (e) {
       // Gestion des erreurs spécifiques à Dio
       if (e.response != null) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -80,14 +80,14 @@ class ReceptionServices {
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
-      print('Response Status Code: ${formData.fields}');
+      debugPrint('Response Status Code: ${formData.fields}');
 
       if (response.statusCode == 201) {
         final responseData = response.data;
         return Vehicle.fromJson(responseData['data']).id;
       } else {
         final errorData = response.data;
-        print(formData.fields.toString());
+        debugPrint(formData.fields.toString());
         throw Exception(
           'Échec de la création du véhicule : ${errorData['message']}',
         );
@@ -96,15 +96,53 @@ class ReceptionServices {
       // Gérer l'erreur Dio
       if (e.response != null) {
         // La requête a été faite et le serveur a répondu avec un code d'erreur
-        print('Erreur: ${e.response?.statusCode}');
-        print('Détails: ${e.response?.data}');
+        debugPrint('Erreur: ${e.response?.statusCode}');
+        debugPrint('Détails: ${e.response?.data}');
+        return null;
       } else {
         // La requête n'a pas pu être effectuée
-        print('Erreur: ${e.message}');
+        debugPrint('Erreur: ${e.message}');
+        return null;
       }
     } catch (e) {
       // Gérer d'autres types d'erreurs
-      print('Erreur inconnue: $e');
+      debugPrint('Erreur inconnue: $e');
+      return null;
+    }
+  }
+
+  //##################################"-RECUPERATION DE LA LISTE DES VEHICULE-"#########################################
+
+  Future<List<Vehicle>> fetchVehicles(BuildContext context) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/vehicles', // adapte le endpoint selon ton backend
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((json) => Vehicle.fromJson(json)).toList();
+      } else {
+        debugPrint("Erreur lors de la récupération des véhicules");
+        return [];
+      }
+    } on DioException catch (e) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Impossible de récupérer les véhicules. ${e.response?.data['message'] ?? e.message}",
+          ),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return [];
+    } catch (e) {
+      debugPrint('Erreur: ${e.toString()}');
+      return [];
     }
   }
 
@@ -114,10 +152,6 @@ class ReceptionServices {
     BuildContext context,
   ) async {
     try {
-      print(
-        "Les données de la visite sont" + json.encode(visiteData.toString()),
-      );
-
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
           '/visites/create',
@@ -126,17 +160,57 @@ class ReceptionServices {
         ),
       );
 
-      print("La reponse du serveur est " + response.toString());
       switch (response.statusCode) {
         case 201:
-          final responseData = response.data;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Votre véhicule est enregistré, merci de passer au diagnostic.",
+          bool? shouldNavigateToDiagnostic = await showDialog<bool>(
+            // ignore: use_build_context_synchronously
+            context: context,
+            builder: (context) => AlertDialog(
+              actionsAlignment: MainAxisAlignment.center,
+              title: Center(
+                child: Text(
+                  textAlign: TextAlign.center,
+                  "Souhaitez-vous passer directement au diagnostic ?",
+                  style: AppStyles.bodyMedium(context),
+                ),
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false), // Non
+                  child: const Text("Non"),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true), // Oui
+                  child: const Text("Oui"),
+                ),
+              ],
             ),
           );
+          if (shouldNavigateToDiagnostic == true) {
+            // Rediriger vers la page Diagnostic
+
+            final responseData = response.data;
+            final idVisite = Visite.fromJson(responseData['data']).id;
+            debugPrint("La visite est $idVisite");
+            Navigator.push(
+              // ignore: use_build_context_synchronously
+              context,
+              MaterialPageRoute(
+                builder: (context) => DiagnosticPage(idVisite: idVisite),
+              ),
+            );
+          } else {
+            // Rediriger vers la page ConfirmationScreen
+            Navigator.push(
+              // ignore: use_build_context_synchronously
+              context,
+              MaterialPageRoute(
+                builder: (context) => ConfirmationScreen(
+                  message: "Votre véhicule a été enregistré avec succès",
+                ),
+              ),
+            );
+          }
           return response.statusCode;
         default:
           debugPrint("Erreur non reconnue");
@@ -145,9 +219,11 @@ class ReceptionServices {
     } on DioException catch (e) {
       // Gestion des erreurs spécifiques à Dio
       if (e.response != null) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
+              // ignore: prefer_interpolation_to_compose_strings
               "Nous n'avons pas pu créer la visite car " +
                   (e.response?.data['message'] ?? 'Erreur inconnue'),
             ),

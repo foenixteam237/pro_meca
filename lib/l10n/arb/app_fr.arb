@@ -99,6 +99,7 @@
   "connexionOk": "Connexion internet OK",
   "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants",
   "modele": "Modèle",
-  "property":"Propriétaire"
+  "property":"Propriétaire",
+  "logout": "Déconnexion!"
 
 }

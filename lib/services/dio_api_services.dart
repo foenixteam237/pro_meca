@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/models/dataLogin.dart';
 import 'package:pro_meca/core/models/modele.dart';
@@ -35,7 +36,7 @@ class ApiDioService {
     final refreshExpiresAt = prefs.getInt('refreshExpiresAt');
     final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     if (refreshExpiresAt == null || currentTime >= refreshExpiresAt) {
-      await _logoutUser();
+      await logoutUser();
       throw Exception('Session expirée, veuillez vous reconnecter');
     }
     if (expiresAt == null || currentTime >= expiresAt) {
@@ -57,20 +58,22 @@ class ApiDioService {
           );
           return true;
         } else {
-          await _logoutUser();
+          await logoutUser();
           throw Exception('Échec du rafraîchissement du token');
         }
       } catch (e) {
-        await _logoutUser();
+        await logoutUser();
         throw Exception('Erreur lors du rafraîchissement: ${e.toString()}');
       }
     }
     return false;
   }
 
-  Future<void> _logoutUser() async {
+  Future<void> logoutUser() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
+    await prefs.remove('user');
   }
 
   Future<Response> authenticatedRequest(

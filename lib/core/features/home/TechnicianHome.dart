@@ -30,7 +30,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       buildHomeContent(context),
       CategoriesPage(),
       VehicleDashboardPage(context: context),
-      ProfileScreen(),
+      ProfileScreen(con: context),
     ];
   }
 

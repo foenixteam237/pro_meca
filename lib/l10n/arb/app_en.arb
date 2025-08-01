@@ -100,5 +100,6 @@
   "connexionOk": "Your internet connection is OK",
   "authLoginFailed": "Login failed, please check your credentials",
   "modele": "Model",
-  "property":"Property"
+  "property":"Property",
+  "logout": "Logout!"
 }

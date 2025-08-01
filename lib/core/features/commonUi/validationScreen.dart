@@ -1,28 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
 
 class ConfirmationScreen extends StatelessWidget {
-  const ConfirmationScreen({super.key});
+  final String message;
+  const ConfirmationScreen({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.responsiveValue(
+                context,
+                mobile: width * 0.02,
+              ),
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 /// Logo ProMeca
                 Image.asset(
                   'assets/images/promeca_logo.png',
-                  width: 180,
+                  width: Responsive.responsiveValue(
+                    context,
+                    mobile: width * 0.4,
+                    tablet: width * 0.5,
+                  ),
+                  height: Responsive.responsiveValue(
+                    context,
+                    mobile: height * 0.3,
+                    tablet: height * 0.4,
+                  ),
                 ),
 
                 /// Message
-                const Text(
-                  "Message personnalisé",
+                Text(
+                  message,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -33,16 +52,20 @@ class ConfirmationScreen extends StatelessWidget {
 
                 /// GIF de validation
                 Container(
-                  height: 120,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.black, width: 3),
+                  height: Responsive.responsiveValue(
+                    context,
+                    mobile: height * 0.3,
                   ),
-                  padding: const EdgeInsets.all(12),
+                  width: Responsive.responsiveValue(
+                    context,
+                    mobile: width * 0.5,
+                  ),
+                  padding: EdgeInsets.all(
+                    Responsive.responsiveValue(context, mobile: 12, tablet: 20),
+                  ),
                   child: Image.asset(
                     'assets/images/verified.gif',
-                    fit: BoxFit.contain,
+                    fit: BoxFit.fill,
                   ),
                 ),
 
@@ -54,19 +77,13 @@ class ConfirmationScreen extends StatelessWidget {
                       // Action de retour à l'accueil
                       Navigator.pushNamed(context, '/technician_home');
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
+                    style: AppStyles.primaryButton(context),
+                    child: Text(
                       "Accueil",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+                      style: AppStyles.buttonText(context),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

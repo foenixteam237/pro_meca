@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-
 import '../../../constants/app_styles.dart';
-import '../../../utils/responsive.dart';
+import '../../../models/piecesCategorie.dart';
+import '../services/pieces_services.dart';
+import 'buildCategorieCard.dart';
+import 'buildCategorieShimmer.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
-
   @override
   _CategoriesPageState createState() => _CategoriesPageState();
 }
@@ -26,6 +27,24 @@ class _CategoriesPageState extends State<CategoriesPage> {
       'image': 'assets/images/v1.jpg',
     },
   ];
+  List<PieceCategorie> categorie = [];
+  bool _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    _loadCategorie();
+  }
+
+  Future<void> _loadCategorie() async {
+    setState(() => _isLoading = true);
+    try {
+      categorie = await PiecesService().fetchPieceCategories(context);
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +61,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               const SizedBox(height: 12),
               Expanded(
                 child: GridView.builder(
-                  itemCount: categories.length,
+                  itemCount: _isLoading ? 4 : categorie.length, // Corrigé ici
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
@@ -51,7 +70,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   ),
                   itemBuilder: (context, index) {
                     final category = categories[index];
-                    return _buildCategoryCard(category);
+                    return _isLoading
+                        ? CategoryCardShimmer()
+                        : CategoryCard(
+                            category: category,
+                            onTap: () => print("object"),
+                          );
                   },
                 ),
               ),
@@ -89,59 +113,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
           child: const Icon(Icons.filter_list, color: Colors.green),
         ),
       ],
-    );
-  }
-
-  Widget _buildCategoryCard(Map<String, dynamic> category) {
-    return GestureDetector(
-      onTap: () => print(category['title']),
-      child: Container(
-        height: Responsive.responsiveValue(context, mobile: 150, tablet: 200),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
-              child: Image.asset(
-                category['image'],
-                height: Responsive.responsiveValue(
-                  context,
-                  mobile: 170,
-                  tablet: 200,
-                  desktop: 300,
-                ),
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    category['title'],
-                    style: AppStyles.caption(context),
-                    textAlign: TextAlign.start,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 5),
-                  Text('Nombre: ${category['count']}'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
