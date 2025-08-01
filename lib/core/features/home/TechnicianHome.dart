@@ -3,8 +3,8 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
-import 'package:pro_meca/core/views/pieces/widgets/buildPiecesContent.dart';
-import 'package:pro_meca/core/views/profil/user_profile_screen.dart';
+import 'package:pro_meca/core/features/pieces/widgets/buildPiecesContent.dart';
+import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 
 import 'widgets/buildHomeContent.dart';
@@ -30,7 +30,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       buildHomeContent(context),
       CategoriesPage(),
       VehicleDashboardPage(context: context),
-      ProfileScreen(),
+      ProfileScreen(con: context),
     ];
   }
 

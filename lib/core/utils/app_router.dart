@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/views/auth/screens/login_screen.dart';
-import 'package:pro_meca/core/views/reception/choseBrandScreen.dart';
+import 'package:pro_meca/core/features/auth/screens/login_screen.dart';
+import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
 
-import '../views/home/TechnicianHome.dart';
-import '../views/welcome_screen.dart';
+import '../features/commonUi/validationScreen.dart';
+import '../features/home/TechnicianHome.dart';
+import '../features/reception/views/welcome_screen.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey();
@@ -14,6 +15,7 @@ class AppRouter {
   static const String technicianHome = '/technician_home';
   static const String brandPicker = '/brand_picker';
   static const String modelPicker = "/model_picker";
+  static const String clientVehicleForm = "/client_vehicle_form";
 
   // Générateur de routes
   static Route<dynamic> generateRoute(RouteSettings settings) {

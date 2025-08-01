@@ -175,4 +175,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get property => 'Propriétaire';
+
+  @override
+  String get logout => 'Déconnexion!';
 }
