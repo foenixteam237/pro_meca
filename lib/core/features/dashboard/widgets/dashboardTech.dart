@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../l10n/arb/app_localizations.dart';
+import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_colors.dart';
 import '../../../constants/app_styles.dart';
 
@@ -10,12 +12,13 @@ class VehicleDashboardPage extends StatelessWidget {
   const VehicleDashboardPage({super.key, required this.context});
 
   Widget _buildSearchBar() {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: const EdgeInsets.all(16),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Immatriculation du véhicule',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon:  Icon(Icons.search, color: appColors.primary,),
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
@@ -27,6 +30,7 @@ class VehicleDashboardPage extends StatelessWidget {
   }
 
   Widget _buildEntryBanner() {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -36,11 +40,11 @@ class VehicleDashboardPage extends StatelessWidget {
             style: AppStyles.titleLarge(context),
           ),
           const Spacer(),
-          const Text(
+           Text(
             "01/01/2025",
             style: TextStyle(
               fontWeight: FontWeight.w500,
-              color: AppColors.primary,
+              color: appColors.primary,
             ),
           ),
         ],
@@ -90,6 +94,8 @@ class VehicleDashboardPage extends StatelessWidget {
     required int month,
     required int total,
   }) {
+
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       width: Responsive.responsiveValue(
         context,
@@ -110,7 +116,7 @@ class VehicleDashboardPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 20),
+              Icon(icon, color: appColors.primary, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 // Wrap avec Expanded
@@ -218,6 +224,7 @@ class VehicleDashboardPage extends StatelessWidget {
     required Color statusColor,
     required String imageUrl,
   }) {
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       padding: const EdgeInsets.all(10),
@@ -272,6 +279,8 @@ class VehicleDashboardPage extends StatelessWidget {
   }
 
   Widget _buildHistoryList() {
+
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -286,7 +295,7 @@ class VehicleDashboardPage extends StatelessWidget {
               Text(
                 "voir plus",
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: appColors.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),

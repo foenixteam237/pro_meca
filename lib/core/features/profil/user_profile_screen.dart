@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
@@ -52,6 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     final textColor = isDarkMode ? Colors.white : AppColors.text;
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -73,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: appColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -121,6 +123,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     AppLocalizations l10n,
     User? user,
   ) {
+
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Center(
       child: Column(
         children: [
@@ -148,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             user?.role.name ?? l10n.technicianRole,
             style: AppStyles.bodyMedium(
               context,
-            ).copyWith(color: AppColors.primary),
+            ).copyWith(color: appColors.primary),
           ),
         ],
       ),

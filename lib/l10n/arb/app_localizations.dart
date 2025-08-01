@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// No description provided for @modele.
   ///
   /// In en, this message translates to:
-  /// **'Model'**
+  /// **'chassis'**
   String get modele;
 
   /// No description provided for @property.
@@ -433,6 +433,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Logout!'**
   String get logout;
+
+  /// No description provided for @adminRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get adminRole;
+
+  /// No description provided for @users.
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get users;
 }
 
 class _AppLocalizationsDelegate

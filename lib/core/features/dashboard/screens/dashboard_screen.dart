@@ -1,12 +1,16 @@
 // features/dashboard/screens/dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:provider/provider.dart';
+
+import '../../../constants/app_adaptive_colors.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Tableau de bord', style: AppStyles.titleLarge(context)),

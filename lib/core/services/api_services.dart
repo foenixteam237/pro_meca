@@ -258,7 +258,7 @@ class ApiService {
     String? clientCompany,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final _companyId = prefs.getString('companyId');
+    final companyId0 = prefs.getString('companyId');
 
     final response = await _authenticatedRequest(
       () async => await http.post(
@@ -268,7 +268,7 @@ class ApiService {
           'firstName': firstName,
           'lastName': lastName,
           'phone': phone,
-          'companyId': _companyId,
+          'companyId': companyId0,
           if (email != null) 'email': email,
           if (address != null) 'address': address,
           if (city != null) 'city': city,

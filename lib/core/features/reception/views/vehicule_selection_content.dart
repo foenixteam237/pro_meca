@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
-import 'package:pro_meca/core/views/reception/choseBrandScreen.dart';
+import 'package:pro_meca/core/features/reception/services/reception_services.dart';
+import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
+import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'widgets/vehicule_info.dart';
+import '../widgets/vehicule_inf_shimmer.dart';
+import '../widgets/vehicule_info.dart';
 import 'dart:async';
 
 class VehicleSelectionContent extends StatefulWidget {
@@ -15,15 +18,16 @@ class VehicleSelectionContent extends StatefulWidget {
 
 class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, dynamic>> _vehicles = [];
-  List<Map<String, dynamic>> _filteredVehicles = [];
+
+  List<Vehicle> vehicles = [];
+  List<Vehicle> _filteredVehicle = [];
+
   bool _isLoading = false;
   Timer? _debounce;
   @override
   void initState() {
     super.initState();
     _loadVehicles();
-    print("Step3");
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -38,52 +42,10 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   Future<void> _loadVehicles() async {
     setState(() => _isLoading = true);
     try {
-      final response = {
-        'data': [
-          {
-            'id': 1,
-            'marque': 'MAZDA',
-            'type': 'Voiture',
-            'modele': 'CX-5',
-            'immatriculation': '1234ABC',
-            'proprietaire': 'John Doe',
-          },
-          {
-            'id': 2,
-            'marque': 'HONDA',
-            'type': 'Moto',
-            'modele': 'CBR500R',
-            'immatriculation': '5678DEF',
-            'proprietaire': 'Jane Smith',
-          },
-          {
-            'id': 3,
-            'marque': 'TOYOTA',
-            'type': 'Camion',
-            'modele': 'Hilux',
-            'immatriculation': '9101GHI',
-            'proprietaire': 'Alice Johnson',
-          },
-          {
-            'id': 2,
-            'marque': 'HONDA',
-            'type': 'Moto',
-            'modele': 'CBR500R',
-            'immatriculation': '5678DEF',
-            'proprietaire': 'Jane Smith',
-          },
-          {
-            'id': 3,
-            'marque': 'TOYOTA',
-            'type': 'Camion',
-            'modele': 'Hilux',
-            'immatriculation': '9101GHI',
-            'proprietaire': 'Alice Johnson',
-          },
-        ],
-      };
-      _vehicles = List<Map<String, dynamic>>.from(response['data']!);
-      _filteredVehicles = _vehicles;
+      vehicles = await ReceptionServices().fetchVehicles(context);
+
+      _filteredVehicle = vehicles;
+
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -102,13 +64,15 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
 
   void _searchVehicles(String query) {
     final lowerCaseQuery = query.toLowerCase();
-    _filteredVehicles = _vehicles.where((vehicle) {
-      final plate = vehicle['immatriculation']?.toString().toLowerCase() ?? '';
-      final brand = vehicle['marque']?.toString().toLowerCase() ?? '';
-      final model = vehicle['modele']?.toString().toLowerCase() ?? '';
+
+    _filteredVehicle = vehicles.where((vehicle) {
+      final plate = vehicle.licensePlate.toString().toLowerCase();
+      final propertyName = vehicle.client?.firstName.toString().toLowerCase();
+      final propertyLast = vehicle.client?.lastName.toString().toLowerCase();
+
       return plate.contains(lowerCaseQuery) ||
-          brand.contains(lowerCaseQuery) ||
-          model.contains(lowerCaseQuery);
+          propertyName!.contains(lowerCaseQuery) ||
+          propertyLast!.contains(lowerCaseQuery);
     }).toList();
     setState(() {});
   }
@@ -200,11 +164,16 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
             ],
           ),
           SizedBox(
-            height: Responsive.responsiveValue(context, mobile: 10, tablet: 20),
+            height: Responsive.responsiveValue(context, mobile: 0, tablet: 10),
           ),
           if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (_filteredVehicles.isEmpty)
+            Column(
+              children: List.generate(
+                6, // nombre de shimmer cards à afficher
+                    (index) => const VehicleInfoCardShimmer(),
+              ),
+            )
+          else if (_filteredVehicle.isEmpty)
             Column(
               children: [
                 const Icon(Icons.car_repair, size: 48, color: Colors.grey),
@@ -217,7 +186,8 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: _showAddVehicleDialog,
+                  onPressed: ()=>
+                      Navigator.pushReplacementNamed(context, "/brand_picker"),
                   child: const Text('Ajouter un nouveau véhicule'),
                 ),
               ],
@@ -226,7 +196,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
             ListView(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              children: _filteredVehicles.map((vehicle) {
+              children: _filteredVehicle.map((vehicle) {
                 return VehicleInfoCard(vehicle: vehicle);
               }).toList(),
             ),

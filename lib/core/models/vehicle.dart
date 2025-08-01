@@ -42,17 +42,17 @@ class Vehicle {
       id: json['id'] as String,
       marqueId: json['marqueId'] as String,
       modelId: json['modelId'] as String,
-      year: json['year'] as int,
+      year: json['year'] ?? 00000,
       chassis: json['chassis'] as String,
       licensePlate: json['licensePlate'] as String,
-      color: json['color'] as String,
-      logo: json['logo'] as String?,
-      kilometrage: json['kilometrage'] as int,
+      color: json['color'] ?? "NO DEFINE",
+      logo: json['logo'] ?? "https://promeca.api.blasco.top/logo/vehicle/6886b12681f36a0.png",
+      kilometrage: json['kilometrage'] ?? 00000,
       clientId: json['clientId'] as String,
-      companyId: json['companyId'] as String,
+      companyId: json['companyId'] ?? "",
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
-      client: Client.fromJson(json['client'] as Map<String, dynamic>),
+      client: Client.fromJsn(json['client'] as Map<String, dynamic>),
     );
   }
 

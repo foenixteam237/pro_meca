@@ -112,7 +112,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get add => 'Ajouter';
 
   @override
-  String get immatVehicule => 'Immatriculation';
+  String get immatVehicule => 'Imm';
 
   @override
   String get validation => 'En validation';
@@ -171,11 +171,17 @@ class AppLocalizationsFr extends AppLocalizations {
       'Échec de la connexion, veuillez vérifier vos identifiants';
 
   @override
-  String get modele => 'Modèle';
+  String get modele => 'Chassis';
 
   @override
   String get property => 'Propriétaire';
 
   @override
   String get logout => 'Déconnexion!';
+
+  @override
+  String get adminRole => 'Administrateur';
+
+  @override
+  String get users => 'Utilisateurs';
 }

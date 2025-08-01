@@ -1,19 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
-import '../../../constants/app_colors.dart';
+import 'package:provider/provider.dart';
+import '../../../constants/app_adaptive_colors.dart';
 
 Widget completedVehicleCard(BuildContext context) {
   final l10n = AppLocalizations.of(context);
   final screenWidth = MediaQuery.of(context).size.width;
-
+  final appColors = Provider.of<AppAdaptiveColors>(context);
+  
   return Container(
     width: screenWidth * 0.4, // 40% de la largeur d'écran
     constraints: const BoxConstraints(maxWidth: 200), // Largeur max
     margin: EdgeInsets.only(right: screenWidth * 0.03),
     padding: EdgeInsets.all(screenWidth * 0.02),
     decoration: BoxDecoration(
-      border: Border.all(color: AppColors.primary),
+      border: Border.all(color: appColors.primary),
       borderRadius: BorderRadius.circular(12),
     ),
     child: Column(
@@ -45,7 +47,7 @@ Widget completedVehicleCard(BuildContext context) {
         Text(
           l10n.seeInvoice,
           style: TextStyle(
-            color: AppColors.primary,
+            color: appColors.primary,
             fontWeight: FontWeight.bold,
             fontSize: screenWidth * 0.03,
           ),

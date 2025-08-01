@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/features/reception/widgets/showVehicleSelectionModal.dart';
+import 'package:provider/provider.dart';
 import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_colors.dart';
 import 'completeVehiculeCard.dart';
@@ -9,6 +11,8 @@ Widget buildHomeContent(BuildContext context) {
   final l10n = AppLocalizations.of(context);
   final screenSize = MediaQuery.of(context).size;
   final isMobile = screenSize.width < 600;
+  final appColors = Provider.of<AppAdaptiveColors>(context);
+  
   return Stack(
     children: [
       SingleChildScrollView(
@@ -20,14 +24,14 @@ Widget buildHomeContent(BuildContext context) {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: l10n.vehicleRegistrationHint,
-                  suffixIcon: Icon(Icons.search, color: AppColors.primary),
+                  suffixIcon: Icon(Icons.search, color: appColors.primary),
                 ),
               ),
             ),
-            _sectionTitle(l10n.completedVehicles, l10n),
+            _sectionTitle(l10n.completedVehicles, l10n, context),
             _buildVehicleRow(context),
             const SizedBox(height: 20),
-            _sectionTitle(l10n.ongoingVehicles, l10n),
+            _sectionTitle(l10n.ongoingVehicles, l10n, context),
             ongoingVehicleCard(
               date: "12/06/2023",
               status: l10n.diagnostic,
@@ -102,7 +106,7 @@ Widget buildHomeContent(BuildContext context) {
             */
             showVehicleSelectionModal(context);
           },
-          backgroundColor: AppColors.primary,
+          backgroundColor: appColors.primary,
           shape: const CircleBorder(),
           child: Icon(Icons.add, size: screenSize.width * 0.09),
         ),
@@ -111,7 +115,8 @@ Widget buildHomeContent(BuildContext context) {
   );
 }
 
-Widget _sectionTitle(String title, AppLocalizations l10n) {
+Widget _sectionTitle(String title, AppLocalizations l10n, BuildContext context) {
+  final appColors = Provider.of<AppAdaptiveColors>(context);
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -121,7 +126,7 @@ Widget _sectionTitle(String title, AppLocalizations l10n) {
       ),
       Text(
         l10n.viewMore,
-        style: TextStyle(color: AppColors.primary, fontSize: 14),
+        style: TextStyle(color: appColors.primary, fontSize: 14),
       ),
     ],
   );

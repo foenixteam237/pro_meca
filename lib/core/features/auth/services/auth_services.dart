@@ -65,6 +65,7 @@ class AuthServices {
     await prefs.setString('user_data', json.encode(user));
     await prefs.setBool('remember_me', rememberMe);
     await prefs.setString("companyId", user.role.companyId);
+    await prefs.setBool("isAdmin", user.isCompanyAdmin);
     if (!rememberMe) {
       await prefs.setBool('session_only', true);
     }

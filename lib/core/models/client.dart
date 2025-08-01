@@ -1,3 +1,4 @@
+
 class Client {
   final String id;
   final String firstName;
@@ -10,8 +11,8 @@ class Client {
   final String? userId;
   final String? clientCompany;
   final String companyId;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Client({
     required this.id,
@@ -25,8 +26,8 @@ class Client {
     this.userId,
     this.clientCompany,
     required this.companyId,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -35,18 +36,24 @@ class Client {
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       email: json['email'] as String?,
-      phone: json['phone'] as String,
+      phone: json['phone'].toString(),
       address: json['address'] as String?,
       city: json['city'] as String?,
       logo: json['logo'] as String?,
       userId: json['userId'] as String?,
       clientCompany: json['clientCompany'] as String?,
-      companyId: json['companyId'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      companyId: json['companyId'] as String
     );
   }
-
+  factory Client.fromJsn(Map<String, dynamic> json) {
+    return Client(
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      phone: json['phone'],
+      id: '',
+      companyId: '',
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'firstName': firstName,
@@ -58,8 +65,8 @@ class Client {
       if (userId != null) 'userId': userId,
       if (clientCompany != null) 'clientCompany': clientCompany,
       'companyId': companyId,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 

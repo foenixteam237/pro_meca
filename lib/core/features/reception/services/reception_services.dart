@@ -117,13 +117,13 @@ class ReceptionServices {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
-          '/vehicles', // adapte le endpoint selon ton backend
+          '/vehicles',
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'];
+        final List<dynamic> data = response.data;
         return data.map((json) => Vehicle.fromJson(json)).toList();
       } else {
         debugPrint("Erreur lors de la récupération des véhicules");

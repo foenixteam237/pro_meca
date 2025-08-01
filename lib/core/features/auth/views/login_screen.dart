@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-<<<<<<<< HEAD:lib/core/features/auth/screens/login_screen.dart
-========
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
->>>>>>>> d6cfa360ec21d9b87807b309fbd1bd488f8a8e33:lib/core/features/auth/views/login_screen.dart
 import 'package:pro_meca/core/features/auth/services/auth_services.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';

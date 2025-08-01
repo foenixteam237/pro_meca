@@ -169,11 +169,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authLoginFailed => 'Login failed, please check your credentials';
 
   @override
-  String get modele => 'Model';
+  String get modele => 'chassis';
 
   @override
   String get property => 'Property';
 
   @override
   String get logout => 'Logout!';
+
+  @override
+  String get adminRole => 'Administrator';
+
+  @override
+  String get users => 'Users';
 }

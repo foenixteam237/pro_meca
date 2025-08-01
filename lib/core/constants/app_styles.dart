@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:provider/provider.dart';
+
+import 'app_adaptive_colors.dart';
 
 class AppStyles {
   // Text Styles
@@ -68,10 +70,11 @@ class AppStyles {
   }
 
   static TextStyle caption(BuildContext context) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Theme.of(context).textTheme.labelSmall!.copyWith(
       fontSize: 14,
       fontWeight: FontWeight.bold,
-      color: AppColors.primary,
+      color: appColors.primary,
     );
   }
   static TextStyle buttonText(BuildContext context) {
@@ -86,7 +89,7 @@ class AppStyles {
   // Button Styles
   static ButtonStyle primaryButton(BuildContext context) {
     return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppAdaptiveColors().primary,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       textStyle: buttonText(context),
@@ -94,8 +97,9 @@ class AppStyles {
   }
 
   static ButtonStyle secondaryButton(BuildContext context) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.secondary,
+      backgroundColor: appColors.secondary,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       textStyle: buttonText(context),
@@ -103,20 +107,22 @@ class AppStyles {
   }
 
   static ButtonStyle outlineButton(BuildContext context) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return OutlinedButton.styleFrom(
-      foregroundColor: AppColors.primary,
-      side: BorderSide(color: AppColors.primary),
+      foregroundColor: appColors.primary,
+      side: BorderSide(color: appColors.primary),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      textStyle: buttonText(context).copyWith(color: AppColors.primary),
+      textStyle: buttonText(context).copyWith(color: appColors.primary),
     );
   }
 
   static ButtonStyle textButton(BuildContext context) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return TextButton.styleFrom(
-      foregroundColor: AppColors.primary,
+      foregroundColor: appColors.primary,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      textStyle: buttonText(context).copyWith(color: AppColors.primary),
+      textStyle: buttonText(context).copyWith(color: appColors.primary),
     );
   }
 
@@ -141,6 +147,8 @@ class AppStyles {
     String? label,
     String? hint,
   }) {
+
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return InputDecoration(
       labelText: label,
       hintText: hint,
@@ -156,11 +164,11 @@ class AppStyles {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.primary, width: 2),
+        borderSide: BorderSide(color: appColors.primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: AppColors.alert),
+        borderSide: BorderSide(color: AppAdaptiveColors.alert.withOpacity(0.2)),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
@@ -171,13 +179,14 @@ class AppStyles {
     BuildContext context, {
     bool isError = false,
   }) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return BoxDecoration(
       color: isError
-          ? AppColors.alert.withOpacity(0.2)
-          : AppColors.secondary.withOpacity(0.2),
+          ? AppAdaptiveColors.alert.withOpacity(0.2)
+          : appColors.secondary.withOpacity(0.2),
       borderRadius: BorderRadius.circular(8),
       border: Border.all(
-        color: isError ? AppColors.alert : AppColors.secondary,
+        color: isError ? AppAdaptiveColors.alert.withOpacity(0.2) : appColors.secondary,
         width: 1,
       ),
     );

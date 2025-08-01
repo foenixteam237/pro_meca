@@ -9,7 +9,7 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/providers/locale_provider.dart';
 
-import '../../l10n/arb/app_localizations.dart';
+import 'l10n/arb/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -20,6 +20,7 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isFirstLaunch = true;
+  bool _isAdmin = false;
   bool _isLoading = false;
   bool _isConnected = false;
   String _connectionMessage = "";
@@ -40,6 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Future<void> _initializePreferences() async {
     _prefs = await SharedPreferences.getInstance();
+    _isAdmin = _prefs.getBool('isAdmin') ?? false;
     _isFirstLaunch = _prefs.getBool('first_launch') ?? true;
     _isCheck = _prefs.getBool('remember_me') ?? false;
     _accessToken = _prefs.getString("accessToken");
@@ -66,7 +68,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
     // Test de la connexion à l'API
     try {
-      final isConnected = await _apiService.testConnection();
+      var isConnected = await _apiService.testConnection();
       setState(() {
         _isConnected = isConnected;
         _connectionMessage = isConnected
@@ -108,56 +110,65 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _navigateToTechHome() {
-    Navigator.pushReplacementNamed(context, '/technician_home');
+    if(_isAdmin){
+      Navigator.pushReplacementNamed(context, '/admin_home');
+      return;
+    }else{
+      Navigator.pushReplacementNamed(context, '/technician_home');
+    }
+
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: Image.asset(
-                    'assets/images/promeca_logo.png',
-                    width: Responsive.responsiveValue(
-                      context,
-                      mobile: MediaQuery.of(context).size.width * 0.3,
-                      tablet: MediaQuery.of(context).size.width * 0.04,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Image.asset(
+                      'assets/images/promeca_logo.png',
+                      width: Responsive.responsiveValue(
+                        context,
+                        mobile: MediaQuery.of(context).size.width * 0.3,
+                        tablet: MediaQuery.of(context).size.width * 0.04,
+                      ),
+                      fit: BoxFit.contain,
                     ),
-                    fit: BoxFit.contain,
                   ),
-                ),
-                const Spacer(),
-                Center(
-                  child: Image.asset(
-                    'assets/images/welcome_image.png',
-                    width: Responsive.responsiveValue(
-                      context,
-                      mobile: MediaQuery.of(context).size.width * 0.6,
-                      tablet: MediaQuery.of(context).size.width * 0.8,
+                  const Spacer(),
+                  Center(
+                    child: Image.asset(
+                      'assets/images/welcome_image.png',
+                      width: Responsive.responsiveValue(
+                        context,
+                        mobile: MediaQuery.of(context).size.width * 0.6,
+                        tablet: MediaQuery.of(context).size.width * 0.8,
+                      ),
+                      fit: BoxFit.contain,
                     ),
-                    fit: BoxFit.contain,
                   ),
-                ),
-                const Spacer(),
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom: Responsive.isMobile(context) ? 40 : 60,
+                  const Spacer(),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom: Responsive.isMobile(context) ? 40 : 60,
+                    ),
+                    child: _isFirstLaunch
+                        ? _buildStartButton(l10n)
+                        : _buildProgressIndicator(),
                   ),
-                  child: _isFirstLaunch
-                      ? _buildStartButton(l10n)
-                      : _buildProgressIndicator(),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

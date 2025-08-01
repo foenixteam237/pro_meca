@@ -7,7 +7,6 @@ import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/models/client.dart';
 import '../core/models/vehicle.dart';
 
 class ApiDioService {
@@ -74,6 +73,7 @@ class ApiDioService {
     await prefs.remove('accessToken');
     await prefs.remove('refreshToken');
     await prefs.remove('user');
+    await prefs.remove('isAdmin');
   }
 
   Future<Response> authenticatedRequest(
@@ -101,37 +101,6 @@ class ApiDioService {
     }
   }
 
-  Future<Map<String, dynamic>> authenticateUser({
-    required String identifier,
-    required String password,
-    required String? mail,
-    bool rememberMe = false,
-  }) async {
-    final response = await _dio.post(
-      '/auth/login',
-      data: json.encode({
-        'phone': identifier,
-        'mail': mail,
-        'password': password,
-        'rememberMe': rememberMe,
-      }),
-    );
-    if (response.statusCode == 200) {
-      final responseData = response.data;
-      final data = Data.fromJson(responseData['data']);
-      await _saveAuthData(
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        refreshExpiresAt: data.refreshExpiresAt,
-        expiresAt: data.expiresAt,
-        user: data.user,
-        rememberMe: rememberMe,
-      );
-      return responseData;
-    } else {
-      throw Exception('Échec de l\'authentification : ${response.data}');
-    }
-  }
 
   Future<void> _saveAuthData({
     required String accessToken,

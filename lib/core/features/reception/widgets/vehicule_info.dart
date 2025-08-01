@@ -16,6 +16,7 @@ class VehicleInfoCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: isMobile ? 8 : 16),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: isMobile ? screenWidth * 0.2 : 80,
@@ -34,12 +35,26 @@ class VehicleInfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "${l10n.immatVehicule}: ${vehicle.licensePlate}",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: isMobile ? 14 : 18,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "${l10n.immatVehicule}: ${vehicle.licensePlate}".toUpperCase(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: isMobile ? 12 : 18,
+                      ),
+                      maxLines: 1,
+                    ),
+                    Text(
+                      vehicle.color.toString(),
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: isMobile ? 12 : 14,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 2),
                 Text(
@@ -58,18 +73,6 @@ class VehicleInfoCard extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-          Container(
-            height: 70,
-            padding: EdgeInsets.only(right: 20),
-            alignment: Alignment.topRight,
-            child: Text(
-              vehicle.color.toString(),
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: isMobile ? 12 : 14,
-              ),
             ),
           ),
         ],

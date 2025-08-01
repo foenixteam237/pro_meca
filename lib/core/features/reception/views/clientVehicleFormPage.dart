@@ -3,12 +3,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pro_meca/core/features/reception/services/reception_services.dart';
+import 'package:pro_meca/core/models/client.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
-import 'package:pro_meca/core/services/api_services.dart';
-import 'package:pro_meca/services/dio_api_services.dart';
+import 'package:pro_meca/core/models/visite.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../constants/app_colors.dart';
-import '../../constants/app_styles.dart';
+import '../../../constants/app_colors.dart';
+import '../../../constants/app_styles.dart';
 
 class ClientVehicleFormPage extends StatefulWidget {
   final String idBrand;
@@ -25,8 +26,9 @@ class ClientVehicleFormPage extends StatefulWidget {
 class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   DateTime? selectedDate;
   File? _selectedImage;
-  bool isSelected = false;
+  bool isLoading = false;
   final ImagePicker _picker = ImagePicker();
+
   // Contrôleurs pour les champs du client et du véhicule
   final Map<String, TextEditingController> controllers = {
     'firstName': TextEditingController(),
@@ -47,13 +49,33 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
     "Cric": false,
     "Kit médical": false,
     "Boîte à outil": false,
+    "Essuie Glace": false,
   };
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    await Permission.photos.request();
+    await Permission.camera.request();
+  }
 
   Future<void> _selectImageSource() async {
+    if (_selectedImage != null) {
+      return; // Ne pas demander à nouveau si une image est déjà sélectionnée
+    }
     final action = await showDialog<ImageSource>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Choisir une source d\'image'),
+        actionsAlignment: MainAxisAlignment.center,
+        title: Center(
+          child: Text(
+            'Choisir une source d\'image',
+            style: AppStyles.titleMedium(context),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, ImageSource.camera),
@@ -67,16 +89,12 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       ),
     );
     if (action != null) {
-      if (action == ImageSource.camera) {
-        await _takePhoto();
-      } else {
-        await _pickImage();
-      }
+      action == ImageSource.camera ? await _takePhoto() : await _pickImage();
     }
   }
 
   Future<void> _pickImage() async {
-    if (await Permission.photos.request().isGranted) {
+    if (await Permission.photos.isGranted) {
       final image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 800,
@@ -84,20 +102,15 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         imageQuality: 85,
       );
       if (image != null) {
-        if (mounted) {
-          setState(() {
-            isSelected = true;
-            _selectedImage = File(image.path);
-          });
-        }
+        setState(() {
+          _selectedImage = File(image.path);
+        });
       }
-    } else if (await Permission.photos.isDenied) {
-      //openAppSettings();
     }
   }
 
   Future<void> _takePhoto() async {
-    if (await Permission.camera.request().isGranted) {
+    if (await Permission.camera.isGranted) {
       final photo = await _picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.rear,
@@ -105,106 +118,129 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         maxHeight: 800,
         imageQuality: 85,
       );
-      isSelected = true;
       if (photo != null) {
-        if (mounted) {
-          setState(() {
-            _selectedImage = File(photo.path);
-          });
-        }
+        setState(() {
+          _selectedImage = File(photo.path);
+        });
       }
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime(1990),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && picked != selectedDate) {
-      if (mounted) {
-        setState(() => selectedDate = picked);
-      }
-    }
+  bool _areFieldsValid() {
+    return controllers.values.every(
+          (controller) => controller.text.isNotEmpty,
+        ) &&
+        isYearValid(int.tryParse(controllers['year']!.text) ?? 0) &&
+        selectedDate != null;
   }
 
   void _submitForm() async {
-    // Récupération des données du client et du véhicule
-    final clientData = {
-      'firstName': controllers['firstName']!.text,
-      'lastName': controllers['lastName']!.text,
-      'email': controllers['email']!.text.isNotEmpty
-          ? controllers['email']!.text
-          : null,
-      'phone': controllers['phone']!.text,
-    };
-    final vehicleData = {
-      'chassis': controllers['chassis']!.text,
-      'licensePlate': controllers['licensePlate']!.text,
-      'year': int.tryParse(controllers['year']!.text) ?? 0,
-      'color': controllers['color']!.text,
-      'kilometrage': int.tryParse(controllers['mileage']!.text) ?? 0,
-      'onboardItems': {
-        ...onboardItems,
-        if (controllers['otherItems']!.text.isNotEmpty)
-          'Autres': controllers['otherItems']!.text,
-      },
-      'reportedProblem': controllers['reportedProblem']!.text,
-      'entryDate': selectedDate?.toIso8601String(),
-    };
-
+    if (!_areFieldsValid()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.primary,
+          content: Center(
+            child: Text(
+              textAlign: TextAlign.center,
+              'Veuillez remplir tous les champs et respecter les formats des champs.',
+              style: AppStyles.bodyMedium(context),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() {
+      isLoading = true;
+    });
     try {
       final prefs = await SharedPreferences.getInstance();
-      final _companyId = prefs.getString('companyId') ?? '';
-
-      // Création de l'objet Vehicle
-      final vehicule = Vehicle(
-        marqueId: widget.idBrand,
-        modelId: widget.idModel,
-        year: int.tryParse(controllers['year']!.text) ?? 0,
-        chassis: controllers['chassis']!.text,
-        licensePlate: controllers['licensePlate']!.text,
-        color: controllers['color']!.text,
-        kilometrage: int.tryParse(controllers['mileage']!.text) ?? 0,
-        clientId: "115c58ac-4355-4381-b3fa-fd6d8cccb41f",
-        companyId: _companyId,
+      final companyId = prefs.getString('companyId') ?? '';
+      final client = Client(
+        id: "",
+        firstName: controllers['firstName']!.text,
+        lastName: controllers['lastName']!.text,
+        phone: controllers['phone']!.text,
+        email: controllers['email']!.text,
+        companyId: companyId,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
-      print(await vehicule.toJson(_selectedImage));
-      // Création du FormData
-      FormData formData = FormData.fromMap(
-        await vehicule.toJson(_selectedImage),
+      final clientId = await ReceptionServices().createClient(
+        client.toMap(),
+        context,
       );
-      // Affiche les champs de formData
-      // Appel à l'API
-      final vehicle = await ApiDioService().createVehicle(formData);
-      // debugPrint('Vehicle Data: $vehicle');
-      // Navigation ou message de succès
+      if (clientId.isNotEmpty) {
+        final vehicle = Vehicle(
+          marqueId: widget.idBrand,
+          modelId: widget.idModel,
+          year: int.tryParse(controllers['year']!.text) ?? 0,
+          chassis: controllers['chassis']!.text,
+          licensePlate: controllers['licensePlate']!.text,
+          color: controllers['color']!.text,
+          kilometrage: int.tryParse(controllers['mileage']!.text) ?? 0,
+          clientId: clientId,
+          companyId: companyId,
+        );
+        FormData formData = FormData.fromMap(
+          await vehicle.toJson(_selectedImage),
+        );
+        final createdVehicle = await ReceptionServices().createVehicle(
+          formData,
+        );
+        if (createdVehicle != null) {
+          final visite = Visite(
+            id: "",
+            dateEntree: selectedDate ?? DateTime.now(),
+            vehicleId: createdVehicle,
+            status: "ATTENTE_DIAGNOSTIC",
+            constatClient: controllers["reportedProblem"]!.text,
+            elementsBord: ElementsBord(
+              extincteur: onboardItems['Extincteur'] ?? false,
+              dossier: onboardItems['Papier du véhicule'] ?? false,
+              cric: onboardItems['Cric'] ?? false,
+              boitePharmacie: onboardItems['Kit médical'] ?? false,
+              boiteOutils: onboardItems['Boîte à outil'] ?? false,
+              essuieGlace: onboardItems['Essuie Glace'] ?? false,
+            ),
+            companyId: companyId,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+          // ignore: use_build_context_synchronously
+          await ReceptionServices().createVisite(visite.toJson(), context);
+          setState(() => isLoading = false);
+        }
+      }
     } catch (e) {
+      setState(() => isLoading = false);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   void dispose() {
-    controllers.forEach((key, controller) => controller.dispose());
+    controllers.forEach((_, controller) => controller.dispose());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Reception du véhicule")),
+      appBar: AppBar(title: const Text("Réception du véhicule")),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ... (votre code existant pour les indicateurs de progression)
+              // Indicateurs de progression
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
@@ -222,14 +258,14 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
               ),
               const SizedBox(height: 20),
               const Text(
-                "Information du client",
+                "Informations du client",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               ..._buildInputFields(),
               const SizedBox(height: 20),
               const Text(
-                "Détail du véhicule",
+                "Détails du véhicule",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               ..._buildVehicleInputFields(),
@@ -251,9 +287,9 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            isSelected
-                                ? "Image déjà selectionnée "
-                                : "Selectionné une image",
+                            _selectedImage != null
+                                ? "Image déjà sélectionnée"
+                                : "Sélectionnez une image",
                           ),
                         ),
                         Icon(
@@ -347,15 +383,17 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _submitForm,
+                      onPressed: isLoading ? null : _submitForm,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: Text(
-                        "Terminé",
-                        style: AppStyles.buttonText(context),
-                      ),
+                      child: isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              "Terminé",
+                              style: AppStyles.buttonText(context),
+                            ),
                     ),
                   ),
                 ],
@@ -397,7 +435,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   List<Widget> _buildVehicleInputFields() {
     return [
       _buildInputField(
-        hint: "Numéro du chassis",
+        hint: "Numéro du châssis",
         controller: controllers['chassis']!,
       ),
       _buildInputField(
@@ -407,7 +445,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       _buildInputField(
         hint: "Année de sortie",
         controller: controllers['year']!,
-        keyboardType: TextInputType.number,
+        keyboardType: TextInputType.datetime,
       ),
       _buildInputField(hint: "Couleur", controller: controllers['color']!),
       _buildInputField(
@@ -464,12 +502,31 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         Checkbox(
           value: onboardItems[label],
           onChanged: (value) {
-            setState(() => onboardItems[label] = value ?? false);
+            setState(() {
+              onboardItems[label] = value ?? false;
+            });
           },
           activeColor: Colors.green,
         ),
         Text(label, style: const TextStyle(fontSize: 13)),
       ],
     );
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1990),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() => selectedDate = picked);
+    }
+  }
+
+  bool isYearValid(int year) {
+    int currentYear = DateTime.now().year;
+    return (year <= currentYear && year != 0);
   }
 }

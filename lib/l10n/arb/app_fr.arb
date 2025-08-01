@@ -77,9 +77,9 @@
   "parts": "Pièces",
   "dashboard": "Tableau de bord",
   "profile": "Profil",
-  "technicianRole" : "Technicien",
+  "technicianRole": "Technicien",
   "add": "Ajouter",
-  "immatVehicule": "Immatriculation",
+  "immatVehicule": "Imm",
   "validation": "En validation",
   "userProfile": "Profil utilisateur",
   "administratorRole": "Administrateur",
@@ -92,14 +92,15 @@
   "roleLabel": "Rôle",
   "permissionsLabel": "Permissions",
   "permissionsDetails": "Détails des permissions",
-    "connectionSuccess": "Connexion au serveur réussie",
+  "connectionSuccess": "Connexion au serveur réussie",
   "connectionFailed": "Échec de connexion au serveur",
   "connectionError": "Erreur lors de la vérification de la connexion",
   "noInternetConnection": "Pas de connexion Internet",
   "connexionOk": "Connexion internet OK",
   "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants",
-  "modele": "Modèle",
-  "property":"Propriétaire",
-  "logout": "Déconnexion!"
-
+  "modele": "Chassis",
+  "property": "Propriétaire",
+  "logout": "Déconnexion!",
+  "adminRole": "Administrateur",
+  "users": "Utilisateurs"
 }
