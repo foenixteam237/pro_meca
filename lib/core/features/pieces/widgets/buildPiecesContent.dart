@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/piecesCategorie.dart';
 import '../services/pieces_services.dart';
@@ -12,33 +13,29 @@ class CategoriesPage extends StatefulWidget {
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  final List<Map<String, dynamic>> categories = [
-    {'title': 'Pièces moteurs', 'count': 2435, 'image': 'assets/images/v1.jpg'},
-    {'title': 'Transmissions', 'count': 1234, 'image': 'assets/images/v1.jpg'},
-    {'title': 'Freinages', 'count': 2435, 'image': 'assets/images/v1.jpg'},
-    {
-      'title': 'Directions et suspension',
-      'count': 1234,
-      'image': 'assets/images/v1.jpg',
-    },
-    {
-      'title': 'Directions et suspension',
-      'count': 1234,
-      'image': 'assets/images/v1.jpg',
-    },
-  ];
   List<PieceCategorie> categorie = [];
+  List<PieceCategorie> filteredCategorie = [];
   bool _isLoading = false;
+  String _accessToken = "";
+  String _searchText = "";
+
   @override
   void initState() {
     super.initState();
     _loadCategorie();
+    _getToken();
+  }
+
+  Future<void> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _accessToken = prefs.getString('accessToken')!;
   }
 
   Future<void> _loadCategorie() async {
     setState(() => _isLoading = true);
     try {
       categorie = await PiecesService().fetchPieceCategories(context);
+      _filterCategories();
     } catch (e) {
       print(e);
     } finally {
@@ -46,8 +43,25 @@ class _CategoriesPageState extends State<CategoriesPage> {
     }
   }
 
+  void _filterCategories() {
+    setState(() {
+      if (_searchText.isEmpty) {
+        filteredCategorie = List.from(categorie);
+      } else {
+        filteredCategorie = categorie
+            .where((cat) =>
+        cat.name.toLowerCase().contains(_searchText.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final displayList = _isLoading
+        ? List.generate(4, (index) => null)
+        : filteredCategorie;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -61,7 +75,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               const SizedBox(height: 12),
               Expanded(
                 child: GridView.builder(
-                  itemCount: _isLoading ? 4 : categorie.length, // Corrigé ici
+                  itemCount: displayList.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
@@ -69,13 +83,18 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     childAspectRatio: 3 / 4,
                   ),
                   itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return _isLoading
-                        ? CategoryCardShimmer()
-                        : CategoryCard(
-                            category: category,
-                            onTap: () => print("object"),
-                          );
+                    if (_isLoading) {
+                      return const CategoryCardShimmer();
+                    } else if (filteredCategorie.isNotEmpty) {
+                      final category = displayList[index];
+                      return CategoryCard(
+                        category: category!,
+                        getToken: _accessToken,
+                      );
+                    } else {
+                      // Gérer le cas où la liste est vide
+                      return const Center(child: Text("Aucune catégorie disponible"));
+                    }
                   },
                 ),
               ),
@@ -92,7 +111,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         Expanded(
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'immatriculation du véhicule',
+              hintText: 'Nom catégorie',
               filled: true,
               suffixIcon: const Icon(Icons.search, color: Colors.green),
               border: OutlineInputBorder(
@@ -105,6 +124,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
             ),
+            onChanged: (value) {
+              _searchText = value;
+              _filterCategories();
+            },
           ),
         ),
         const SizedBox(width: 10),

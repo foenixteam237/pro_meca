@@ -7,7 +7,6 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/providers/theme_provider.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import '../../widgets/editable_textField.dart';
-import '../auth/screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final BuildContext con;

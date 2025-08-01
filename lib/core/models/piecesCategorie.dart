@@ -3,6 +3,7 @@ class PieceCategorie {
   final String name;
   final String description;
   final String logo;
+  final dynamic count;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -11,6 +12,7 @@ class PieceCategorie {
     required this.name,
     required this.description,
     required this.logo,
+    this.count,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -21,6 +23,7 @@ class PieceCategorie {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       logo: json['logo'] ?? '',
+      count: json['_count'] ?? {"pieces": 0},
       createdAt: DateTime.parse(json['createdAt'] ?? ''),
       updatedAt: DateTime.parse(json['updatedAt'] ?? ''),
     );

@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// No description provided for @modele.
   ///
   /// In en, this message translates to:
-  /// **'Model'**
+  /// **'chassis'**
   String get modele;
 
   /// No description provided for @property.

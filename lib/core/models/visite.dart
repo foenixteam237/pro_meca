@@ -1,5 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:pro_meca/core/models/vehicle.dart';
 
 class Visite {
   final String id;
@@ -10,6 +10,7 @@ class Visite {
   final String constatClient;
   final ElementsBord elementsBord;
   final String companyId;
+  final Vehicle? vehicle;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -17,6 +18,7 @@ class Visite {
     required this.id,
     required this.dateEntree,
     this.dateSortie,
+    this.vehicle,
     required this.vehicleId,
     required this.status,
     required this.constatClient,
@@ -35,6 +37,7 @@ class Visite {
           : null,
       vehicleId: json['vehicleId'] as String,
       status: json['status'] as String,
+      vehicle: json['vehicle'],
       constatClient: json['constatClient'] as String,
       elementsBord: ElementsBord.fromJson(
         json['elementsBord'] as Map<String, dynamic>,

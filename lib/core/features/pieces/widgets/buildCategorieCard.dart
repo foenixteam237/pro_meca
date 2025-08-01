@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../models/piecesCategorie.dart';
 
 class CategoryCard extends StatelessWidget {
-  final Map<String, dynamic> category;
-  final VoidCallback? onTap;
+  final PieceCategorie category;
+  final String? getToken;
+  const CategoryCard({super.key, required this.category, this.getToken});
 
-  const CategoryCard({
-    super.key,
-    required this.category,
-    this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
+
+
+
+    final height = MediaQuery.of(context).size.height;
+
     return GestureDetector(
-      onTap: onTap ?? () => print(category['title']),
+      onTap:  () {
+      },
       child: Container(
-        height: Responsive.responsiveValue(context, mobile: 150, tablet: 200),
+        height: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(10),
@@ -30,16 +35,36 @@ class CategoryCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
               ),
-              child: Image.asset(
-                category['image'],
+              child: Image.network (
+                category.logo,
+                headers: {'Authorization': 'Bearer $getToken'},
                 height: Responsive.responsiveValue(
                   context,
-                  mobile: 170,
+                  mobile: height * 0.18,
                   tablet: 200,
                   desktop: 300,
                 ),
                 width: double.infinity,
                 fit: BoxFit.cover,
+                errorBuilder:
+                    (
+                      BuildContext context,
+                      Object error,
+                      StackTrace? stackTrace,
+                    ) {
+                      debugPrint(error.toString());
+                      return Image.asset(
+                        'assets/images/v1.jpg', // Remplacez par le chemin de votre image par défaut
+                        height: Responsive.responsiveValue(
+                          context,
+                          mobile: height * 0.18,
+                          tablet: 200,
+                          desktop: 300,
+                        ),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      );
+                    },
               ),
             ),
             Padding(
@@ -48,15 +73,29 @@ class CategoryCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    category['title'],
-                    style: AppStyles.caption(context),
-                    textAlign: TextAlign.start,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${category.name}".toUpperCase(),
+                        style: AppStyles.caption(context),
+                        textAlign: TextAlign.start,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: height * 0.03),
+                      Text('Nombre: ${category.count['pieces']}'),
+                    ],
                   ),
                   const SizedBox(height: 5),
-                  Text('Nombre: ${category['count']}'),
+                  Text(
+                    "${category.description}",
+                    style: AppStyles.bodySmall(context),
+                    textAlign: TextAlign.start,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),

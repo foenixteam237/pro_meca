@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
+import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -13,8 +14,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color roleColor;
   final Color appBarColor;
   final VoidCallback? onInfoPressed;
-
-  const CustomAppBar({
+   CustomAppBar({
     super.key,
     required this.profileImagePath,
     required this.name,

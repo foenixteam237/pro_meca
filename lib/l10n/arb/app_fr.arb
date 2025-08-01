@@ -79,7 +79,7 @@
   "profile": "Profil",
   "technicianRole" : "Technicien",
   "add": "Ajouter",
-  "immatVehicule": "Immatriculation",
+  "immatVehicule": "Imm",
   "validation": "En validation",
   "userProfile": "Profil utilisateur",
   "administratorRole": "Administrateur",
@@ -98,7 +98,7 @@
   "noInternetConnection": "Pas de connexion Internet",
   "connexionOk": "Connexion internet OK",
   "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants",
-  "modele": "Modèle",
+  "modele": "Chassis",
   "property":"Propriétaire",
   "logout": "Déconnexion!"
 

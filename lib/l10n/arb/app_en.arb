@@ -99,7 +99,7 @@
   "noInternetConnection": "No internet connection",
   "connexionOk": "Your internet connection is OK",
   "authLoginFailed": "Login failed, please check your credentials",
-  "modele": "Model",
+  "modele": "chassis",
   "property":"Property",
   "logout": "Logout!"
 }
