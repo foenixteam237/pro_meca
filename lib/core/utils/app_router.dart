@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/features/auth/screens/login_screen.dart';
+import 'package:pro_meca/core/features/auth/views/login_screen.dart';
 import 'package:pro_meca/core/features/home/AdminHome.dart';
 import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
 
