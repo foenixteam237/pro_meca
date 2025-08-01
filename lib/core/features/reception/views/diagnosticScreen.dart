@@ -5,6 +5,9 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
+import 'package:provider/provider.dart';
+
+import '../../../constants/app_adaptive_colors.dart';
 
 class DiagnosticPage extends StatefulWidget {
   final String idVisite; // Paramètre pour l'identifiant de la visite
@@ -29,6 +32,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     final isMobile = screenSize.width < 600;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     final avatarRadius = max(20, min(30, screenSize.width * 0.06));
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -36,6 +40,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
         role: l10n.technicianRole,
+        nameColor: appColors.primary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

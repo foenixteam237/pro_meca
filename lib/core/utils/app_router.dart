@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/features/auth/screens/login_screen.dart';
+import 'package:pro_meca/core/features/home/AdminHome.dart';
 import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
 
 import '../features/home/TechnicianHome.dart';
@@ -15,6 +16,7 @@ class AppRouter {
   static const String brandPicker = '/brand_picker';
   static const String modelPicker = "/model_picker";
   static const String clientVehicleForm = "/client_vehicle_form";
+  static const String adminHoe = "/admin_home";
 
   // Générateur de routes
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -25,6 +27,8 @@ class AppRouter {
         return _fadeRoute(const WelcomeScreen(), settings);
       case technicianHome:
         return _fadeRoute(TechnicianHomeScreen(), settings);
+      case adminHoe:
+        return _fadeRoute(AdminHomeScreen(), settings);
       case brandPicker:
         return _fadeRoute(
           BrandPickerScreen(

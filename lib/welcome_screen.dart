@@ -20,6 +20,7 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isFirstLaunch = true;
+  bool _isAdmin = false;
   bool _isLoading = false;
   bool _isConnected = false;
   String _connectionMessage = "";
@@ -40,6 +41,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Future<void> _initializePreferences() async {
     _prefs = await SharedPreferences.getInstance();
+    _isAdmin = _prefs.getBool('isAdmin') ?? false;
     _isFirstLaunch = _prefs.getBool('first_launch') ?? true;
     _isCheck = _prefs.getBool('remember_me') ?? false;
     _accessToken = _prefs.getString("accessToken");
@@ -108,7 +110,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _navigateToTechHome() {
-    Navigator.pushReplacementNamed(context, '/technician_home');
+    if(_isAdmin){
+      Navigator.pushReplacementNamed(context, '/admin_home');
+      return;
+    }else{
+      Navigator.pushReplacementNamed(context, '/technician_home');
+    }
+
   }
 
   @override

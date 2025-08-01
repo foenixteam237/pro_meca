@@ -12,15 +12,14 @@ import 'package:provider/provider.dart';
 import 'widgets/buildHomeContent.dart';
 import '../dashboard/widgets/dashboardTech.dart';
 
-class TechnicianHomeScreen extends StatefulWidget {
-  const TechnicianHomeScreen({super.key});
+class AdminHomeScreen extends StatefulWidget {
+  const AdminHomeScreen({super.key});
   @override
-  State<TechnicianHomeScreen> createState() => _TechnicianHomeScreenState();
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
-class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
+class _AdminHomeScreenState extends State<AdminHomeScreen> {
   late PersistentTabController _controller;
-
   @override
   void initState() {
     super.initState();
@@ -29,9 +28,11 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
 
   List<Widget> _buildScreens() {
     return [
-      buildHomeContent(context),
-      CategoriesPage(),
+
       VehicleDashboardPage(context: context),
+      CategoriesPage(),
+      Center(child: Text("Ca vient"),),
+      buildHomeContent(context),
       ProfileScreen(con: context),
     ];
   }
@@ -39,29 +40,36 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   List<PersistentBottomNavBarItem> _navBarsItems(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return [
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.home),
         title: l10n.home,
-        activeColorPrimary: AppColors.primary,
+        activeColorPrimary: appColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.build),
         title: l10n.parts,
-        activeColorPrimary: AppColors.primary,
+        activeColorPrimary: appColors.primary,
+        inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.people),
+        title: l10n.users,
+        activeColorPrimary: appColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.dashboard),
         title: l10n.dashboard,
-        activeColorPrimary: AppColors.primary,
+        activeColorPrimary: appColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.person),
         title: l10n.profile,
-        activeColorPrimary: AppColors.primary,
+        activeColorPrimary: appColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
     ];
@@ -74,16 +82,16 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     final isMobile = screenSize.width < 600;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final appColors = Provider.of<AppAdaptiveColors>(context);
-
     return Scaffold(
       appBar: CustomAppBar(
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
-        role: l10n.technicianRole,
+        role: l10n.adminRole,
         nameColor: appColors.primary,
+
       ),
       resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.customBackground(context),
+      backgroundColor: appColors.customBackground(context),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Stack(
@@ -108,7 +116,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
                 resizeToAvoidBottomInset: false,
                 backgroundColor: isDarkMode
                     ? const Color(0xFF1E1E1E)
-                    : appColors.customBackground(context),
+                    : AppColors.background,
                 stateManagement: true,
                 decoration: NavBarDecoration(
                   border: Border(top: BorderSide(color: Colors.black12)),

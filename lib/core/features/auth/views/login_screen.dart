@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/features/auth/services/auth_services.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -194,13 +196,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                     print(user.role.name);
                                     if (user.isCompanyAdmin) {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (context) {
-                                          return Center(
-                                            child: Text(l10n.connectionSuccess),
-                                          );
-                                        },
+                                      final appColors = Provider.of<AppAdaptiveColors>(context, listen: false);
+                                      appColors.updateColorsForRole(user.isCompanyAdmin); // role: 'admin', 'reception', etc.
+
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        '/admin_home',
+                                        arguments: user,
                                       );
                                     } else if (user.role.name == "technicien" ||
                                         user.role.name == "receptionniste") {

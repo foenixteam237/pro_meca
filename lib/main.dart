@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/utils/app_router.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import 'package:pro_meca/core/constants/app_themes.dart';
 import 'package:pro_meca/core/providers/theme_provider.dart';
 import 'package:pro_meca/core/providers/locale_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +20,8 @@ Future<void> main() async {
     localeProvider.loadLocalePrefs(),
   ]);
   await dotenv.load(fileName: ".env");
+  final prefs = await SharedPreferences.getInstance();
+  final savedRole = prefs.getBool('isAdmin') ?? false; // valeur par défaut
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -27,6 +31,7 @@ Future<void> main() async {
         providers: [
           ChangeNotifierProvider(create: (_) => themeProvider),
           ChangeNotifierProvider(create: (_) => localeProvider),
+          ChangeNotifierProvider(create: (_) => AppAdaptiveColors()..updateColorsForRole(savedRole)),
         ],
         child: const MyApp(),
       ),

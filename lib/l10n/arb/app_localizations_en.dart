@@ -176,4 +176,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logout => 'Logout!';
+
+  @override
+  String get adminRole => 'Administrator';
+
+  @override
+  String get users => 'Users';
 }

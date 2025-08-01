@@ -19,7 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.profileImagePath,
     required this.name,
     required this.role,
-    this.nameColor = AppColors.primary,
+    required this.nameColor,
     this.roleColor = Colors.black45,
     this.appBarColor = AppColors.background,
     this.onInfoPressed,

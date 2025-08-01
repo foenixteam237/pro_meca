@@ -178,4 +178,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get logout => 'Déconnexion!';
+
+  @override
+  String get adminRole => 'Administrateur';
+
+  @override
+  String get users => 'Users';
 }

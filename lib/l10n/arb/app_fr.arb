@@ -100,6 +100,8 @@
   "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants",
   "modele": "Chassis",
   "property":"Propriétaire",
-  "logout": "Déconnexion!"
+  "logout": "Déconnexion!",
+  "adminRole": "Administrateur",
+  "users": "Utilisateurs",
 
 }

@@ -72,6 +72,7 @@ class ApiDioService {
     await prefs.remove('accessToken');
     await prefs.remove('refreshToken');
     await prefs.remove('user');
+    await prefs.remove('isAdmin');
   }
 
   Future<Response> authenticatedRequest(
