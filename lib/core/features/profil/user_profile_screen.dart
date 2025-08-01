@@ -128,9 +128,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Center(
       child: Column(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 50,
-            backgroundImage: AssetImage('assets/images/images.jpeg'),
+            child: Image.network(
+              "logo",
+              // headers: {'Authorization': 'Bearer $_accessToken'},
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: Colors.grey,
+                child: const Icon(Icons.directions_car),
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           Text(

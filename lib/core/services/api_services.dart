@@ -34,7 +34,7 @@ class ApiService {
 
     // 1. Vérifier si le refresh token est expiré
     if (refreshExpiresAt == null || currentTime >= refreshExpiresAt) {
-      await _logoutUser();
+      await logoutUser();
       throw Exception('Session expirée, veuillez vous reconnecter');
     }
 
@@ -60,11 +60,11 @@ class ApiService {
           );
           return true;
         } else {
-          await _logoutUser();
+          await logoutUser();
           throw Exception('Échec du rafraîchissement du token');
         }
       } catch (e) {
-        await _logoutUser();
+        await logoutUser();
         throw Exception('Erreur lors du rafraîchissement: ${e.toString()}');
       }
     }
@@ -72,7 +72,7 @@ class ApiService {
     return false;
   }
 
-  Future<void> _logoutUser() async {
+  Future<void> logoutUser() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     // Vous pouvez aussi ajouter une navigation vers l'écran de login ici
