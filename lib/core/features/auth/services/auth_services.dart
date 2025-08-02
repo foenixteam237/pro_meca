@@ -27,7 +27,7 @@ class AuthServices {
       '/auth/login',
       data: json.encode({
         'phone': identifier,
-        'mail': mail,
+        'email': mail,
         'password': password,
         'rememberMe': rememberMe,
       }),

@@ -34,7 +34,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get authLoginMessage =>
-      'Si vous n\'avez pas de compte, veuillez vous rapprocher de votre chef.';
+      'Si vous n\'avez pas de compte, veuillez vous rapprocher de votre Administrateur.';
 
   @override
   String get commonCancel => 'Annuler';
@@ -52,7 +52,55 @@ class AppLocalizationsFr extends AppLocalizations {
   String get errorsRequiredField => 'Ce champ est obligatoire';
 
   @override
-  String get errorsInvalidEmail => 'Email invalide';
+  String get errorsInvalidEmail => 'Veuillez entrer un email valide';
+
+  @override
+  String get authEmail => 'Adresse email';
+
+  @override
+  String get authPhone => 'Téléphone';
+
+  @override
+  String get emailRequired => 'L\'email est requis';
+
+  @override
+  String get phoneRequired => 'Le numéro de téléphone est requis';
+
+  @override
+  String get invalidPhone => 'Numéro de téléphone invalide';
+
+  @override
+  String get passwordRequired => 'Le mot de passe est requis';
+
+  @override
+  String get phoneFormatCM => 'Format: 9 chiffres (ex: 698765432)';
+
+  @override
+  String get phoneFormatGA => 'Format: 8 chiffres (ex: 06012345)';
+
+  @override
+  String get phoneFormatTD => 'Format: 8 chiffres (ex: 63012345)';
+
+  @override
+  String get phoneFormatCF => 'Format: 8 chiffres (ex: 70012345)';
+
+  @override
+  String get phoneFormatNG => 'Format: 10 chiffres (ex: 8012345678)';
+
+  @override
+  String get phoneFormatGQ => 'Format: 9 chiffres (ex: 222123456)';
+
+  @override
+  String get phoneFormatCO => 'Format: 10 chiffres (ex: 6012345678)';
+
+  @override
+  String get phoneFormatDefault => 'Entrez un numéro de téléphone valide';
+
+  @override
+  String get selectCountry => 'Sélectionner un pays';
+
+  @override
+  String get searchCountry => 'Rechercher un pays';
 
   @override
   String get completedVehicles => 'Véhicule terminé';

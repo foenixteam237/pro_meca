@@ -52,7 +52,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorsRequiredField => 'This field is required';
 
   @override
-  String get errorsInvalidEmail => 'Invalid email';
+  String get errorsInvalidEmail => 'Please enter a valid email';
+
+  @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authPhone => 'Phone';
+
+  @override
+  String get emailRequired => 'Email is required';
+
+  @override
+  String get phoneRequired => 'Phone number is required';
+
+  @override
+  String get invalidPhone => 'Invalid phone number';
+
+  @override
+  String get passwordRequired => 'Password is required';
+
+  @override
+  String get phoneFormatCM => 'Format: 9 digits (ex: 698765432)';
+
+  @override
+  String get phoneFormatGA => 'Format: 8 digits (ex: 06012345)';
+
+  @override
+  String get phoneFormatTD => 'Format: 8 digits (ex: 63012345)';
+
+  @override
+  String get phoneFormatCF => 'Format: 8 digits (ex: 70012345)';
+
+  @override
+  String get phoneFormatNG => 'Format: 10 digits (ex: 8012345678)';
+
+  @override
+  String get phoneFormatGQ => 'Format: 9 digits (ex: 222123456)';
+
+  @override
+  String get phoneFormatCO => 'Format: 10 digits (ex: 6012345678)';
+
+  @override
+  String get phoneFormatDefault => 'Enter a valid phone number';
+
+  @override
+  String get selectCountry => 'Select a country';
+
+  @override
+  String get searchCountry => 'Search for a country';
 
   @override
   String get completedVehicles => 'Completed Vehicles';

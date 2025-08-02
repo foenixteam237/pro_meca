@@ -57,10 +57,26 @@
   "@errorsRequiredField": {
     "description": "Required field error"
   },
-  "errorsInvalidEmail": "Invalid email",
+  "errorsInvalidEmail": "Please enter a valid email",
   "@errorsInvalidEmail": {
     "description": "Email validation error"
   },
+  "authEmail": "Email",
+  "authPhone": "Phone",
+  "emailRequired": "Email is required",
+  "phoneRequired": "Phone number is required",
+  "invalidPhone": "Invalid phone number",
+  "passwordRequired": "Password is required",
+  "phoneFormatCM": "Format: 9 digits (ex: 698765432)",
+  "phoneFormatGA": "Format: 8 digits (ex: 06012345)",
+  "phoneFormatTD": "Format: 8 digits (ex: 63012345)",
+  "phoneFormatCF": "Format: 8 digits (ex: 70012345)",
+  "phoneFormatNG": "Format: 10 digits (ex: 8012345678)",
+  "phoneFormatGQ": "Format: 9 digits (ex: 222123456)",
+  "phoneFormatCO": "Format: 10 digits (ex: 6012345678)",
+  "phoneFormatDefault": "Enter a valid phone number",
+  "selectCountry": "Select a country",
+  "searchCountry": "Search for a country",
   "completedVehicles": "Completed Vehicles",
   "ongoingVehicles": "Ongoing Vehicles",
   "repair": "Repair",

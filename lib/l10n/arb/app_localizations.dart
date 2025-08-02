@@ -185,8 +185,104 @@ abstract class AppLocalizations {
   /// Email validation error
   ///
   /// In en, this message translates to:
-  /// **'Invalid email'**
+  /// **'Please enter a valid email'**
   String get errorsInvalidEmail;
+
+  /// No description provided for @authEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get authEmail;
+
+  /// No description provided for @authPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get authPhone;
+
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email is required'**
+  String get emailRequired;
+
+  /// No description provided for @phoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required'**
+  String get phoneRequired;
+
+  /// No description provided for @invalidPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid phone number'**
+  String get invalidPhone;
+
+  /// No description provided for @passwordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get passwordRequired;
+
+  /// No description provided for @phoneFormatCM.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 9 digits (ex: 698765432)'**
+  String get phoneFormatCM;
+
+  /// No description provided for @phoneFormatGA.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 8 digits (ex: 06012345)'**
+  String get phoneFormatGA;
+
+  /// No description provided for @phoneFormatTD.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 8 digits (ex: 63012345)'**
+  String get phoneFormatTD;
+
+  /// No description provided for @phoneFormatCF.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 8 digits (ex: 70012345)'**
+  String get phoneFormatCF;
+
+  /// No description provided for @phoneFormatNG.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 10 digits (ex: 8012345678)'**
+  String get phoneFormatNG;
+
+  /// No description provided for @phoneFormatGQ.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 9 digits (ex: 222123456)'**
+  String get phoneFormatGQ;
+
+  /// No description provided for @phoneFormatCO.
+  ///
+  /// In en, this message translates to:
+  /// **'Format: 10 digits (ex: 6012345678)'**
+  String get phoneFormatCO;
+
+  /// No description provided for @phoneFormatDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid phone number'**
+  String get phoneFormatDefault;
+
+  /// No description provided for @selectCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a country'**
+  String get selectCountry;
+
+  /// No description provided for @searchCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a country'**
+  String get searchCountry;
 
   /// No description provided for @completedVehicles.
   ///

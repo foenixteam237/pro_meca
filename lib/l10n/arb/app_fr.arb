@@ -32,7 +32,7 @@
   "@authForgotPassword": {
     "description": "Lien pour réinitialiser le mot de passe"
   },
-  "authLoginMessage": "Si vous n'avez pas de compte, veuillez vous rapprocher de votre chef.",
+  "authLoginMessage": "Si vous n'avez pas de compte, veuillez vous rapprocher de votre Administrateur.",
   "@authLoginMessage": {
     "description": "Message d'information sous le formulaire"
   },
@@ -56,10 +56,26 @@
   "@errorsRequiredField": {
     "description": "Message d'erreur pour champ requis"
   },
-  "errorsInvalidEmail": "Email invalide",
+  "errorsInvalidEmail": "Veuillez entrer un email valide",
   "@errorsInvalidEmail": {
     "description": "Message d'erreur pour email invalide"
   },
+  "authEmail": "Adresse email",
+  "authPhone": "Téléphone",
+  "emailRequired": "L'email est requis",
+  "phoneRequired": "Le numéro de téléphone est requis",
+  "invalidPhone": "Numéro de téléphone invalide",
+  "passwordRequired": "Le mot de passe est requis",
+  "phoneFormatCM": "Format: 9 chiffres (ex: 698765432)",
+  "phoneFormatGA": "Format: 8 chiffres (ex: 06012345)",
+  "phoneFormatTD": "Format: 8 chiffres (ex: 63012345)",
+  "phoneFormatCF": "Format: 8 chiffres (ex: 70012345)",
+  "phoneFormatNG": "Format: 10 chiffres (ex: 8012345678)",
+  "phoneFormatGQ": "Format: 9 chiffres (ex: 222123456)",
+  "phoneFormatCO": "Format: 10 chiffres (ex: 6012345678)",
+  "phoneFormatDefault": "Entrez un numéro de téléphone valide",
+  "selectCountry": "Sélectionner un pays",
+  "searchCountry": "Rechercher un pays",
   "completedVehicles": "Véhicule terminé",
   "ongoingVehicles": "Véhicule en cours",
   "repair": "Réparation",

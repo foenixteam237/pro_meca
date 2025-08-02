@@ -14,7 +14,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color roleColor;
   final Color appBarColor;
   final VoidCallback? onInfoPressed;
-   CustomAppBar({
+  const CustomAppBar({
     super.key,
     required this.profileImagePath,
     required this.name,
@@ -96,8 +96,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 // Bouton d'information (taille responsive)
                 IconButton(
                   iconSize: screenWidth * 0.06, // 6% de la largeur
-                  icon: Icon(Icons.info_outline, color: nameColor),
-                  onPressed: onInfoPressed,
+                  icon: Icon(Icons.exit_to_app_outlined, color: nameColor),
+                  onPressed: () async {
+                    await ApiDioService().logoutUser();
+                    if (!context.mounted) return;
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
                 ),
               ],
             ),
