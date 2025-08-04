@@ -201,9 +201,9 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _redirectUserBasedOnRole(User user) {
+    final appColors = Provider.of<AppAdaptiveColors>(context, listen: false);
+    appColors.updateColorsForRole(user.isCompanyAdmin);
     if (user.isCompanyAdmin) {
-      final appColors = Provider.of<AppAdaptiveColors>(context, listen: false);
-      appColors.updateColorsForRole(user.isCompanyAdmin);
       Navigator.pushReplacementNamed(context, '/admin_home', arguments: user);
     } else if (user.role.name == "technicien" ||
         user.role.name == "receptionniste") {
@@ -286,10 +286,10 @@ class _LoginScreenState extends State<LoginScreen>
                         children: [
                           // Barre d'onglets
                           TabBar(
-                            padding: EdgeInsets.only(left: 10, right: 10),
+                            padding: EdgeInsets.only(left: 10, right: 10, bottom: 20),
                             controller: _tabController,
                             labelColor: AppColors.secondary,
-                            unselectedLabelColor: AppColors.primary,
+                            unselectedLabelColor: AppColors.background,
                             indicatorSize: TabBarIndicatorSize.label,
                             indicatorColor: AppColors.secondary,
                             tabs: [
@@ -355,7 +355,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   "$_selectedCountryCode  ${_getPhoneFormatHint()}",
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.blueGrey,
+                                    color: AppColors.background,
                                   ),
                                 ),
 
@@ -372,7 +372,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           .textTheme
                                           .titleSmall
                                           ?.copyWith(
-                                            color: AppColors.secondary,
+                                            color: AppColors.alert.withOpacity(0.7),
                                           ),
                                       textAlign: TextAlign.start,
                                     ),
@@ -409,8 +409,6 @@ class _LoginScreenState extends State<LoginScreen>
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide.none,
                             ),
-                            filled: true,
-                            fillColor: theme.inputDecorationTheme.fillColor,
                           ),
                         ),
                       ),

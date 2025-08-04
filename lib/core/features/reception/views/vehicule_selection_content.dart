@@ -3,6 +3,7 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/features/reception/services/reception_services.dart';
 import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import '../widgets/vehicule_inf_shimmer.dart';
@@ -21,7 +22,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
 
   List<Vehicle> vehicles = [];
   List<Vehicle> _filteredVehicle = [];
-
+  late String _accessToken;
   bool _isLoading = false;
   Timer? _debounce;
   @override
@@ -40,6 +41,8 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   }
 
   Future<void> _loadVehicles() async {
+    final pref = await SharedPreferences.getInstance();
+    _accessToken = pref.getString('accessToken') ?? '';
     setState(() => _isLoading = true);
     try {
       vehicles = await ReceptionServices().fetchVehicles(context);
@@ -197,7 +200,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: _filteredVehicle.map((vehicle) {
-                return VehicleInfoCard(vehicle: vehicle);
+                return VehicleInfoCard(vehicle: vehicle, accessToken: _accessToken);
               }).toList(),
             ),
         ],

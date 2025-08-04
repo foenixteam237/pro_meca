@@ -93,14 +93,21 @@ class ApiDioService {
     try {
       final response = await _dio
           .get('/ping')
-          .timeout(const Duration(seconds: 10));
-      return response.statusCode == 200 &&
-          response.data.toString().toLowerCase().contains('pong');
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        // Vérification directe si response.data est une chaîne
+        if (response.data is String) {
+          return response.data.toLowerCase().contains('pong');
+        }
+      }
+    } on DioException catch (dioError) {
+      // Gestion des erreurs spécifiques à Dio
+      print('Erreur de connexion : ${dioError.message}');
     } catch (e) {
-      return false;
+      print('Erreur inattendue : $e');
     }
+    return false;
   }
-
 
   Future<void> _saveAuthData({
     required String accessToken,
@@ -151,16 +158,19 @@ class ApiDioService {
     String userId,
     Map<String, dynamic> data,
   ) async {
+
+
     final accessToken = (await SharedPreferences.getInstance()).getString(
       'accessToken',
     );
     final response = await _dio.put(
-      '/users/$userId',
+      '/auth/$userId',
       data: json.encode(data),
       options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
     );
     if (response.statusCode == 200) {
-      final updatedUser = User.fromJson(response.data);
+      print(response.data['data']);
+      final updatedUser = User.fromUserJson(response.data['data']);
       final currentUser = await getSavedUser();
       if (currentUser != null && currentUser.id == updatedUser.id) {
         await _saveAuthData(

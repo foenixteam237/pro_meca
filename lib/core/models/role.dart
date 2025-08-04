@@ -4,7 +4,6 @@ class Role {
   final String companyId;
   Role({required this.id, required this.name, required this.companyId});
   factory Role.fromJson(Map<String, dynamic> json) {
-    print("i'm there role hm$json");
 
     return switch (json) {
       {'id': int id, 'name': String name, 'companyId': String companyId} =>

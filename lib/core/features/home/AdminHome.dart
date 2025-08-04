@@ -9,6 +9,7 @@ import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 
+import '../users/views/user_list_page.dart';
 import 'widgets/buildHomeContent.dart';
 import '../dashboard/widgets/dashboardTech.dart';
 
@@ -31,7 +32,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       VehicleDashboardPage(context: context),
       CategoriesPage(),
-      Center(child: Text("Ca vient"),),
+      UserListScreen(),
       buildHomeContent(context),
       ProfileScreen(con: context),
     ];

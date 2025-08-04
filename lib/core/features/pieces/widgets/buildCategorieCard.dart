@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../models/piecesCategorie.dart';
 
@@ -10,17 +9,12 @@ class CategoryCard extends StatelessWidget {
   final String? getToken;
   const CategoryCard({super.key, required this.category, this.getToken});
 
-
   @override
   Widget build(BuildContext context) {
-
-
-
     final height = MediaQuery.of(context).size.height;
 
     return GestureDetector(
-      onTap:  () {
-      },
+      onTap: () {},
       child: Container(
         height: double.infinity,
         decoration: BoxDecoration(
@@ -35,7 +29,7 @@ class CategoryCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
               ),
-              child: Image.network (
+              child: Image.network(
                 category.logo,
                 headers: {'Authorization': 'Bearer $getToken'},
                 height: Responsive.responsiveValue(

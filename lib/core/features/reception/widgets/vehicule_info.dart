@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VehicleInfoCard extends StatelessWidget {
   final Vehicle vehicle;
-
-  const VehicleInfoCard({super.key, required this.vehicle});
+  final String accessToken;
+  const VehicleInfoCard({super.key, required this.vehicle, required this.accessToken});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class VehicleInfoCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),
               ),
-              child: Image.asset('assets/images/v1.jpg', fit: BoxFit.cover),
+              child: _buildImage(vehicle.logo)
             ),
           ),
           SizedBox(width: isMobile ? 10 : 14),
@@ -78,5 +79,16 @@ class VehicleInfoCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildImage(String? imageUrl) {
+    if(imageUrl != null){
+      return Image.network(imageUrl, headers:{'Authorization': 'Bearer $accessToken'},
+        fit: BoxFit.cover,
+      );
+    }else{
+      return Image.asset('assets/images/v1.jpg', fit: BoxFit.cover);
+    }
+
   }
 }

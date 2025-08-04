@@ -1,59 +1,93 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/constants/app_styles.dart';
 
 class EditableTextField extends StatefulWidget {
-  final String value;
-  const EditableTextField({super.key, required this.value});
+  final TextEditingController controller;
+  final bool enabled;
+  final String? hintText;
+  final ValueChanged<String>? onSaved;
+
+  const EditableTextField({
+    super.key,
+    required this.controller,
+    this.enabled = false,
+    this.hintText,
+    this.onSaved,
+  });
 
   @override
   State<EditableTextField> createState() => _EditableTextFieldState();
 }
 
 class _EditableTextFieldState extends State<EditableTextField> {
-  late bool _isEditable;
-  late TextEditingController _controller;
+  bool _isEditing = false;
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
-    _isEditable = false;
-    _controller = TextEditingController(text: widget.value);
+    _focusNode = FocusNode();
+    _focusNode.addListener(_handleFocusChange);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus && _isEditing) {
+      _saveChanges();
+    }
+  }
+
+  void _toggleEditing() {
+    setState(() {
+      _isEditing = !_isEditing;
+      if (_isEditing) {
+        _focusNode.requestFocus();
+      } else {
+        _saveChanges();
+      }
+    });
+  }
+
+  void _saveChanges() {
+    FocusScope.of(context).unfocus();
+    widget.onSaved?.call(widget.controller.text);
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      enabled: _isEditable, // Contrôle l'éditabilité
-      decoration: InputDecoration(
-        hintText: widget.value,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        suffixIcon: IconButton(
-          icon: Icon(_isEditable ? Icons.check : Icons.edit),
-          onPressed: () {
-            setState(() {
-              _isEditable = !_isEditable;
-              if (!_isEditable) {
-                // Sauvegarder la valeur quand on quitte le mode édition
-                print('Valeur sauvegardée: ${_controller.text}');
-              }
-            });
-          },
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: widget.controller,
+            focusNode: _focusNode,
+            enabled: _isEditing && widget.enabled,
+            decoration: InputDecoration(
+              hintText: widget.hintText,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+            ),
+            style: TextStyle(
+              color: widget.enabled ? Colors.black : Theme.of(context).textTheme.bodyMedium?.color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
-      ),
-      style: TextStyle(
-        color: _isEditable
-            ? Colors.black12
-            : AppStyles.titleMedium(context).color,
-      ),
+        if (widget.enabled)
+          IconButton(
+            icon: Icon(_isEditing ? Icons.check : Icons.edit),
+            onPressed: _toggleEditing,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+      ],
     );
   }
 }
