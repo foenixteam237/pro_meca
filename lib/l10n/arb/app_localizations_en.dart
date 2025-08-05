@@ -230,4 +230,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get users => 'Users';
+
+  @override
+  String get lastLogin => 'Last Login';
 }

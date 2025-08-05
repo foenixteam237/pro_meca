@@ -47,7 +47,7 @@ class ApiDioService {
         );
         if (response.statusCode == 200) {
           final responseData = response.data;
-          await _saveAuthData(
+          await saveAuthData(
             accessToken: responseData['accessToken'],
             refreshToken: responseData['refreshToken'],
             refreshExpiresAt: responseData['refreshExpiresAt'],
@@ -109,7 +109,7 @@ class ApiDioService {
     return false;
   }
 
-  Future<void> _saveAuthData({
+  Future<void> saveAuthData({
     required String accessToken,
     required String refreshToken,
     required int refreshExpiresAt,
@@ -134,7 +134,7 @@ class ApiDioService {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
     if (userData != null) {
-      return User.fromJson(json.decode(userData));
+      return User.fromUserJson(json.decode(userData));
     }
     return null;
   }
@@ -151,48 +151,6 @@ class ApiDioService {
       return User.fromJson(response.data);
     } else {
       throw Exception('Failed to load user profile');
-    }
-  }
-
-  Future<User> updateUserProfile(
-    String userId,
-    Map<String, dynamic> data,
-  ) async {
-
-
-    final accessToken = (await SharedPreferences.getInstance()).getString(
-      'accessToken',
-    );
-    final response = await _dio.put(
-      '/auth/$userId',
-      data: json.encode(data),
-      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-    );
-    if (response.statusCode == 200) {
-      print(response.data['data']);
-      final updatedUser = User.fromUserJson(response.data['data']);
-      final currentUser = await getSavedUser();
-      if (currentUser != null && currentUser.id == updatedUser.id) {
-        await _saveAuthData(
-          accessToken: accessToken!,
-          refreshToken: (await SharedPreferences.getInstance()).getString(
-            'refreshToken',
-          )!,
-          refreshExpiresAt: (await SharedPreferences.getInstance()).getInt(
-            'refreshExpiresAt',
-          )!,
-          expiresAt: (await SharedPreferences.getInstance()).getInt(
-            'expiresAt',
-          )!,
-          user: updatedUser,
-          rememberMe:
-              (await SharedPreferences.getInstance()).getBool('remember_me') ??
-              false,
-        );
-      }
-      return updatedUser;
-    } else {
-      throw Exception('Failed to update profile');
     }
   }
 

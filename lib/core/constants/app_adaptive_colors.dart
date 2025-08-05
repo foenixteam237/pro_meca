@@ -6,7 +6,7 @@ class AppAdaptiveColors extends ChangeNotifier {
 
   AppAdaptiveColors() {
     _primary = const Color.fromARGB(255, 98, 173, 101); // par défaut
-    _secondary = const Color(0xFF2E5AAC);
+    _secondary = const Color(0xFF6871D7);
   }
 
   Color get primary => _primary;
@@ -14,11 +14,11 @@ class AppAdaptiveColors extends ChangeNotifier {
 
   void updateColorsForRole(bool role) {
     if (role) {
-      _primary = const Color(0xFF2E5AAC); // Bleu pour admin
+      _primary = const Color(0xFF6871D7); // Bleu pour admin
       _secondary = const Color.fromARGB(255, 98, 173, 101); // Vert secondaire
     } else {
       _primary = const Color.fromARGB(255, 98, 173, 101); // Vert
-      _secondary = const Color(0xFF2E5AAC); // Bleu
+      _secondary = const Color(0xFF6871D7); // Bleu
     }
     notifyListeners();
   }

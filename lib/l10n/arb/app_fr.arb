@@ -118,5 +118,6 @@
   "property": "Propriétaire",
   "logout": "Déconnexion!",
   "adminRole": "Administrateur",
-  "users": "Utilisateurs"
+  "users": "Utilisateurs",
+  "lastLogin": "Dernière connexion"
 }

@@ -119,5 +119,6 @@
   "property": "Property",
   "logout": "Logout!",
   "adminRole": "Administrator",
-  "users": "Users"
+  "users": "Users",
+  "lastLogin": "Last Login"
 }

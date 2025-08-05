@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../models/user.dart';
 import '../widgets/UserListShimmer.dart';
+import 'add_user_screen.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -177,7 +179,11 @@ class _UserListScreenState extends State<UserListScreen> {
                         ),
                         IconButton(
                           onPressed: () {
-                            // TODO: Ajouter un utilisateur
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AddUserScreen()),
+                            );
                           },
                           icon: const Icon(Icons.add_circle, color: Colors.blue),
                           tooltip: "Ajouter un utilisateur",
@@ -199,10 +205,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     itemBuilder: (context, index) {
                       final user = filteredUsers[index];
                       return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: AssetImage("assets/images/v1.jpg"),
-                          radius: 24,
-                        ),
+                        leading: _buildImage(user.logo),
                         title: Text(
                           user.name,
                           style: AppStyles.bodyMedium(context).copyWith(
@@ -211,8 +214,11 @@ class _UserListScreenState extends State<UserListScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          user.role.name,
-                          style: AppStyles.bodySmall(context),
+                          user.role.name.toUpperCase(),
+                          style: AppStyles.bodySmall(context).copyWith(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w100
+                          ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 0),
                         onTap: () {
@@ -231,6 +237,32 @@ class _UserListScreenState extends State<UserListScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildImage(String? image){
+    if(image == null){
+      return  CircleAvatar(
+        backgroundImage: AssetImage("assets/images/v1.jpg"),
+        radius: 24,
+      );
+    }else{
+      return Container(
+        width: Responsive.responsiveValue(context, mobile: 50, tablet: 80),
+        height:Responsive.responsiveValue(context, mobile: 50, tablet:  80),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+        ),
+          child: ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: image,
+              fit: BoxFit.cover,
+              httpHeaders: {'Authorization': 'Bearer $_accessToken'},
+              placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) => Icon(Icons.person),
+            ),
+          )
+      );
+    }
   }
 }
 

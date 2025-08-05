@@ -75,7 +75,7 @@ class _EditableTextFieldState extends State<EditableTextField> {
               contentPadding: const EdgeInsets.symmetric(vertical: 8),
             ),
             style: TextStyle(
-              color: widget.enabled ? Colors.black : Theme.of(context).textTheme.bodyMedium?.color,
+              color: widget.enabled ? Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7) : Theme.of(context).textTheme.bodyMedium?.color,
               fontWeight: FontWeight.w500,
             ),
           ),

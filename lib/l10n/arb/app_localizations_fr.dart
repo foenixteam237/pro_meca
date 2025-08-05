@@ -232,4 +232,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get users => 'Utilisateurs';
+
+  @override
+  String get lastLogin => 'Dernière connexion';
 }
