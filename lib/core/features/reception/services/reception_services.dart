@@ -113,11 +113,11 @@ class ReceptionServices {
 
   //##################################"-RECUPERATION DE LA LISTE DES VEHICULE-"#########################################
 
-  Future<List<Vehicle>> fetchVehicles(BuildContext context) async {
+  Future<List<Vehicle>> fetchVehicles(BuildContext context, String plate) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
-          '/vehicles',
+          '/vehicles/license-plate/$plate',
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );

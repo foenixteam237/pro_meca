@@ -119,6 +119,7 @@
   "logout": "Déconnexion!",
   "adminRole": "Administrateur",
   "users": "Utilisateurs",
+  "lastLogin": "Dernière connexion",
   "resetPasswordSent": "Demande envoyée. Vérifiez votre administrateur pour le code.",
   "resetPasswordError": "Erreur lors de l'envoi de la demande",
   "resetPasswordEmailPrompt": "Entrez votre email pour réinitialiser le mot de passe",

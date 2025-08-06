@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:pro_meca/core/models/company.dart';
 import 'package:pro_meca/core/models/role.dart';
 
@@ -138,7 +141,29 @@ class User {
       'companyId': companyId,
       'company': company?.toJson(),
       'role': role.toJson(),
-      'roleId': roleId,
+      'roleId': role.id,
+      'lastLogin': lastLogin,
+    };
+  }
+  Future<Map<String, dynamic>> toUserJson(File? logo, String password) async {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'phone': phone,
+      'password': password,
+      'isCompanyAdmin': isCompanyAdmin,
+      'logo': logo != null
+          ? await MultipartFile.fromFile(logo.path)
+        : null,
+      'bio': bio,
+      'managerId': managerId,
+      'createdAt': DateTime.now().toIso8601String(),
+      'updatedAt': DateTime.now().toIso8601String(),
+      'companyId': companyId,
+      'company': company?.toJson(),
+      'role': role.toRoleJson(companyId!),
+      'roleId': role.id,
       'lastLogin': lastLogin,
     };
   }

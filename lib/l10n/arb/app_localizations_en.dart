@@ -232,6 +232,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get users => 'Users';
 
   @override
+  String get lastLogin => 'Last Login';
+
+  @override
   String get resetPasswordSent =>
       'Request sent. Check with your administrator for the code.';
 

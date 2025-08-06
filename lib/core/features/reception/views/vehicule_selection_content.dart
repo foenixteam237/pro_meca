@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/features/reception/services/reception_services.dart';
-import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
-import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import '../../../models/vehicle.dart';
 import '../widgets/vehicule_inf_shimmer.dart';
 import '../widgets/vehicule_info.dart';
-import 'dart:async';
 
 class VehicleSelectionContent extends StatefulWidget {
   const VehicleSelectionContent({super.key});
@@ -20,106 +17,63 @@ class VehicleSelectionContent extends StatefulWidget {
 class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   final TextEditingController _searchController = TextEditingController();
 
-  List<Vehicle> vehicles = [];
-  List<Vehicle> _filteredVehicle = [];
+  List<Vehicle> _vehicles = [];
   late String _accessToken;
   bool _isLoading = false;
-  Timer? _debounce;
+  bool _hasSearched = false;
+
   @override
   void initState() {
     super.initState();
-    _loadVehicles();
-    _searchController.addListener(_onSearchChanged);
+    _initAccessToken();
   }
 
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _loadVehicles() async {
+  Future<void> _initAccessToken() async {
     final pref = await SharedPreferences.getInstance();
     _accessToken = pref.getString('accessToken') ?? '';
-    setState(() => _isLoading = true);
+  }
+
+  Future<void> _searchVehicles() async {
+    final plate = _searchController.text.trim();
+    if (plate.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez entrer une immatriculation.')),
+      );
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _hasSearched = true;
+      _vehicles = [];
+    });
     try {
-      vehicles = await ReceptionServices().fetchVehicles(context);
-
-      _filteredVehicle = vehicles;
-
+      // Cette méthode doit retourner une liste de véhicules correspondant à la recherche
+      List<Vehicle> vehicles = await ReceptionServices().fetchVehicles(context, plate);
+      setState(() => _vehicles = vehicles);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
+      setState(() => _vehicles = []);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: ${e.toString()}')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  void _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _searchVehicles(_searchController.text);
-    });
-  }
-
-  void _searchVehicles(String query) {
-    final lowerCaseQuery = query.toLowerCase();
-
-    _filteredVehicle = vehicles.where((vehicle) {
-      final plate = vehicle.licensePlate.toString().toLowerCase();
-      final propertyName = vehicle.client?.firstName.toString().toLowerCase();
-      final propertyLast = vehicle.client?.lastName.toString().toLowerCase();
-
-      return plate.contains(lowerCaseQuery) ||
-          propertyName!.contains(lowerCaseQuery) ||
-          propertyLast!.contains(lowerCaseQuery);
-    }).toList();
-    setState(() {});
-  }
-
-  void _showAddVehicleDialog() {
-    String selectedBrand = '';
-    String selectedModel = '';
-    final clientInfoFormKey = GlobalKey<FormState>();
-    final vehicleDetailsFormKey = GlobalKey<FormState>();
-
-    WoltModalSheet.show(
-      context: context,
-      pageListBuilder: (modalContext) => [
-        // Étape 1: Choix de la marque
-        WoltModalSheetPage(
-          topBarTitle: const Text('Choisir la marque'),
-          trailingNavBarWidget: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(modalContext),
-          ),
-          child: BrandPickerWidget(
-            onBrandSelected: (brand) {
-              selectedBrand = brand;
-            },
-          ),
-        ),
-      ],
-      modalTypeBuilder: (context) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        return screenWidth > 700
-            ? WoltModalType.dialog()
-            : WoltModalType.dialog();
-      },
-    );
+  void _goToAddVehicle() {
+    Navigator.pushReplacementNamed(context, "/brand_picker");
   }
 
   @override
   Widget build(BuildContext context) {
-    print('Step 4 building ');
+    final isDesktop = Responsive.isDesktop(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Champ de recherche immatriculation
           Row(
             children: [
               Expanded(
@@ -127,15 +81,19 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                   padding: const EdgeInsets.all(8.0),
                   child: TextField(
                     controller: _searchController,
+                    onSubmitted: (_) => _searchVehicles(),
                     decoration: InputDecoration(
-                      hintText: 'Rechercher un véhicule...',
+                      hintText: 'Entrer l\'immatriculation du véhicule...',
                       hintStyle: TextStyle(color: Theme.of(context).hintColor),
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.clear, color: Colors.grey),
                         onPressed: () {
                           _searchController.clear();
-                          _searchVehicles('');
+                          setState(() {
+                            _vehicles = [];
+                            _hasSearched = false;
+                          });
                         },
                       ),
                       border: OutlineInputBorder(
@@ -147,6 +105,19 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                 ),
               ),
               const SizedBox(width: 2),
+              IconButton(
+                icon: Icon(
+                  Icons.search,
+                  color: AppColors.primary,
+                  size: Responsive.responsiveValue(
+                    context,
+                    mobile: MediaQuery.sizeOf(context).width * 0.1,
+                    tablet: MediaQuery.sizeOf(context).width * 0.2,
+                    desktop: MediaQuery.sizeOf(context).width * 0.3,
+                  ),
+                ),
+                onPressed: _isLoading ? null : _searchVehicles,
+              ),
               IconButton(
                 icon: Icon(
                   Icons.add,
@@ -164,45 +135,52 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                   Navigator.pushReplacementNamed(context, "/brand_picker");
                 },
               ),
+
             ],
           ),
           SizedBox(
             height: Responsive.responsiveValue(context, mobile: 0, tablet: 10),
           ),
           if (_isLoading)
-            Column(
-              children: List.generate(
-                6, // nombre de shimmer cards à afficher
-                    (index) => const VehicleInfoCardShimmer(),
-              ),
-            )
-          else if (_filteredVehicle.isEmpty)
+            const VehicleInfoCardShimmer()
+          else if (!_hasSearched)
             Column(
               children: [
-                const Icon(Icons.car_repair, size: 48, color: Colors.grey),
+                const SizedBox(height: 32),
+                Icon(Icons.car_repair, size: 56, color: Colors.grey),
                 const SizedBox(height: 16),
                 Text(
-                  _searchController.text.isEmpty
-                      ? 'Aucun véhicule enregistré'
-                      : 'Aucun véhicule trouvé',
+                  "Veuillez entrer une immatriculation pour rechercher un véhicule.",
                   style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: ()=>
-                      Navigator.pushReplacementNamed(context, "/brand_picker"),
-                  child: const Text('Ajouter un nouveau véhicule'),
+                  textAlign: TextAlign.center,
                 ),
               ],
             )
-          else
-            ListView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: _filteredVehicle.map((vehicle) {
-                return VehicleInfoCard(vehicle: vehicle, accessToken: _accessToken);
-              }).toList(),
-            ),
+          else if (_vehicles.isEmpty)
+              Column(
+                children: [
+                  const Icon(Icons.directions_car_filled, size: 48, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Aucun véhicule trouvé',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _goToAddVehicle,
+                    child: const Text('Ajouter un nouveau véhicule'),
+                  ),
+                ],
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _vehicles.length,
+                itemBuilder: (context, index) {
+                  return VehicleInfoCard(vehicle: _vehicles[index], accessToken: _accessToken);
+                },
+              ),
         ],
       ),
     );

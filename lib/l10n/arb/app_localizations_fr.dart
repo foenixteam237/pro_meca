@@ -234,6 +234,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get users => 'Utilisateurs';
 
   @override
+  String get lastLogin => 'Dernière connexion';
+
+  @override
   String get resetPasswordSent =>
       'Demande envoyée. Vérifiez votre administrateur pour le code.';
 

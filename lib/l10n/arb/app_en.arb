@@ -120,6 +120,7 @@
   "logout": "Logout!",
   "adminRole": "Administrator",
   "users": "Users",
+  "lastLogin": "Last Login",
   "resetPasswordSent": "Request sent. Check with your administrator for the code.",
   "resetPasswordError": "Error sending request",
   "resetPasswordEmailPrompt": "Enter your email to reset password",

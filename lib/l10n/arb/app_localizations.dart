@@ -542,6 +542,12 @@ abstract class AppLocalizations {
   /// **'Users'**
   String get users;
 
+  /// No description provided for @lastLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Login'**
+  String get lastLogin;
+
   /// No description provided for @resetPasswordSent.
   ///
   /// In en, this message translates to:
