@@ -55,6 +55,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorsInvalidEmail => 'Please enter a valid email';
 
   @override
+  String get passwordRequirementsError =>
+      'Password must be at least 6 alphanumeric characters long';
+
+  @override
   String get authEmail => 'Email';
 
   @override

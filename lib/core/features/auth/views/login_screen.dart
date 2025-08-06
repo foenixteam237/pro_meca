@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _tabController.index = 1;
+    _tabController.index = 0;
 
     // Pré-remplissage pour l'environnement de développement
     if (dotenv.env["FLUTTER_ENV"] == "dev") {
@@ -121,8 +121,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _handleLogin() async {
-    String email = '';
-    String identifier = '';
+    String? email;
+    String? identifier;
 
     if (_tabController.index == 0) {
       // Mode email
@@ -151,29 +151,43 @@ class _LoginScreenState extends State<LoginScreen>
       );
       return;
     }
-
-    setState(() => _isLoading = true);
-
-    try {
-      Map<String, dynamic> response = await AuthServices().authenticateUser(
-        identifier: identifier,
-        mail: email,
-        password: _passwordController.text,
-        rememberMe: _isChecked,
-      );
-
-      User user = User.fromJson(response['data']['user']);
-      _redirectUserBasedOnRole(user);
-    } catch (e) {
+    if (_passwordController.text.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).authLoginFailed),
+          content: Text(AppLocalizations.of(context).passwordRequirementsError),
           backgroundColor: AppColors.alert,
         ),
       );
-    } finally {
-      setState(() => _isLoading = false);
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    Map<String, dynamic> response = await AuthServices().authenticateUser(
+      phone: identifier,
+      email: email,
+      password: _passwordController.text,
+      rememberMe: _isChecked,
+    );
+
+    if (!response['success']) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? AppLocalizations.of(context).authLoginFailed,
+          ),
+          backgroundColor: AppColors.alert,
+        ),
+      );
+      _passwordController.text = '';
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    User user = User.fromJson(response['data']['user']);
+    _redirectUserBasedOnRole(user);
+    setState(() => _isLoading = false);
   }
 
   void _redirectUserBasedOnRole(User user) {

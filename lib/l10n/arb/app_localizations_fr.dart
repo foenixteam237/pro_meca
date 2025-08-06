@@ -55,6 +55,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get errorsInvalidEmail => 'Veuillez entrer un email valide';
 
   @override
+  String get passwordRequirementsError =>
+      'Le mot de passe doit contenir au moins 6 caractères alphanumériques';
+
+  @override
   String get authEmail => 'Adresse email';
 
   @override

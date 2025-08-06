@@ -61,6 +61,10 @@
   "@errorsInvalidEmail": {
     "description": "Email validation error"
   },
+  "passwordRequirementsError": "Password must be at least 6 alphanumeric characters long",
+  "@passwordRequirementsError": {
+    "description": "Information on password requirements"
+  },
   "authEmail": "Email",
   "authPhone": "Phone",
   "emailRequired": "Email is required",

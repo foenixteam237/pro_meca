@@ -199,7 +199,8 @@ class ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 AppLocalizations.of(context).eitherEmailOrPhonesRequired,
               )
             ? AppLocalizations.of(context).eitherEmailOrPhonesRequired
-            : AppLocalizations.of(context).resetPasswordError;
+            : e.toString();
+        // : AppLocalizations.of(context).resetPasswordError;
       });
     } finally {
       setState(() => _isLoading = false);
@@ -590,8 +591,9 @@ class _VerificationCodeDialogState extends State<VerificationCodeDialog> {
       );
     } catch (e) {
       setState(
-        () =>
-            _errorMessage = AppLocalizations.of(context).verificationCodeFailed,
+        () => _errorMessage = e.toString().isNotEmpty
+            ? e.toString()
+            : AppLocalizations.of(context).verificationCodeFailed,
       );
     } finally {
       setState(() => _isLoading = false);
@@ -616,6 +618,16 @@ class _VerificationCodeDialogState extends State<VerificationCodeDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).passwordRequired),
+          backgroundColor: AppColors.alert,
+        ),
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).passwordRequirementsError),
           backgroundColor: AppColors.alert,
         ),
       );

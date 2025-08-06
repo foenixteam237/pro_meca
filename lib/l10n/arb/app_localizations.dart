@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'Please enter a valid email'**
   String get errorsInvalidEmail;
 
+  /// Information on password requirements
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 alphanumeric characters long'**
+  String get passwordRequirementsError;
+
   /// No description provided for @authEmail.
   ///
   /// In en, this message translates to:

@@ -18,36 +18,65 @@ class AuthServices {
           sendTimeout: const Duration(seconds: 10),
         ),
       );
-
   Future<Map<String, dynamic>> authenticateUser({
-    required String identifier,
+    required String? phone,
     required String password,
-    required String? mail,
+    required String? email,
     bool rememberMe = false,
   }) async {
-    final response = await _dio.post(
-      '/auth/login',
-      data: json.encode({
-        'phone': identifier,
-        'email': mail,
-        'password': password,
-        'rememberMe': rememberMe,
-      }),
-    );
-    if (response.statusCode == 200) {
-      final responseData = response.data;
-      final data = Data.fromJson(responseData['data']);
-      await _saveAuthData(
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        refreshExpiresAt: data.refreshExpiresAt,
-        expiresAt: data.expiresAt,
-        user: data.user,
-        rememberMe: rememberMe,
-      );
-      return responseData;
-    } else {
-      throw Exception('Échec de l\'authentification : ${response.data}');
+    try {
+      final Map<String, String> data = {};
+      if (email != null) {
+        data['email'] = email;
+      } else if (phone != null) {
+        data['phone'] = phone;
+      } else {
+        throw Exception('Either email or phone must be provided');
+      }
+      data['password'] = password;
+
+      final response = await _dio.post('/auth/login', data: data);
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        final data = Data.fromJson(responseData['data']);
+        await _saveAuthData(
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          refreshExpiresAt: data.refreshExpiresAt,
+          expiresAt: data.expiresAt,
+          user: data.user,
+          rememberMe: rememberMe,
+        );
+        return responseData;
+      } else {
+        // extraire le message d'erreur
+        final dynamic errorData = response.data;
+        String serverMessage = 'Échec de l\'authentification';
+
+        if (errorData is Map<String, dynamic>) {
+          serverMessage = errorData['message']?.toString() ?? serverMessage;
+        }
+
+        return {"success": false, "message": serverMessage};
+      }
+    } catch (e) {
+      // Gestion améliorée des erreurs Dio
+      String errorMessage = 'Erreur inconnue';
+
+      if (e is DioException) {
+        if (e.response?.data is Map<String, dynamic>) {
+          errorMessage =
+              e.response!.data['message']?.toString() ?? 'Erreur inconnue';
+        } else {
+          errorMessage = e.message ?? 'Erreur réseau';
+        }
+      } else if (e is Exception) {
+        errorMessage = e.toString();
+      }
+
+      print(errorMessage);
+      return {"success": false, "message": errorMessage};
     }
   }
 
@@ -95,6 +124,13 @@ class AuthServices {
         throw Exception('Failed to send reset request');
       }
     } catch (e) {
+      if (e is DioException) {
+        if (e.response?.data is Map<String, dynamic>) {
+          throw (e.response!.data['message']?.toString() ?? 'Erreur inconnue');
+        } else {
+          throw (e.message ?? 'Erreur réseau');
+        }
+      }
       throw Exception('Password reset request failed: ${e.toString()}');
     }
   }
@@ -126,6 +162,13 @@ class AuthServices {
 
       return response.data;
     } catch (e) {
+      if (e is DioException) {
+        if (e.response?.data is Map<String, dynamic>) {
+          throw (e.response!.data['message']?.toString() ?? 'Erreur inconnue');
+        } else {
+          throw (e.message ?? 'Erreur réseau');
+        }
+      }
       throw Exception('Verification failed: ${e.toString()}');
     }
   }
@@ -148,6 +191,13 @@ class AuthServices {
         throw Exception('Reset password failed');
       }
     } catch (e) {
+      if (e is DioException) {
+        if (e.response?.data is Map<String, dynamic>) {
+          throw (e.response!.data['message']?.toString() ?? 'Erreur inconnue');
+        } else {
+          throw (e.message ?? 'Erreur réseau');
+        }
+      }
       throw Exception('Password reset failed: ${e.toString()}');
     }
   }

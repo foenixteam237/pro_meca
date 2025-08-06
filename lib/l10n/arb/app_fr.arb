@@ -60,6 +60,10 @@
   "@errorsInvalidEmail": {
     "description": "Message d'erreur pour email invalide"
   },
+  "passwordRequirementsError": "Le mot de passe doit contenir au moins 6 caractères alphanumériques",
+  "@passwordRequirementsError": {
+    "description": "Message d'erreur pour les exigences de mot de passe"
+  },
   "authEmail": "Adresse email",
   "authPhone": "Téléphone",
   "emailRequired": "L'email est requis",
