@@ -230,4 +230,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get users => 'Users';
+
+  @override
+  String get resetPasswordSent =>
+      'Request sent. Check with your administrator for the code.';
+
+  @override
+  String get resetPasswordError => 'Error sending request';
+
+  @override
+  String get resetPasswordEmailPrompt => 'Enter your email to reset password';
+
+  @override
+  String get resetPasswordPhonePrompt =>
+      'Enter your number and your administrator\'s number';
+
+  @override
+  String get eitherEmailOrPhonesRequired =>
+      'Either email or phones must be provided';
+
+  @override
+  String get verificationCodeTitle => 'Verification Code';
+
+  @override
+  String get verificationCodeSentEmail =>
+      'A code has been sent to your administrator. Enter it here:';
+
+  @override
+  String get verificationCodeSentAdminPhone =>
+      'A code has been sent to your administrator. Enter it here:';
+
+  @override
+  String get verificationCodeInvalid => 'Code must be 6 characters';
+
+  @override
+  String get verificationCodeFailed => 'Invalid code. Please try again';
+
+  @override
+  String get verificationCodeSuccess => 'Code verified successfully!';
+
+  @override
+  String get verify => 'Verify';
+
+  @override
+  String get userPhoneNumber => 'Your phone number';
+
+  @override
+  String get adminPhoneNumber => 'Admin phone number';
+
+  @override
+  String get adminPhoneHint => 'Your administrator\'s number';
+
+  @override
+  String get bothPhonesRequired => 'Both phone numbers are required';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get userPhoneInvalid => 'User phone number is invalid';
+
+  @override
+  String get adminPhoneInvalid => 'Admin phone number is invalid';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get resetPasswordSucces => 'Password reset successfully';
 }

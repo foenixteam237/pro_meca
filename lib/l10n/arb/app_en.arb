@@ -119,5 +119,33 @@
   "property": "Property",
   "logout": "Logout!",
   "adminRole": "Administrator",
-  "users": "Users"
+  "users": "Users",
+  "resetPasswordSent": "Request sent. Check with your administrator for the code.",
+  "resetPasswordError": "Error sending request",
+  "resetPasswordEmailPrompt": "Enter your email to reset password",
+  "resetPasswordPhonePrompt": "Enter your number and your administrator's number",
+  "eitherEmailOrPhonesRequired": "Either email or phones must be provided",
+  "verificationCodeTitle": "Verification Code",
+  "verificationCodeSentEmail": "A code has been sent to your administrator. Enter it here:",
+  "verificationCodeSentAdminPhone": "A code has been sent to your administrator. Enter it here:",
+  "verificationCodeInvalid": "Code must be 6 characters",
+  "verificationCodeFailed": "Invalid code. Please try again",
+  "verificationCodeSuccess": "Code verified successfully!",
+  "verify": "Verify",
+  "userPhoneNumber": "Your phone number",
+  "adminPhoneNumber": "Admin phone number",
+  "adminPhoneHint": "Your administrator's number",
+  "bothPhonesRequired": "Both phone numbers are required",
+  "submit": "Submit",
+  "cancel": "Cancel",
+  "userPhoneInvalid": "User phone number is invalid",
+  "adminPhoneInvalid": "Admin phone number is invalid",
+  "newPassword": "New password",
+  "@newPassword": {
+    "description": "New password input label"
+  },
+  "resetPasswordSucces": "Password reset successfully",
+  "@resetPasswordSucces": {
+    "description": "Information reset password has been successful"
+  }
 }

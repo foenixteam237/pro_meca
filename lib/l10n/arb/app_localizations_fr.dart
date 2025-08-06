@@ -232,4 +232,76 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get users => 'Utilisateurs';
+
+  @override
+  String get resetPasswordSent =>
+      'Demande envoyée. Vérifiez votre administrateur pour le code.';
+
+  @override
+  String get resetPasswordError => 'Erreur lors de l\'envoi de la demande';
+
+  @override
+  String get resetPasswordEmailPrompt =>
+      'Entrez votre email pour réinitialiser le mot de passe';
+
+  @override
+  String get resetPasswordPhonePrompt =>
+      'Entrez votre numéro et celui de votre administrateur';
+
+  @override
+  String get eitherEmailOrPhonesRequired =>
+      'Email ou numéros de téléphone manquants';
+
+  @override
+  String get verificationCodeTitle => 'Code de vérification';
+
+  @override
+  String get verificationCodeSentEmail =>
+      'Un code a été envoyé à votre administrateur. Entrez-le ici:';
+
+  @override
+  String get verificationCodeSentAdminPhone =>
+      'Un code a été envoyé à votre administrateur. Entrez-le ici:';
+
+  @override
+  String get verificationCodeInvalid => 'Le code doit contenir 6 caractères';
+
+  @override
+  String get verificationCodeFailed => 'Code invalide. Veuillez réessayer';
+
+  @override
+  String get verificationCodeSuccess => 'Code vérifié avec succès!';
+
+  @override
+  String get verify => 'Vérifier';
+
+  @override
+  String get userPhoneNumber => 'Votre numéro';
+
+  @override
+  String get adminPhoneNumber => 'Numéro administrateur';
+
+  @override
+  String get adminPhoneHint => 'Numéro de votre admin';
+
+  @override
+  String get bothPhonesRequired => 'Les deux numéros sont requis';
+
+  @override
+  String get submit => 'Envoyer';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get userPhoneInvalid => 'Numéro utilisateur invalide';
+
+  @override
+  String get adminPhoneInvalid => 'Numéro administrateur invalide';
+
+  @override
+  String get newPassword => 'Nouveau mot de passe';
+
+  @override
+  String get resetPasswordSucces => 'Mot de passe réinitialisé';
 }

@@ -118,5 +118,33 @@
   "property": "Propriétaire",
   "logout": "Déconnexion!",
   "adminRole": "Administrateur",
-  "users": "Utilisateurs"
+  "users": "Utilisateurs",
+  "resetPasswordSent": "Demande envoyée. Vérifiez votre administrateur pour le code.",
+  "resetPasswordError": "Erreur lors de l'envoi de la demande",
+  "resetPasswordEmailPrompt": "Entrez votre email pour réinitialiser le mot de passe",
+  "resetPasswordPhonePrompt": "Entrez votre numéro et celui de votre administrateur",
+  "eitherEmailOrPhonesRequired": "Email ou numéros de téléphone manquants",
+  "verificationCodeTitle": "Code de vérification",
+  "verificationCodeSentEmail": "Un code a été envoyé à votre administrateur. Entrez-le ici:",
+  "verificationCodeSentAdminPhone": "Un code a été envoyé à votre administrateur. Entrez-le ici:",
+  "verificationCodeInvalid": "Le code doit contenir 6 caractères",
+  "verificationCodeFailed": "Code invalide. Veuillez réessayer",
+  "verificationCodeSuccess": "Code vérifié avec succès!",
+  "verify": "Vérifier",
+  "userPhoneNumber": "Votre numéro",
+  "adminPhoneNumber": "Numéro administrateur",
+  "adminPhoneHint": "Numéro de votre admin",
+  "bothPhonesRequired": "Les deux numéros sont requis",
+  "submit": "Envoyer",
+  "cancel": "Annuler",
+  "userPhoneInvalid": "Numéro utilisateur invalide",
+  "adminPhoneInvalid": "Numéro administrateur invalide",
+  "newPassword": "Nouveau mot de passe",
+  "@newPassword": {
+    "description": "Champ de saisie du nouveau mot de passe"
+  },
+  "resetPasswordSucces": "Mot de passe réinitialisé",
+  "@resetPasswordSucces": {
+    "description": "Message notifiant du succès de la réinitialisation du mot de passe"
+  }
 }

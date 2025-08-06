@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/features/auth/services/auth_services.dart';
+import 'package:pro_meca/core/features/auth/views/forgot_password_dialog.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:pro_meca/core/utils/validations.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,20 +34,6 @@ class _LoginScreenState extends State<LoginScreen>
   String? _emailError;
   String? _phoneError;
 
-  // Expressions régulières par pays
-  final Map<String, RegExp> _phoneRegex = {
-    'cm': RegExp(
-      r'^[2367]\d{8}$',
-    ), // Cameroun: 9 chiffres commençant par 2,3,6 ou 7
-    'ga': RegExp(r'^\d{8}$'), // Gabon: 8 chiffres
-    'td': RegExp(r'^\d{8}$'), // Tchad: 8 chiffres
-    'cf': RegExp(r'^\d{8}$'), // Centrafrique: 8 chiffres
-    'ng': RegExp(
-      r'^[789]\d{9}$',
-    ), // Nigeria: 10 chiffres commençant par 7,8 ou 9
-    'gq': RegExp(r'^\d{9}$'), // Guinée équatoriale: 9 chiffres
-    'co': RegExp(r'^\d{10}$'), // Congo: 10 chiffres
-  };
   @override
   void initState() {
     super.initState();
@@ -98,18 +86,6 @@ class _LoginScreenState extends State<LoginScreen>
     await prefs.setBool('remember_me', _isChecked);
   }
 
-  bool _validateEmail(String email) {
-    final emailRegex = RegExp(
-      r'^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
-    );
-    return emailRegex.hasMatch(email);
-  }
-
-  bool _validatePhone(String phone) {
-    final regex = _phoneRegex[_selectedCountryIso.toLowerCase()];
-    return regex != null && regex.hasMatch(phone);
-  }
-
   bool _checkMail() {
     // Réinitialiser l'erreur
     setState(() {
@@ -118,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (_emailController.text.isEmpty) {
       setState(() => _emailError = AppLocalizations.of(context).emailRequired);
       return false;
-    } else if (!_validateEmail(_emailController.text)) {
+    } else if (!validateEmail(_emailController.text)) {
       setState(
         () => _emailError = AppLocalizations.of(context).errorsInvalidEmail,
       );
@@ -137,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (phone.isEmpty) {
       setState(() => _phoneError = AppLocalizations.of(context).phoneRequired);
       return '';
-    } else if (!_validatePhone(phone)) {
+    } else if (!validatePhone(phone, _selectedCountryIso)) {
       setState(() => _phoneError = AppLocalizations.of(context).invalidPhone);
       return '';
     }
@@ -286,7 +262,11 @@ class _LoginScreenState extends State<LoginScreen>
                         children: [
                           // Barre d'onglets
                           TabBar(
-                            padding: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+                            padding: EdgeInsets.only(
+                              left: 10,
+                              right: 10,
+                              bottom: 20,
+                            ),
                             controller: _tabController,
                             labelColor: AppColors.secondary,
                             unselectedLabelColor: AppColors.background,
@@ -352,10 +332,10 @@ class _LoginScreenState extends State<LoginScreen>
                               // crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "$_selectedCountryCode  ${_getPhoneFormatHint()}",
+                                  "$_selectedCountryCode  ${getPhoneFormatHint(_selectedCountryIso, context)}",
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: AppColors.background,
+                                    color: AppColors.text,
                                   ),
                                 ),
 
@@ -372,7 +352,9 @@ class _LoginScreenState extends State<LoginScreen>
                                           .textTheme
                                           .titleSmall
                                           ?.copyWith(
-                                            color: AppColors.alert.withOpacity(0.7),
+                                            color: AppColors.alert.withOpacity(
+                                              0.7,
+                                            ),
                                           ),
                                       textAlign: TextAlign.start,
                                     ),
@@ -473,7 +455,9 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       SizedBox(height: 25),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          _showForgotPasswordDialog(context);
+                        },
                         child: Text(
                           l10n.authForgotPassword,
                           style: TextStyle(
@@ -552,7 +536,7 @@ class _LoginScreenState extends State<LoginScreen>
                 border: Border.all(color: Colors.grey),
               ),
               child: CountryCodePicker(
-                countryFilter: const ['CM', 'GA', 'TD', 'CE', 'NG', 'GQ', 'CG'],
+                countryFilter: countries,
                 initialSelection: 'CM',
                 favorite: ['CM', 'TD', 'CE'],
                 showCountryOnly: false,
@@ -606,28 +590,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  String _getPhoneFormatHint() {
-    // 'CM', 'GA', 'TD', 'CE', 'NG', 'GQ', 'CG'
-    switch (_selectedCountryIso.toLowerCase()) {
-      case 'cm':
-        return AppLocalizations.of(context).phoneFormatCM;
-      case 'ga':
-        return AppLocalizations.of(context).phoneFormatGA;
-      case 'td':
-        return AppLocalizations.of(context).phoneFormatTD;
-      case 'ce':
-        return AppLocalizations.of(context).phoneFormatCF;
-      case 'ng':
-        return AppLocalizations.of(context).phoneFormatNG;
-      case 'gq':
-        return AppLocalizations.of(context).phoneFormatGQ;
-      case 'cg':
-        return AppLocalizations.of(context).phoneFormatCO;
-      default:
-        return AppLocalizations.of(context).phoneFormatDefault;
-    }
-  }
-
   // Widget _buildLanguageSwitcher(BuildContext context, LocaleProvider provider) {
   //   return Padding(
   //     padding: const EdgeInsets.only(top: 8.0),
@@ -641,4 +603,21 @@ class _LoginScreenState extends State<LoginScreen>
   //     ),
   //   );
   // }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    final bool isEmailTab = _tabController.index == 0;
+    String identifier = isEmailTab
+        ? _emailController.text
+        : _phoneController.text;
+
+    showDialog(
+      context: context,
+      builder: (context) => ForgotPasswordDialog(
+        initialIdentifier: identifier,
+        isEmailMode: isEmailTab,
+        countryCode: _selectedCountryCode,
+        countryIso: _selectedCountryIso,
+      ),
+    );
+  }
 }

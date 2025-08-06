@@ -541,6 +541,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Users'**
   String get users;
+
+  /// No description provided for @resetPasswordSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. Check with your administrator for the code.'**
+  String get resetPasswordSent;
+
+  /// No description provided for @resetPasswordError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error sending request'**
+  String get resetPasswordError;
+
+  /// No description provided for @resetPasswordEmailPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email to reset password'**
+  String get resetPasswordEmailPrompt;
+
+  /// No description provided for @resetPasswordPhonePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your number and your administrator\'s number'**
+  String get resetPasswordPhonePrompt;
+
+  /// No description provided for @eitherEmailOrPhonesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Either email or phones must be provided'**
+  String get eitherEmailOrPhonesRequired;
+
+  /// No description provided for @verificationCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Code'**
+  String get verificationCodeTitle;
+
+  /// No description provided for @verificationCodeSentEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'A code has been sent to your administrator. Enter it here:'**
+  String get verificationCodeSentEmail;
+
+  /// No description provided for @verificationCodeSentAdminPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'A code has been sent to your administrator. Enter it here:'**
+  String get verificationCodeSentAdminPhone;
+
+  /// No description provided for @verificationCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Code must be 6 characters'**
+  String get verificationCodeInvalid;
+
+  /// No description provided for @verificationCodeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid code. Please try again'**
+  String get verificationCodeFailed;
+
+  /// No description provided for @verificationCodeSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Code verified successfully!'**
+  String get verificationCodeSuccess;
+
+  /// No description provided for @verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verify;
+
+  /// No description provided for @userPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone number'**
+  String get userPhoneNumber;
+
+  /// No description provided for @adminPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin phone number'**
+  String get adminPhoneNumber;
+
+  /// No description provided for @adminPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your administrator\'s number'**
+  String get adminPhoneHint;
+
+  /// No description provided for @bothPhonesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Both phone numbers are required'**
+  String get bothPhonesRequired;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @userPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'User phone number is invalid'**
+  String get userPhoneInvalid;
+
+  /// No description provided for @adminPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin phone number is invalid'**
+  String get adminPhoneInvalid;
+
+  /// New password input label
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// Information reset password has been successful
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully'**
+  String get resetPasswordSucces;
 }
 
 class _AppLocalizationsDelegate
