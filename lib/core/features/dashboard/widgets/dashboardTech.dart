@@ -1,24 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_colors.dart';
 import '../../../constants/app_styles.dart';
+import '../../../models/visite.dart';
+import '../../reception/services/reception_services.dart';
+import '../../reception/widgets/vehicule_inf_shimmer.dart';
 
-class VehicleDashboardPage extends StatelessWidget {
-  final BuildContext context;
-  const VehicleDashboardPage({super.key, required this.context});
+class VehicleDashboardPage extends StatefulWidget {
+  const VehicleDashboardPage({super.key});
 
-  Widget _buildSearchBar() {
+  @override
+  State<VehicleDashboardPage> createState() => _VehicleDashboardPageState();
+}
+
+class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
+  List<Visite> _visites = [];
+  bool _isLoading = true;
+  String accessToken = "";
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final pref = await SharedPreferences.getInstance();
+      accessToken = pref.getString("accessToken") ?? "";
+      final visites = await ReceptionServices().fetchVisitesWithVehicle();
+      setState(() {
+        _visites = visites;
+        _isLoading = false;
+      });
+    } catch (e, stack) {
+      // Affiche une erreur (ex: snackbar) ou log
+      print("Erreur lors du chargement des visites: $e");
+      print(stack);
+      setState(() {
+        _visites = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: const EdgeInsets.all(16),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Immatriculation du véhicule',
-          prefixIcon:  Icon(Icons.search, color: appColors.primary,),
+          prefixIcon: Icon(Icons.search, color: appColors.primary),
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
@@ -29,7 +71,7 @@ class VehicleDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildEntryBanner() {
+  Widget _buildEntryBanner(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -40,7 +82,7 @@ class VehicleDashboardPage extends StatelessWidget {
             style: AppStyles.titleLarge(context),
           ),
           const Spacer(),
-           Text(
+          Text(
             "01/01/2025",
             style: TextStyle(
               fontWeight: FontWeight.w500,
@@ -52,7 +94,7 @@ class VehicleDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCardWithImage() {
+  Widget _buildStatusCardWithImage(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(12),
@@ -75,7 +117,7 @@ class VehicleDashboardPage extends StatelessWidget {
           Expanded(
             child: Text(
               AppLocalizations.of(context).waitingDiagnotics,
-              style: TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
           const Text(
@@ -87,24 +129,24 @@ class VehicleDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSmallCard({
-    required IconData icon,
-    required String title,
-    required int today,
-    required int month,
-    required int total,
-  }) {
-
+  Widget _buildSmallCard(
+      BuildContext context, {
+        required IconData icon,
+        required String title,
+        required int today,
+        required int month,
+        required int total,
+      }) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       width: Responsive.responsiveValue(
         context,
-        mobile: MediaQuery.of(context).size.width * 0.45, // Réduit légèrement
+        mobile: MediaQuery.of(context).size.width * 0.45,
         tablet: MediaQuery.of(context).size.width * 0.22,
       ),
-      constraints: BoxConstraints(
-        minHeight: 100, // Hauteur minimale
-        maxHeight: 120, // Hauteur maximale
+      constraints: const BoxConstraints(
+        minHeight: 100,
+        maxHeight: 120,
       ),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -119,7 +161,6 @@ class VehicleDashboardPage extends StatelessWidget {
               Icon(icon, color: appColors.primary, size: 20),
               const SizedBox(width: 8),
               Expanded(
-                // Wrap avec Expanded
                 child: Text(
                   title,
                   style: TextStyle(
@@ -130,7 +171,7 @@ class VehicleDashboardPage extends StatelessWidget {
                       tablet: 14,
                     ),
                   ),
-                  maxLines: 2, // Autoriser 2 lignes
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.right,
                 ),
@@ -141,16 +182,16 @@ class VehicleDashboardPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Ce jour", style: TextStyle(fontSize: 12)),
-              Text('$today', style: TextStyle(fontSize: 12)),
+              const Text("Ce jour", style: TextStyle(fontSize: 12)),
+              Text('$today', style: const TextStyle(fontSize: 12)),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Ce mois", style: TextStyle(fontSize: 12)),
-              Text("$month", style: TextStyle(fontSize: 12)),
+              const Text("Ce mois", style: TextStyle(fontSize: 12)),
+              Text("$month", style: const TextStyle(fontSize: 12)),
             ],
           ),
           const Spacer(),
@@ -159,10 +200,10 @@ class VehicleDashboardPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Total", style: TextStyle(fontSize: 18)),
+                const Text("Total", style: TextStyle(fontSize: 18)),
                 Text(
                   "$total",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ],
             ),
@@ -172,7 +213,7 @@ class VehicleDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusGrid() {
+  Widget _buildStatusGrid(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.count(
@@ -180,17 +221,18 @@ class VehicleDashboardPage extends StatelessWidget {
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         shrinkWrap: true,
-        physics:
-            const NeverScrollableScrollPhysics(), // important pour éviter le scroll interne
+        physics: const NeverScrollableScrollPhysics(),
         children: [
           _buildSmallCard(
+            context,
             icon: Icons.access_time_outlined,
             title: AppLocalizations.of(context).waitingValidationDiagnostic,
             today: 10,
             month: 5,
-            total: 15,
+            total: 17,
           ),
           _buildSmallCard(
+            context,
             icon: Icons.rule_folder_outlined,
             title: AppLocalizations.of(context).waitingValidation,
             today: 20,
@@ -198,6 +240,7 @@ class VehicleDashboardPage extends StatelessWidget {
             total: 23,
           ),
           _buildSmallCard(
+            context,
             icon: Icons.settings,
             title: AppLocalizations.of(context).repairing,
             today: 10,
@@ -205,6 +248,7 @@ class VehicleDashboardPage extends StatelessWidget {
             total: 14,
           ),
           _buildSmallCard(
+            context,
             icon: Icons.directions_car_filled,
             title: AppLocalizations.of(context).finished,
             today: 10,
@@ -216,18 +260,14 @@ class VehicleDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHistoryItem({
-    required String plate,
-    required String model,
-    required String status,
-    required String date,
-    required Color statusColor,
-    required String imageUrl,
-  }) {
-
+  Widget _buildHistoryItem(Visite visite) {
+    final isMobile = Responsive.isMobile(context);
+    final screenWidth = MediaQuery.of(context).size.width;
     return Container(
+      width: double.infinity,
+      height: isMobile ? screenWidth * 0.23 : 80,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey),
@@ -242,13 +282,15 @@ class VehicleDashboardPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              imageUrl,
-              height: 55,
-              width: 70,
-              fit: BoxFit.cover,
+          Container(
+            width: isMobile ? screenWidth * 0.2 : 80,
+            height: isMobile ? screenWidth * 0.2 : 80,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+            child: ClipRRect(borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+            ),
+              child:_buildImage(visite.vehicle?.logo),
             ),
           ),
           const SizedBox(width: 10),
@@ -256,30 +298,78 @@ class VehicleDashboardPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  plate,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      visite.vehicle?.licensePlate ?? "",
+                      style: AppStyles.titleMedium(context).copyWith(
+                        fontSize: 14
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(DateFormat.yMMMd().format(visite.dateEntree), style: const TextStyle(fontSize: 12)),
+                    )
+                  ],
                 ),
-                Text("Modèle: $model", style: const TextStyle(fontSize: 13)),
+                Text("Propriètaire: ${visite.vehicle?.client?.firstName ?? ""}", style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 12 : 18,
+                ),
+                  maxLines: 1,
+                ),
                 const SizedBox(height: 4),
                 Text(
-                  status,
-                  style: TextStyle(fontSize: 13, color: statusColor),
+                  _statut(visite.status),
+                  style: TextStyle(fontSize: 13, color: _visitColor(visite.status)),
                 ),
               ],
             ),
           ),
-          Text(date, style: const TextStyle(fontSize: 12)),
+
         ],
       ),
     );
   }
 
-  Widget _buildHistoryList() {
+  String _statut(String statut){
+    switch(statut){
+      case 'ATTENTE_DIAGNOSTIC':
+        return "Diagnostic";
+      case 'ATTENTE_VALIDATION_DIAGNOSTIC':
+        return "Attente validation diagnostic";
+      case 'ATTENTE_INTERVENTION':
+        return "Attente intervention";
+      case 'ATTENTE_PIECE':
+        return "Attente pièces";
+      default:
+        return "Element externe";
+    }
+  }
+  Widget _buildImage(String? imageUrl) {
+    if(imageUrl != null){
+      return Image.network(imageUrl, headers:{'Authorization': 'Bearer $accessToken'},
+        fit: BoxFit.cover,
+      );
+    }else{
+      return Image.asset('assets/images/v1.jpg', fit: BoxFit.cover);
+    }
 
+  }
+  Color _visitColor(String status) {
+    switch(status){
+      case "ATTENTE_DIAGNOSTIC":
+        return AppColors.alert;
+      case "ATTENTE_INTERVENTION":
+        return Colors.green;
+      default:
+        return Colors.white;
+    }
+  }
+
+  Widget buildHistoryList(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,7 +381,7 @@ class VehicleDashboardPage extends StatelessWidget {
           child: Row(
             children: [
               Text("Historique", style: AppStyles.titleLarge(context)),
-              Spacer(),
+              const Spacer(),
               Text(
                 "voir plus",
                 style: TextStyle(
@@ -302,33 +392,22 @@ class VehicleDashboardPage extends StatelessWidget {
             ],
           ),
         ),
-        _buildHistoryItem(
-          plate: "N0567AZ",
-          model: "COROLLA LE",
-          status: "Attente validation diagnostic",
-          date: "07/02/2025",
-          statusColor: Colors.red,
-          imageUrl:
-              "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0018_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024",
-        ),
-        _buildHistoryItem(
-          plate: "N0567AZ",
-          model: "COROLLA LE",
-          status: "Attente diagnostic",
-          date: "07/02/2025",
-          statusColor: Colors.orange,
-          imageUrl:
-              "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0009_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024",
-        ),
-        _buildHistoryItem(
-          plate: "N0567AZ",
-          model: "COROLLA LE",
-          status: "Attente validation intervention",
-          date: "07/02/2025",
-          statusColor: Colors.green,
-          imageUrl:
-              "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/mlp/mosiac/CRS_MY25_0012_V001.png?wid=1440&hei=810&fmt=jpg&fit=crop",
-        ),
+        if (_isLoading)
+          Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+              ...List.generate(10, (_) => VehicleInfoCardShimmer()),
+              ]
+            ),
+          )
+        else if (_visites.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Center(child: Text("Aucune visite trouvée.")),
+          )
+        else
+          ..._visites.map((v) => _buildHistoryItem(v)).toList(),
       ],
     );
   }
@@ -336,15 +415,19 @@ class VehicleDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildSearchBar(),
-              _buildEntryBanner(),
-              _buildStatusCardWithImage(),
-              _buildStatusGrid(),
-              _buildHistoryList(),
+              _buildSearchBar(context),
+              _buildEntryBanner(context),
+              _buildStatusCardWithImage(context),
+              _buildStatusGrid(context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: HistoryList(title: "Historique", visites: _visites, isLoading: _isLoading, context: context, accessToken: accessToken),
+              ),
               const SizedBox(height: 30),
             ],
           ),

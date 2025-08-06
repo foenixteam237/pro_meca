@@ -7,7 +7,7 @@ import '../../../constants/app_colors.dart';
 import 'completeVehiculeCard.dart';
 import 'ongoingVehiculeCard.dart';
 
-Widget buildHomeContent(BuildContext context) {
+Widget buildHomeContent(BuildContext context, Widget historyList) {
   final l10n = AppLocalizations.of(context);
   final screenSize = MediaQuery.of(context).size;
   final isMobile = screenSize.width < 600;
@@ -30,63 +30,7 @@ Widget buildHomeContent(BuildContext context) {
             ),
             _sectionTitle(l10n.completedVehicles, l10n, context),
             _buildVehicleRow(context),
-            const SizedBox(height: 20),
-            _sectionTitle(l10n.ongoingVehicles, l10n, context),
-            ongoingVehicleCard(
-              date: "12/06/2023",
-              status: l10n.diagnostic,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "12/06/2023",
-              status: l10n.diagnostic,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "12/06/2023",
-              status: l10n.diagnostic,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "12/06/2023",
-              status: l10n.diagnostic,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "12/06/2023",
-              status: l10n.diagnostic,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "10/06/2023",
-              status: l10n.validation,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "10/06/2023",
-              status: l10n.validation,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "10/06/2023",
-              status: l10n.validation,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "10/06/2023",
-              status: l10n.validation,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "10/06/2023",
-              status: l10n.validation,
-              context: context,
-            ),
-            ongoingVehicleCard(
-              date: "10/06/2023",
-              status: l10n.validation,
-              context: context,
-            ),
+            historyList
             // Ajouter un bouton de réception de véhicule
           ],
         ),

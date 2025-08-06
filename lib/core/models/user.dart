@@ -124,6 +124,32 @@ class User {
       _ => throw const FormatException('Invalid JSON format for User'),
     };
   }
+  factory User.fromUserUpdateJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {
+        'id': String id,
+        'name': String name,
+        'email': String? email,
+        'bio': String bio,
+        'logo': String logo,
+        'updateAt': String updatedAt,
+      } =>
+        User(
+          id: id,
+          name: name,
+          email: email,
+          logo: logo,
+          bio: bio,
+          updatedAt: updatedAt,
+          phone:'',
+          isCompanyAdmin: false,
+          createdAt: '',
+          role: Role(id: 2, name: "", companyId: ""),
+        ),
+      _ => throw const FormatException('Invalid JSON format for User'),
+    };
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

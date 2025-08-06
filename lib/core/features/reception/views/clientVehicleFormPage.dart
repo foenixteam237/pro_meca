@@ -14,10 +14,12 @@ import '../../../constants/app_styles.dart';
 class ClientVehicleFormPage extends StatefulWidget {
   final String idBrand;
   final String idModel;
+  final Vehicle? vehicle;
   const ClientVehicleFormPage({
     super.key,
     required this.idBrand,
     required this.idModel,
+    this.vehicle
   });
   @override
   State<ClientVehicleFormPage> createState() => _ClientVehicleFormPageState();
@@ -55,6 +57,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   void initState() {
     super.initState();
     _checkPermissions();
+    _controllerInit();
   }
 
   Future<void> _checkPermissions() async {
@@ -223,7 +226,16 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
       });
     }
   }
-
+  void _controllerInit(){
+    controllers['firstName']!.text = widget.vehicle?.client?.firstName ?? '';
+    controllers['lastName']!.text = widget.vehicle?.client?.lastName ?? '';
+    controllers['email']!.text = widget.vehicle?.client?.email ?? '';
+    controllers['phone']!.text = widget.vehicle?.client?.phone ?? '';
+    controllers['chassis']!.text = widget.vehicle?.chassis ?? '';
+    controllers['licensePlate']!.text = widget.vehicle?.licensePlate ?? '';
+    controllers['year']!.text = widget.vehicle?.year.toString() ?? '';
+    controllers['color']!.text = widget.vehicle?.color ?? '';
+  }
   @override
   void dispose() {
     controllers.forEach((_, controller) => controller.dispose());
@@ -241,21 +253,23 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Indicateurs de progression
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  3,
-                  (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 30,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: index < 3 ? AppColors.primary : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
+              if(widget.vehicle == null)...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    3,
+                        (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: index < 3 ? AppColors.primary : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
               const SizedBox(height: 20),
               const Text(
                 "Informations du client",
