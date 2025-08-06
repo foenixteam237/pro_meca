@@ -3,12 +3,16 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/core/features/pieces/widgets/buildPiecesContent.dart';
 import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../models/visite.dart';
+import '../reception/services/reception_services.dart';
 import 'widgets/buildHomeContent.dart';
 import '../dashboard/widgets/dashboardTech.dart';
 
@@ -20,18 +24,43 @@ class TechnicianHomeScreen extends StatefulWidget {
 
 class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   late PersistentTabController _controller;
+  List<Visite> _visites = [];
+  bool _isLoading = true;
+  String accessToken = "";
 
   @override
   void initState() {
     super.initState();
+    _loadData();
     _controller = PersistentTabController(initialIndex: 0);
   }
-
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final pref = await SharedPreferences.getInstance();
+      accessToken = pref.getString("accessToken") ?? "";
+      final visites = await ReceptionServices().fetchVisitesWithVehicle();
+      setState(() {
+        _visites = visites;
+        _isLoading = false;
+      });
+    } catch (e, stack) {
+      // Affiche une erreur (ex: snackbar) ou log
+      print("Erreur lors du chargement des visites: $e");
+      print(stack);
+      setState(() {
+        _visites = [];
+        _isLoading = false;
+      });
+    }
+  }
   List<Widget> _buildScreens() {
     return [
-      buildHomeContent(context),
+      buildHomeContent(context, HistoryList(title: AppLocalizations.of(context).ongoingVehicles, visites: _visites, isLoading: _isLoading, context: context, accessToken: accessToken)),
       CategoriesPage(),
-      VehicleDashboardPage(context: context),
+      VehicleDashboardPage(),
       ProfileScreen(con: context),
     ];
   }

@@ -242,4 +242,78 @@ class ReceptionServices {
       return 0;
     }
   }
+
+  //##################################################-RECUPERATION DES VISITES AVEC LA VEHICULE INCLU-###################################
+
+  Future<List<Visite>> fetchVisitesWithVehicle() async {
+    try {
+      // 1. Récupère les visites avec timeout et gestion d'erreur
+      final Response resVisite = await _dio.get(
+        '/visites',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
+          headers: await ApiDioService().getAuthHeaders()
+        ),
+      );
+
+      if (resVisite.statusCode != 200) {
+        throw DioException(
+          requestOptions: resVisite.requestOptions,
+          response: resVisite,
+          error: 'Statut HTTP ${resVisite.statusCode}',
+        );
+      }
+
+      final List<dynamic> visites = resVisite.data as List;
+
+      // 2. Récupération parallèle des véhicules
+      final List<Visite> result = await Future.wait(
+        visites.map((visiteJson) async {
+          try {
+            final vehicleId = visiteJson['vehicleId'] as String;
+            final Response resVehicle = await _dio.get(
+              '/vehicles/$vehicleId',
+              options: Options(
+                receiveTimeout: const Duration(seconds: 10),
+                headers: await ApiDioService().getAuthHeaders()
+              ),
+            );
+            if (resVehicle.statusCode != 200) {
+              throw DioException(
+                requestOptions: resVehicle.requestOptions,
+                response: resVehicle,
+                error: 'Erreur véhicule ${resVehicle.statusCode}',
+              );
+            }
+
+            final Vehicle vehicle = Vehicle.fromJson(resVehicle.data as Map<String, dynamic>);
+
+            return Visite.fromVisiteJson(visiteJson, vehicle);
+          } on DioException catch (e) {
+            // En cas d'erreur sur un véhicule, retourne une visite partielle
+            debugPrint('Erreur véhicule : ${e.message}');
+            return Visite.fromJson(visiteJson);
+          }
+        }),
+      );
+
+      return result;
+
+    } on DioException catch (e) {
+      debugPrint('Erreur réseau: ${e.message}');
+      if (e.response != null) {
+        throw Exception(
+          'Erreur serveur (${e.response?.statusCode}): ${e.response?.data['message'] ?? 'Pas de message'}',
+        );
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        throw Exception('Timeout de connexion au serveur');
+      } else {
+        throw Exception('Erreur réseau: ${e.message}');
+      }
+    } catch (e) {
+      debugPrint('Erreur inattendue: $e');
+      throw Exception('Erreur lors du chargement des visites');
+    }
+  }
 }

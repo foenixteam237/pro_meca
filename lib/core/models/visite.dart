@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pro_meca/core/features/reception/services/reception_services.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 
 class Visite {
@@ -47,6 +49,38 @@ class Visite {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
+  factory Visite.fromVisiteJson(Map<String, dynamic> json, Vehicle vehicle) {
+    return Visite(
+      id: json['id'].toString(),
+      dateEntree: DateTime.parse(json['dateEntree'].toString()),
+      dateSortie: json['dateSortie'] != null
+          ? DateTime.tryParse(json['dateSortie'])
+          : DateTime.tryParse("00/00/00"),
+      vehicleId: json['vehicleId'].toString(),
+      status: json['status'].toString(),
+      vehicle: vehicle,
+      constatClient: json['constatClient'].toString(),
+      elementsBord: ElementsBord.fromJson(
+        json['elementsBord'] as Map<String, dynamic>,
+      ),
+      companyId: json['companyId'].toString(),
+      createdAt: DateTime.parse(json['createdAt'].toString()),
+      updatedAt: DateTime.parse(json['updatedAt'].toString()),
+    );
+  }
+
+  Future<List<Visite>?> fetchVisite(BuildContext context) async{
+    try {
+      final visites = await ReceptionServices().fetchVisitesWithVehicle();
+      return visites;
+      // Afficher les visites...
+    } on Exception catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+      return null;
+    }
+  }
 
   Map<String, dynamic> toJson() {
 
@@ -84,13 +118,14 @@ class ElementsBord {
   });
 
   factory ElementsBord.fromJson(Map<String, dynamic> json) {
+
     return ElementsBord(
-      extincteur: json['extincteur'] as bool? ?? false,
-      dossier: json['dossier'] as bool? ?? false,
-      cric: json['cric'] as bool? ?? false,
-      boitePharmacie: json['boitePharmacie'] as bool? ?? false,
-      boiteOutils: json['boiteOutils'] as bool? ?? false,
-      essuieGlace: json['essuie-glace'] as bool? ?? false,
+      extincteur: bool.tryParse(json['extincteur'].toString(), caseSensitive: false) ?? false,
+      dossier:bool.tryParse(json['dossier'].toString(), caseSensitive: false) ?? false,
+      cric: bool.tryParse(json['cric'].toString(), caseSensitive: false) ?? false,
+      boitePharmacie: bool.tryParse(json['boitePharmacie'].toString(), caseSensitive: false) ?? false,
+      boiteOutils: bool.tryParse(json['boiteOutils'].toString(), caseSensitive: false) ?? false,
+      essuieGlace: bool.tryParse(json['essuieGlace'].toString(), caseSensitive: false) ?? false,
     );
   }
 

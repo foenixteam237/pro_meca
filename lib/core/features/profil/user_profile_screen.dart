@@ -203,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final userId = widget.member?.id ?? _user!.id;
 
       // Appel API
-      final updatedUser = await UserService().updateUserProfile(userId, updatedFields);
+      final updatedUser = await UserService().updateUserProfile(userId, updatedFields, _user!.isCompanyAdmin);
       await _refreshUserData(updatedUser);
       // Vérifie que la réponse est valide
       setState(() {
