@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
@@ -8,34 +9,98 @@ import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants/app_adaptive_colors.dart';
+import '../../../models/diagnostic.dart';
+import '../../../models/visite.dart';
+import '../../../widgets/build_image.dart';
+import '../services/reception_services.dart';
 
 class DiagnosticPage extends StatefulWidget {
-  final String idVisite; // Paramètre pour l'identifiant de la visite
-  const DiagnosticPage({super.key, required this.idVisite});
+  final String idVisite;
+  final Visite? visite;
+  final String? accessToken;
+
+  const DiagnosticPage({
+    super.key,
+    required this.idVisite,
+    this.visite,
+    this.accessToken
+  });
+
   @override
   _DiagnosticPageState createState() => _DiagnosticPageState();
 }
 
 class _DiagnosticPageState extends State<DiagnosticPage> {
-  // Vous pouvez ajouter des contrôleurs ou des variables d'état ici si nécessaire
-  final TextEditingController problemReportedController =
-      TextEditingController();
-  final TextEditingController problemIdentifiedController =
-      TextEditingController();
-  final TextEditingController errorCodeController = TextEditingController();
-  String urgencyLevel = "Normal"; // Valeur par défaut pour le niveau d'urgence
+  late final TextEditingController problemReportedController;
+  late final TextEditingController problemIdentifiedController;
+  late final TextEditingController errorCodeController;
+  String urgencyLevel = "négligeable";
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    problemReportedController = TextEditingController(text: widget.visite?.constatClient ?? '');
+    problemIdentifiedController = TextEditingController();
+    errorCodeController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    problemReportedController.dispose();
+    problemIdentifiedController.dispose();
+    errorCodeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> createDiagnostic() async {
+    if (_isLoading) return;
+
+    // Validate required fields
+    if (problemIdentifiedController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Veuillez identifier le problème")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+
+      final diagnostic = Diagnostic(visiteId: widget.idVisite, problemReported: problemReportedController.text, problemIdentified: problemIdentifiedController.text, errorCode: errorCodeController.text, urgencyLevel: urgencyLevel);
+      final response = await ReceptionServices().submitDiagnostic(
+          diagnostic,
+          widget.accessToken!
+      );
+
+      if (response) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Diagnostic envoyé avec succès!")),
+        );
+        if (mounted) Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Échec de l'envoi du diagnostic")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur: ${e.toString()}")),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final screenSize = MediaQuery.of(context).size;
-
     final isMobile = screenSize.width < 600;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     final appColors = Provider.of<AppAdaptiveColors>(context);
-    final avatarRadius = max(20, min(30, screenSize.width * 0.06));
+
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: CustomAppBar(
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
@@ -44,155 +109,201 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Vehicle Info Section
+              _buildVehicleInfoSection(context, isMobile, appColors, l10n),
+
+              const SizedBox(height: 20),
+
+              // Problem Reported Section
+              _buildProblemReportedSection(context),
+
+              const SizedBox(height: 10),
+
+              // Problem Identified Section
+              _buildProblemIdentifiedSection(context),
+
+              const SizedBox(height: 20),
+
+              // Additional Fields Section
+              _buildAdditionalFieldsSection(context),
+
+              const SizedBox(height: 30),
+
+              // Submit Button
+              _buildSubmitButton(context, appColors),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVehicleInfoSection(
+      BuildContext context,
+      bool isMobile,
+      AppAdaptiveColors appColors,
+      AppLocalizations l10n
+      ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            buildImage(widget.visite!.vehicle!.logo, context, widget.accessToken!),
+            SizedBox(width: isMobile ? 10 : 20),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // Infos véhicule
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: avatarRadius.toDouble(),
-                          backgroundImage: AssetImage('assets/images/v1.jpg'),
-                        ), // À adapter
-                        SizedBox(width: isMobile ? 10 : 20),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              "N0567AZ",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            Text(
-                              "Model: COROLLA LE",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Text(
-                      "M MARTIN PETER",
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                SizedBox(height: isMobile ? 15 : 20),
-                // Problème signalé
-                Text("Problème signalé", style: AppStyles.titleMedium(context)),
-                const SizedBox(height: 8),
-                _buildMultilineInput(
-                  controller: problemReportedController,
-                  hint: "Fumée blanche.........",
-                ),
-                const SizedBox(height: 10),
-                // Problème identifié
                 Text(
-                  "Problème identifié",
+                  "${l10n.immatVehicule}: ${widget.visite!.vehicle!.licensePlate}",
                   style: AppStyles.titleMedium(context),
                 ),
-                const SizedBox(height: 8),
-                _buildMultilineInput(
-                  controller: problemIdentifiedController,
-                  hint: "Votre idée du problème",
-                ),
-                const SizedBox(height: 20),
-                // Champs supplémentaires
-                Row(
-                  children: [
-                    const Expanded(
-                      flex: 2,
-                      child: Text("Ce véhicule est-il électronique?"),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: _buildInputField(
-                        controller: errorCodeController,
-                        hint: "Code erreur",
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const Expanded(flex: 2, child: Text("Niveau d'urgence")),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      flex: 2,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: urgencyLevel,
-                            items: const [
-                              DropdownMenuItem(
-                                value: "Normal",
-                                child: Text("Normal"),
-                              ),
-                              DropdownMenuItem(
-                                value: "Élevé",
-                                child: Text("Élevé"),
-                              ),
-                              DropdownMenuItem(
-                                value: "Urgent",
-                                child: Text("Urgent"),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                urgencyLevel =
-                                    value ??
-                                    "Normal"; // Mettre à jour la valeur
-                              });
-                            },
-                            icon: const Icon(Icons.arrow_drop_down),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Bouton validé
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Ajouter la logique pour traiter la validation ici
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50), // Vert
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 16,
-                      ),
-                    ),
-                    child: const Text("Validé", style: TextStyle(fontSize: 16)),
+                Text(
+                  "Entrée: ${DateFormat.yMMMd().format(widget.visite!.dateEntree)}",
+                  style: AppStyles.titleMedium(context).copyWith(
+                      fontSize: 12
                   ),
                 ),
               ],
             ),
+          ],
+        ),
+        Text(
+          widget.visite!.vehicle!.client!.firstName,
+          style: AppStyles.titleMedium(context).copyWith(
+              fontSize: 12
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildProblemReportedSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Problème signalé", style: AppStyles.titleMedium(context)),
+        const SizedBox(height: 8),
+        _buildMultilineInput(
+          controller: problemReportedController,
+          hint: "Fumée blanche.........",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProblemIdentifiedSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Problème identifié",
+          style: AppStyles.titleMedium(context),
+        ),
+        const SizedBox(height: 8),
+        _buildMultilineInput(
+          controller: problemIdentifiedController,
+          hint: "Votre idée du problème",
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdditionalFieldsSection(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              flex: 2,
+              child: Text("Ce véhicule est-il électronique?"),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              flex: 2,
+              child: TextField(
+                controller: errorCodeController,
+                decoration: const InputDecoration(
+                  hintText: "Code erreur",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            )
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            const Expanded(flex: 2, child: Text("Niveau d'urgence")),
+            const SizedBox(width: 10),
+            Expanded(
+              flex: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: urgencyLevel,
+                    items: const [
+                      DropdownMenuItem(
+                        value: "négligeable",
+                        child: Text("négligeable"),
+                      ),
+                      DropdownMenuItem(
+                        value: "mineur",
+                        child: Text("mineur"),
+                      ),
+                      DropdownMenuItem(
+                        value: "majeur",
+                        child: Text("majeur"),
+                      ),
+                      DropdownMenuItem(
+                        value: "critique",
+                        child: Text("critique"),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        urgencyLevel = value ?? "négligeable";
+                      });
+                    },
+                    icon: const Icon(Icons.arrow_drop_down),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(BuildContext context, AppAdaptiveColors appColors) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : createDiagnostic,
+        style: AppStyles.primaryButton(context).copyWith(
+          backgroundColor: MaterialStateProperty.all<Color>(appColors.primary),
+        ),
+        child: _isLoading
+            ? const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        )
+            : Text("Validé", style: AppStyles.buttonText(context)),
       ),
     );
   }
@@ -206,7 +317,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         context,
         mobile: MediaQuery.of(context).size.height * 0.2,
       ),
-      padding: EdgeInsets.all(5),
+      padding: const EdgeInsets.all(5),
       child: TextField(
         controller: controller,
         maxLines: 5,
@@ -217,33 +328,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             vertical: 14,
           ),
           enabledBorder: OutlineInputBorder(
-            // ignore: deprecated_member_use
             borderSide: BorderSide(color: Colors.green.withOpacity(0.1)),
             borderRadius: BorderRadius.circular(12),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.green),
+            borderSide: const BorderSide(color: Colors.grey),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required String hint,
-    required TextEditingController controller,
-  }) {
-    return Container(
-      height: 45,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(hintText: hint, border: InputBorder.none),
       ),
     );
   }

@@ -120,6 +120,7 @@
   "authLoginFailed": "Échec de la connexion, veuillez vérifier vos identifiants",
   "modele": "Chassis",
   "property": "Propriétaire",
+  "waitingInterventions": "En attente intervention",
   "logout": "Déconnexion!",
   "adminRole": "Administrateur",
   "users": "Utilisateurs",

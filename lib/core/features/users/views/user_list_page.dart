@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../models/user.dart';
+import '../../../widgets/build_image.dart';
 import '../widgets/UserListShimmer.dart';
 import 'add_user_screen.dart';
 
@@ -205,7 +206,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     itemBuilder: (context, index) {
                       final user = filteredUsers[index];
                       return ListTile(
-                        leading: _buildImage(user.logo),
+                        leading: buildImage(user.logo, context, _accessToken),
                         title: Text(
                           user.name,
                           style: AppStyles.bodyMedium(context).copyWith(
@@ -239,30 +240,6 @@ class _UserListScreenState extends State<UserListScreen> {
     );
   }
 
-  Widget _buildImage(String? image){
-    if(image == null){
-      return  CircleAvatar(
-        backgroundImage: AssetImage("assets/images/v1.jpg"),
-        radius: 24,
-      );
-    }else{
-      return Container(
-        width: Responsive.responsiveValue(context, mobile: 50, tablet: 80),
-        height:Responsive.responsiveValue(context, mobile: 50, tablet:  80),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-        ),
-          child: ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: image,
-              fit: BoxFit.cover,
-              httpHeaders: {'Authorization': 'Bearer $_accessToken'},
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.person),
-            ),
-          )
-      );
-    }
-  }
+
 }
 

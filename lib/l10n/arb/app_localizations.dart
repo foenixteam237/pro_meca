@@ -452,6 +452,12 @@ abstract class AppLocalizations {
   /// **'Certified Technician'**
   String get certifiedTechnician;
 
+  /// No description provided for @waitingInterventions.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting intervention'**
+  String get waitingInterventions;
+
   /// No description provided for @phoneNumberLabel.
   ///
   /// In en, this message translates to:

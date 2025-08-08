@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/reception/services/reception_services.dart';
+import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import '../../../models/vehicle.dart';
@@ -8,7 +12,8 @@ import '../widgets/vehicule_inf_shimmer.dart';
 import '../widgets/vehicule_info.dart';
 
 class VehicleSelectionContent extends StatefulWidget {
-  const VehicleSelectionContent({super.key});
+  final BuildContext context;
+  const VehicleSelectionContent({super.key, required this.context});
   @override
   State<VehicleSelectionContent> createState() =>
       _VehicleSelectionContentState();
@@ -61,13 +66,12 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
   }
 
   void _goToAddVehicle() {
-    Navigator.pushReplacementNamed(context, "/brand_picker");
+    Navigator.pushReplacementNamed(widget.context, "/brand_picker");
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = Responsive.isDesktop(context);
-
+  final appColor = Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
@@ -108,7 +112,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
               IconButton(
                 icon: Icon(
                   Icons.search,
-                  color: AppColors.primary,
+                  color: appColor.primary,
                   size: Responsive.responsiveValue(
                     context,
                     mobile: MediaQuery.sizeOf(context).width * 0.1,
@@ -121,7 +125,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
               IconButton(
                 icon: Icon(
                   Icons.add,
-                  color: AppColors.primary,
+                  color: appColor.primary,
                   size: Responsive.responsiveValue(
                     context,
                     mobile: MediaQuery.sizeOf(context).width * 0.1,
@@ -131,8 +135,7 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                 ),
                 onPressed: () {
                   //_showAddVehicleDialog();
-                  // Redirige vers l'écran de sélection de marque
-                  Navigator.pushReplacementNamed(context, "/brand_picker");
+                  _goToAddVehicle();
                 },
               ),
 
@@ -157,20 +160,24 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
               ],
             )
           else if (_vehicles.isEmpty)
-              Column(
-                children: [
-                  const Icon(Icons.directions_car_filled, size: 48, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Aucun véhicule trouvé',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _goToAddVehicle,
-                    child: const Text('Ajouter un nouveau véhicule'),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  children: [
+                    const Icon(Icons.directions_car_filled, size: 48, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Aucun véhicule trouvé',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _goToAddVehicle,
+                      child: const Text('Ajouter un nouveau véhicule'),
+                      style: AppStyles.outlineButton(context),
+                    ),
+                  ],
+                ),
               )
             else
               ListView.builder(

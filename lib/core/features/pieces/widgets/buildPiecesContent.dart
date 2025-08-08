@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/piecesCategorie.dart';
 import '../services/pieces_services.dart';
 import 'buildCategorieCard.dart';
 import 'buildCategorieShimmer.dart';
+import '../../../utils/responsive.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -22,13 +25,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
   @override
   void initState() {
     super.initState();
-    _loadCategorie();
-    _getToken();
+    _getToken().then((_) => _loadCategorie());
   }
 
   Future<void> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    _accessToken = prefs.getString('accessToken')!;
+    _accessToken = prefs.getString('accessToken') ?? '';
   }
 
   Future<void> _loadCategorie() async {
@@ -37,7 +39,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       categorie = await PiecesService().fetchPieceCategories(context);
       _filterCategories();
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     } finally {
       setState(() => _isLoading = false);
     }
@@ -50,7 +52,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       } else {
         filteredCategorie = categorie
             .where((cat) =>
-        cat.name.toLowerCase().contains(_searchText.toLowerCase()))
+            cat.name.toLowerCase().contains(_searchText.toLowerCase()))
             .toList();
       }
     });
@@ -58,43 +60,60 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final displayList = _isLoading
-        ? List.generate(4, (index) => null)
-        : filteredCategorie;
+    final displayList =
+    _isLoading ? List.generate(4, (index) => null) : filteredCategorie;
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: EdgeInsets.all(
+            Responsive.responsiveValue(context, mobile: 12, tablet: 24),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSearchBar(),
+              _buildSearchBar(context),
               const SizedBox(height: 16),
               Text('Catégories', style: AppStyles.titleLarge(context)),
               const SizedBox(height: 12),
               Expanded(
-                child: GridView.builder(
-                  itemCount: displayList.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 3 / 4,
-                  ),
-                  itemBuilder: (context, index) {
-                    if (_isLoading) {
-                      return const CategoryCardShimmer();
-                    } else if (filteredCategorie.isNotEmpty) {
-                      final category = displayList[index];
-                      return CategoryCard(
-                        category: category!,
-                        getToken: _accessToken,
-                      );
-                    } else {
-                      // Gérer le cas où la liste est vide
-                      return const Center(child: Text("Aucune catégorie disponible"));
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Détermine dynamiquement le nombre de colonnes
+                    int crossAxisCount = 2;
+                    double width = constraints.maxWidth;
+
+                    if (width >= 1200) {
+                      crossAxisCount = 5;
+                    } else if (width >= 900) {
+                      crossAxisCount = 4;
+                    } else if (width >= 600) {
+                      crossAxisCount = 3;
                     }
+
+                    return GridView.builder(
+                      itemCount: displayList.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 3 / 4,
+                      ),
+                      itemBuilder: (context, index) {
+                        if (_isLoading) {
+                          return const CategoryCardShimmer();
+                        } else if (filteredCategorie.isNotEmpty) {
+                          final category = displayList[index];
+                          return CategoryCard(
+                            category: category!,
+                            getToken: _accessToken,
+                          );
+                        } else {
+                          return const Center(
+                              child: Text("Aucune catégorie disponible"));
+                        }
+                      },
+                    );
                   },
                 ),
               ),
@@ -105,7 +124,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Row(
       children: [
         Expanded(
@@ -113,7 +133,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             decoration: InputDecoration(
               hintText: 'Nom catégorie',
               filled: true,
-              suffixIcon: const Icon(Icons.search, color: Colors.green),
+              suffixIcon:  Icon(Icons.search, color: appColors.primary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.grey),
@@ -133,7 +153,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         const SizedBox(width: 10),
         Container(
           padding: const EdgeInsets.all(10),
-          child: const Icon(Icons.filter_list, color: Colors.green),
+          child:  Icon(Icons.filter_list, color: appColors.primary),
         ),
       ],
     );

@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/visite.dart';
 import '../reception/services/reception_services.dart';
 import 'widgets/buildHomeContent.dart';
-import '../dashboard/widgets/dashboardTech.dart';
+import '../dashboard/views/vehicle_dashboard_page.dart';
 
 class TechnicianHomeScreen extends StatefulWidget {
   const TechnicianHomeScreen({super.key});
@@ -58,9 +58,9 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   }
   List<Widget> _buildScreens() {
     return [
-      buildHomeContent(context, HistoryList(title: AppLocalizations.of(context).ongoingVehicles, visites: _visites, isLoading: _isLoading, context: context, accessToken: accessToken)),
+      HomeContent(historyList: HistoryList(title: AppLocalizations.of(context).ongoingVehicles, visites: _visites, contextParent: context,isLoading: _isLoading, accessToken: accessToken), onRefresh: ()=>_loadData(), context: context,),
       CategoriesPage(),
-      VehicleDashboardPage(),
+      VehicleDashboardPage(context: context,),
       ProfileScreen(con: context),
     ];
   }

@@ -15,7 +15,7 @@ import '../../widgets/buildHistoryList.dart';
 import '../reception/services/reception_services.dart';
 import '../users/views/user_list_page.dart';
 import 'widgets/buildHomeContent.dart';
-import '../dashboard/widgets/dashboardTech.dart';
+import '../dashboard/views/vehicle_dashboard_page.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -37,11 +37,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   List<Widget> _buildScreens() {
     return [
-
-      VehicleDashboardPage(),
+      VehicleDashboardPage(context: context),
       CategoriesPage(),
       UserListScreen(),
-      buildHomeContent(context, HistoryList(title: AppLocalizations.of(context).ongoingVehicles, visites: _visites, isLoading: _isLoading, context: context, accessToken: accessToken)),
+      HomeContent(historyList: HistoryList(title: AppLocalizations.of(context).ongoingVehicles,contextParent : context, visites: _visites, isLoading: _isLoading,  accessToken: accessToken), context: context,),
       ProfileScreen(con: context),
     ];
   }

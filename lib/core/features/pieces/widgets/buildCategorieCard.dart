@@ -1,92 +1,120 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-
 import '../../../models/piecesCategorie.dart';
 
 class CategoryCard extends StatelessWidget {
   final PieceCategorie category;
   final String? getToken;
+
   const CategoryCard({super.key, required this.category, this.getToken});
 
   @override
   Widget build(BuildContext context) {
+
     final height = MediaQuery.of(context).size.height;
+    final double imageHeight = Responsive.responsiveValue(
+      context,
+      mobile: height * 0.17,
+      tablet: 180,
+      desktop: 220,
+    );
+
+    final double paddingValue = Responsive.responsiveValue(
+      context,
+      mobile: 10,
+      tablet: 14,
+      desktop: 16,
+    );
+
+    final TextStyle titleStyle = AppStyles.caption(context).copyWith(
+      fontSize: Responsive.responsiveValue(
+        context,
+        mobile: 14,
+        tablet: 16,
+        desktop: 18,
+      ),
+    );
+
+    final TextStyle bodyStyle = AppStyles.bodySmall(context).copyWith(
+      fontSize: Responsive.responsiveValue(
+        context,
+        mobile: 12,
+        tablet: 14,
+        desktop: 16,
+      ),
+    );
 
     return GestureDetector(
       onTap: () {},
       child: Container(
-        height: double.infinity,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// Image Section
             ClipRRect(
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
               ),
               child: Image.network(
                 category.logo,
                 headers: {'Authorization': 'Bearer $getToken'},
-                height: Responsive.responsiveValue(
-                  context,
-                  mobile: height * 0.18,
-                  tablet: 200,
-                  desktop: 300,
-                ),
+                height: imageHeight,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder:
-                    (
-                      BuildContext context,
-                      Object error,
-                      StackTrace? stackTrace,
+                errorBuilder: (
+                    BuildContext context,
+                    Object error,
+                    StackTrace? stackTrace,
                     ) {
-                      debugPrint(error.toString());
-                      return Image.asset(
-                        'assets/images/v1.jpg', // Remplacez par le chemin de votre image par défaut
-                        height: Responsive.responsiveValue(
-                          context,
-                          mobile: height * 0.18,
-                          tablet: 200,
-                          desktop: 300,
-                        ),
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      );
-                    },
+                  debugPrint(error.toString());
+                  return Image.asset(
+                    'assets/images/v1.jpg',
+                    height: imageHeight,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  );
+                },
               ),
             ),
+
+            /// Text Section
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(paddingValue),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  /// Title and Count
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "${category.name}".toUpperCase(),
-                        style: AppStyles.caption(context),
-                        textAlign: TextAlign.start,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Expanded(
+                        child: Text(
+                          category.name.toUpperCase(),
+                          style: titleStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      SizedBox(height: height * 0.03),
-                      Text('Nombre: ${category.count['pieces']}'),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Nombre: ${category.count['pieces']}',
+                        style: bodyStyle,
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
+
+                  /// Description
                   Text(
-                    "${category.description}",
-                    style: AppStyles.bodySmall(context),
-                    textAlign: TextAlign.start,
+                    category.description,
+                    style: bodyStyle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

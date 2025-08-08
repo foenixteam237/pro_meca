@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
+import 'package:provider/provider.dart';
 
 import '../../../widgets/shimmerRound.dart';
 import 'ModelSelectedScreen.dart'; // Ajoutez cette dépendance dans pubspec.yaml
@@ -91,7 +93,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
       print("En cours de chargement");
       return BrandShimmerWidget();
     }
-
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return GridView.builder(
       itemCount: _filteredBrand.length,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -117,7 +119,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: isSelected
-                    ? AppColors.primary
+                    ? appColors.primary
                     : Colors.grey[300],
                 child:
                     brand.logoUrl.toString().isNotEmpty && brand.logoUrl != null
@@ -135,8 +137,9 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
               const SizedBox(height: 4),
               Text(
                 brand.name,
-                style: TextStyle(
+                style: AppStyles.titleMedium(context).copyWith(
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 12
                 ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
@@ -150,6 +153,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -159,7 +163,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
           tablet: MediaQuery.of(context).size.width * 0.1,
           desktop: MediaQuery.of(context).size.width * 0.2,
         ),
-        vertical: 30,
+        vertical: 10,
       ),
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.9,
@@ -180,7 +184,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
                 width: 30,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: index < 1 ? AppColors.primary : Colors.grey[300],
+                  color: index < 1 ? appColors.primary : Colors.grey[300],
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -223,8 +227,8 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary),
+                    backgroundColor: appColors.primary,
+                    side: BorderSide(color: appColors.primary),
                   ),
                   onPressed: () => Navigator.pop(context),
                   child: Text('Retour', style: AppStyles.buttonText(context)),
@@ -235,7 +239,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _selectedBrandObject?.name != null
-                        ? AppColors.primary
+                        ? appColors.primary
                         : Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),

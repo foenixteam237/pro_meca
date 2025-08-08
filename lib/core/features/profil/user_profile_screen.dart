@@ -298,8 +298,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Informations utilisateur
             _buildUserInfoSection(context, l10n, textColor, _user, isCompanyAdmin),
             const SizedBox(height: 24),
-            // Bouton de mise à jour
-            if (isCompanyAdmin || widget.member == null)
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

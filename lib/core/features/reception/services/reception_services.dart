@@ -4,9 +4,11 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/commonUi/validationScreen.dart';
 import 'package:pro_meca/core/features/reception/views/diagnosticScreen.dart';
 import 'package:pro_meca/core/models/client.dart';
+import 'package:pro_meca/core/models/diagnostic.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReceptionServices {
   final Dio _dio;
@@ -151,6 +153,8 @@ class ReceptionServices {
     Map<String, dynamic> visiteData,
     BuildContext context,
   ) async {
+    final pref = await SharedPreferences.getInstance();
+    final accessToken =  pref.getString("accessToken");
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
@@ -190,13 +194,12 @@ class ReceptionServices {
             // Rediriger vers la page Diagnostic
 
             final responseData = response.data;
-            final idVisite = Visite.fromJson(responseData['data']).id;
-            debugPrint("La visite est $idVisite");
+            final visite = Visite.fromJson(responseData['data']);
             Navigator.push(
               // ignore: use_build_context_synchronously
               context,
               MaterialPageRoute(
-                builder: (context) => DiagnosticPage(idVisite: idVisite),
+                builder: (context) => DiagnosticPage(idVisite: visite.id, visite: visite, accessToken: accessToken,),
               ),
             );
           } else {
@@ -314,6 +317,108 @@ class ReceptionServices {
     } catch (e) {
       debugPrint('Erreur inattendue: $e');
       throw Exception('Erreur lors du chargement des visites');
+    }
+  }
+  //##################################################-RECUPERATION DES VISITES AVEC LA VEHICULE INCLU-###################################
+
+  Future<List<Visite>> fetchVisitesWithVehicleStatus(String status) async {
+    try {
+      // 1. Récupère les visites avec timeout et gestion d'erreur
+      final Response resVisite = await _dio.get(
+        '/visites/status/$status',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
+          headers: await ApiDioService().getAuthHeaders()
+        ),
+      );
+
+      if (resVisite.statusCode != 200) {
+        throw DioException(
+          requestOptions: resVisite.requestOptions,
+          response: resVisite,
+          error: 'Statut HTTP ${resVisite.statusCode}',
+        );
+      }
+
+      final List<dynamic> visites = resVisite.data as List;
+
+      // 2. Récupération parallèle des véhicules
+      final List<Visite> result = await Future.wait(
+        visites.map((visiteJson) async {
+          try {
+            final vehicleId = visiteJson['vehicleId'] as String;
+            final Response resVehicle = await _dio.get(
+              '/vehicles/$vehicleId',
+              options: Options(
+                receiveTimeout: const Duration(seconds: 10),
+                headers: await ApiDioService().getAuthHeaders()
+              ),
+            );
+            if (resVehicle.statusCode != 200) {
+              throw DioException(
+                requestOptions: resVehicle.requestOptions,
+                response: resVehicle,
+                error: 'Erreur véhicule ${resVehicle.statusCode}',
+              );
+            }
+
+            final Vehicle vehicle = Vehicle.fromJson(resVehicle.data as Map<String, dynamic>);
+
+            return Visite.fromVisiteJson(visiteJson, vehicle);
+          } on DioException catch (e) {
+            // En cas d'erreur sur un véhicule, retourne une visite partielle
+            debugPrint('Erreur véhicule : ${e.message}');
+            return Visite.fromJson(visiteJson);
+          }
+        }),
+      );
+
+      return result;
+
+    } on DioException catch (e) {
+      debugPrint('Erreur réseau: ${e.message}');
+      if (e.response != null) {
+        throw Exception(
+          'Erreur serveur (${e.response?.statusCode}): ${e.response?.data['message'] ?? 'Pas de message'}',
+        );
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        throw Exception('Timeout de connexion au serveur');
+      } else {
+        throw Exception('Erreur réseau: ${e.message}');
+      }
+    } catch (e) {
+      debugPrint('Erreur inattendue: $e');
+      throw Exception('Erreur lors du chargement des visites');
+    }
+  }
+
+  //##########################---CREATION D'UN DIAGNOSTIC---#############################
+  Future<bool> submitDiagnostic(Diagnostic diag,String accessToken,) async {
+    print(diag.toMap());
+    try {
+      final response = await _dio.post(
+        '/visites/diagnostics/create',
+        data: diag.toMap(),
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $accessToken",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        print(response.data);
+        return false;
+      }
+    } on DioException catch (e) {
+      print(e);
+      return false;
+    } catch (e) {
+      print(e);
+      return false;
     }
   }
 }

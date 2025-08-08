@@ -9,7 +9,7 @@ class CategoryCardShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
-
+    final screnHeigth = MediaQuery.of(context).size.height;
     final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
     final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
 
@@ -17,7 +17,7 @@ class CategoryCardShimmer extends StatelessWidget {
       baseColor: baseColor,
       highlightColor: highlightColor,
       child: Container(
-        height: Responsive.responsiveValue(context, mobile: 150, tablet: 200),
+        height: Responsive.responsiveValue(context, mobile: screnHeigth * 0.2, tablet: 200),
         decoration: BoxDecoration(
           border: Border.all(color: baseColor),
           borderRadius: BorderRadius.circular(10),

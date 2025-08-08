@@ -5,8 +5,10 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../constants/app_adaptive_colors.dart';
 import '../../../services/api_services.dart';
 import '../../../widgets/shimmerRound.dart';
 import 'clientVehicleFormPage.dart';
@@ -98,6 +100,8 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       // Ajout d'un Scaffold
       resizeToAvoidBottomInset: false,
@@ -107,14 +111,14 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
         padding: EdgeInsets.symmetric(
           horizontal: Responsive.responsiveValue(
             context,
-            mobile: MediaQuery.of(context).size.width * 0.05,
-            tablet: MediaQuery.of(context).size.width * 0.1,
-            desktop: MediaQuery.of(context).size.width * 0.2,
+            mobile: width * 0.05,
+            tablet: width * 0.1,
+            desktop: width * 0.2,
           ),
           vertical: 10,
         ),
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          maxHeight: height * 0.9,
         ),
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -213,6 +217,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   }
 
   Widget _buildImage(String? logo) {
+
     if (logo != null) {
       return Image.network(
         logo,
@@ -236,6 +241,8 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   }
 
   Widget _buildModelGrid() {
+
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     if (_isLoading) {
       return BrandShimmerWidget();
     }
@@ -257,25 +264,24 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
             widget.onModelSelected(model.id);
           },
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              // Cercle avec image du modèle
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _selectedModel == model.name
-                      ? AppColors.primary
-                      : Colors.grey.withOpacity(0.1),
-                  border: Border.all(
-                    color: _selectedModel == model.name
-                        ? AppColors.primary
-                        : Colors.transparent,
-                    width: 2,
-                  ),
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: _selectedModel == model.name
+                    ? appColors.primary
+                    : Colors.grey[300],
+                child:
+                model.logo.toString().isNotEmpty && model.logo != null
+                    ? Image.network(
+                  model.logo.toString(),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Icon(Icons.directions_car),
+                )
+                    : Image.asset(
+                  'assets/images/welcome_image.png',
+                  fit: BoxFit.fill,
                 ),
-                child: ClipOval(child: _buildImage(model.logo)),
               ),
               const SizedBox(height: 2),
               // Nom du modèle

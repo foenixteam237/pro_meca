@@ -12,7 +12,7 @@ void showVehicleSelectionModal(BuildContext context) {
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
-        child: const VehicleSelectionContent(),
+        child:  VehicleSelectionContent(context: context,),
       ),
     ],
     modalTypeBuilder: (context) {

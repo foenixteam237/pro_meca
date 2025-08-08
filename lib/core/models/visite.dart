@@ -97,6 +97,30 @@ class Visite {
       'companyId': companyId,
     };
   }
+
+  static Map<String, int> getVehicleStatsByStatus(List<Visite> vehicles, String targetStatus) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+
+    // Filtrer d'abord les véhicules par statut
+    final filteredVehicles = vehicles.where((v) => v.status == targetStatus).toList();
+
+    // Compter pour aujourd'hui
+    final todayCount = filteredVehicles.where((v) => v.updatedAt.isAfter(today)).length;
+
+    // Compter pour ce mois
+    final monthCount = filteredVehicles.where((v) => v.updatedAt.isAfter(firstDayOfMonth)).length;
+
+    // Total est simplement la longueur de la liste filtrée
+    final totalCount = filteredVehicles.length;
+
+    return {
+      'today': todayCount,
+      'month': monthCount,
+      'total': totalCount,
+    };
+  }
 }
 
 /// Classe représentant les éléments à bord d'une voiture lors d'une visite.

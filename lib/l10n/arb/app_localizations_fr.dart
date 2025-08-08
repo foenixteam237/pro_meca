@@ -188,6 +188,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get certifiedTechnician => 'Technicien certifié';
 
   @override
+  String get waitingInterventions => 'En attente intervention';
+
+  @override
   String get phoneNumberLabel => 'Numéro de téléphone';
 
   @override
