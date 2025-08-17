@@ -347,7 +347,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

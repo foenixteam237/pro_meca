@@ -21,7 +21,7 @@ class Piece {
   final DateTime updatedAt;
   final Category category;
   final dynamic source;
-  late final bool? inStock ;
+  late final bool? inStock;
 
   Piece({
     required this.id,
@@ -55,7 +55,7 @@ class Piece {
       name: json['name'],
       reference: json['reference'],
       barcode: json['barcode'],
-      logo: json['logo'] ?? "assets/images/logo.png",
+      logo: json['logo'] ?? "",
       sourceId: json['sourceId'],
       originVehicle: json['originVehicle'],
       recoveryDate: json['recoveryDate'] != null
@@ -80,7 +80,6 @@ class Piece {
       inStock: json['stock'] > 0,
     );
   }
-
 }
 
 class Category {

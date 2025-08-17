@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
-import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/reception/services/reception_services.dart';
-import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
@@ -173,8 +171,8 @@ class _VehicleSelectionContentState extends State<VehicleSelectionContent> {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _goToAddVehicle,
-                      child: const Text('Ajouter un nouveau véhicule'),
                       style: AppStyles.outlineButton(context),
+                      child: const Text('Ajouter un nouveau véhicule'),
                     ),
                   ],
                 ),

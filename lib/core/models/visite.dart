@@ -1,4 +1,3 @@
-
 import 'package:intl/intl.dart';
 import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
@@ -49,9 +48,10 @@ class Visite {
       elementsBord: ElementsBords.fromJson(
         json['elementsBord'] as Map<String, dynamic>,
       ),
-      companyId: json['companyId'] as String,diagnostics: (json['diagnostics'] as List<dynamic>)
-        .map((e) => Diagnostic.fromJson(e))
-        .toList(),
+      companyId: json['companyId'] as String,
+      diagnostics: (json['diagnostics'] as List<dynamic>)
+          .map((e) => Diagnostic.fromJson(e))
+          .toList(),
       photos: (json['photos'] as List<dynamic>)
           .map((e) => Photo.fromJson(e))
           .toList(),
@@ -60,13 +60,12 @@ class Visite {
     );
   }
   factory Visite.fromVisiteJson(Map<String, dynamic> json, Vehicle vehicle) {
-    print("je suis ici ${json['id']}");
     return Visite(
       id: json['id'].toString(),
       dateEntree: DateTime.parse(json['dateEntree'].toString()),
       dateSortie: json['dateSortie'] != null
           ? DateTime.tryParse(json['dateSortie'])
-          : DateTime.tryParse("01/01/1961"),
+          : DateTime.tryParse("1961-01-01"),
       vehicleId: json['vehicleId'].toString(),
       status: json['status'].toString(),
       vehicle: vehicle,
@@ -74,17 +73,17 @@ class Visite {
       elementsBord: ElementsBords.fromJson(
         json['elementsBord'] as Map<String, dynamic>,
       ),
-      companyId: json['companyId'].toString(),diagnostics: (json['diagnostics'] as List<dynamic>)
-        .map((e) => Diagnostic.fromJson(e))
-        .toList(),
+      companyId: json['companyId'].toString(),
+      diagnostics: (json['diagnostics'] as List<dynamic>)
+          .map((e) => Diagnostic.fromJson(e))
+          .toList(),
       photos: (json['photos'] as List<dynamic>)
-        .map((e) => Photo.fromJson(e))
-        .toList(),
+          .map((e) => Photo.fromJson(e))
+          .toList(),
       createdAt: DateTime.parse(json['createdAt'].toString()),
       updatedAt: DateTime.parse(json['updatedAt'].toString()),
     );
   }
-
 
   Map<String, dynamic> toJson() {
     DateTime nowUtc = dateEntree;
@@ -149,18 +148,32 @@ class ElementsBords {
     required this.boitePharmacie,
     required this.boiteOutils,
     required this.essuieGlace,
-    this.autres
+    this.autres,
   });
 
   factory ElementsBords.fromJson(Map<String, dynamic> json) {
     return ElementsBords(
-        extincteur: bool.tryParse(json['extincteur'].toString(), caseSensitive: false) ?? false,
-        dossier:bool.tryParse(json['dossier'].toString(), caseSensitive: false) ?? false,
-        cric: bool.tryParse(json['cric'].toString(), caseSensitive: false) ?? false,
-        boitePharmacie: bool.tryParse(json['boitePharmacie'].toString(), caseSensitive: false) ?? false,
-        boiteOutils: bool.tryParse(json['boiteOutils'].toString(), caseSensitive: false) ?? false,
-        essuieGlace: bool.tryParse(json['essuieGlace'].toString(), caseSensitive: false) ?? false,
-        autres: json['autres']
+      extincteur:
+          bool.tryParse(json['extincteur'].toString(), caseSensitive: false) ??
+          false,
+      dossier:
+          bool.tryParse(json['dossier'].toString(), caseSensitive: false) ??
+          false,
+      cric:
+          bool.tryParse(json['cric'].toString(), caseSensitive: false) ?? false,
+      boitePharmacie:
+          bool.tryParse(
+            json['boitePharmacie'].toString(),
+            caseSensitive: false,
+          ) ??
+          false,
+      boiteOutils:
+          bool.tryParse(json['boiteOutils'].toString(), caseSensitive: false) ??
+          false,
+      essuieGlace:
+          bool.tryParse(json['essuieGlace'].toString(), caseSensitive: false) ??
+          false,
+      autres: json['autres'],
     );
   }
 

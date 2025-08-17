@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_styles.dart';
-import '../../../models/piecesCategorie.dart';
+import '../../../models/categories.dart';
 import '../services/pieces_services.dart';
 import '../widgets/buildCategorieCard.dart';
 import '../widgets/buildCategorieShimmer.dart';
@@ -52,8 +52,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
         filteredCategorie = List.from(categorie);
       } else {
         filteredCategorie = categorie
-            .where((cat) =>
-            cat.name.toLowerCase().contains(_searchText.toLowerCase()))
+            .where(
+              (cat) =>
+                  cat.name.toLowerCase().contains(_searchText.toLowerCase()),
+            )
             .toList();
       }
     });
@@ -61,8 +63,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final displayList =
-    _isLoading ? List.generate(4, (index) => null) : filteredCategorie;
+    final displayList = _isLoading
+        ? List.generate(4, (index) => null)
+        : filteredCategorie;
 
     return Scaffold(
       body: SafeArea(
@@ -112,7 +115,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           );
                         } else {
                           return const Center(
-                              child: Text("Aucune catégorie disponible"));
+                            child: Text("Aucune catégorie disponible"),
+                          );
                         }
                       },
                     );
@@ -127,7 +131,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   Widget _buildSearchBar(BuildContext context) {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Row(
       children: [
         Expanded(
@@ -135,7 +139,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             decoration: InputDecoration(
               hintText: 'Nom catégorie',
               filled: true,
-              suffixIcon:  Icon(Icons.search, color: appColors.primary),
+              suffixIcon: Icon(Icons.search, color: appColors.primary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.grey),
@@ -155,7 +159,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         const SizedBox(width: 10),
         Container(
           padding: const EdgeInsets.all(10),
-          child:  Icon(Icons.filter_list, color: appColors.primary),
+          child: Icon(Icons.filter_list, color: appColors.primary),
         ),
       ],
     );

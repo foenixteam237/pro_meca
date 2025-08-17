@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import '../../../constants/app_adaptive_colors.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/pieces.dart';
 import '../views/show_piece_detail.dart';
 
-Widget buildPieceItems(Piece piece,BuildContext context,int index, void Function(int index) increaseQuantity, void Function(int index) decreaseQuantity) {
-  final appColor = Provider.of<AppAdaptiveColors>(context);
+Widget buildPieceItems(
+  Piece piece,
+  BuildContext context,
+  int index,
+  void Function(int index) increaseQuantity,
+  void Function(int index) decreaseQuantity,
+) {
+  //final appColor = Provider.of<AppAdaptiveColors>(context);
   return GestureDetector(
     onTap: () => showPieceBottomSheet(context, piece),
     child: Container(
@@ -23,20 +27,35 @@ Widget buildPieceItems(Piece piece,BuildContext context,int index, void Function
             // Image de la pièce
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                piece.logo!,
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    'assets/images/moteur.jpg',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,)
-                ),
-              ),
+              child: piece.logo!.isNotEmpty
+                  ? Image.network(
+                      piece.logo!,
+                      headers: {
+                        'Authorization':
+                            'Bearer ${ApiDioService().getAuthHeaders()}',
+                      },
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/images/moteur.jpg',
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image(
+                        image: AssetImage('assets/images/moteur.jpg'),
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
             ),
 
             const SizedBox(width: 12),
@@ -49,12 +68,8 @@ Widget buildPieceItems(Piece piece,BuildContext context,int index, void Function
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        piece.name,
-                        style: AppStyles.bodyLarge(context),
-                      ),
+                      Text(piece.name, style: AppStyles.bodyLarge(context)),
                       conditionSet(piece.condition, context),
-
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -67,17 +82,13 @@ Widget buildPieceItems(Piece piece,BuildContext context,int index, void Function
                       const SizedBox(width: 6),
                       Text(
                         "en stock",
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-
           ],
         ),
       ),
@@ -85,20 +96,19 @@ Widget buildPieceItems(Piece piece,BuildContext context,int index, void Function
   );
 }
 
-Widget conditionSet(String condition, BuildContext context){
-
-  switch(condition){
+Widget conditionSet(String condition, BuildContext context) {
+  switch (condition) {
     case 'NEW':
-      return Text("Neuf",style: AppStyles.bodySmall(context));
+      return Text("Neuf", style: AppStyles.bodySmall(context));
     case 'USED_GOOD':
-      return Text("Occasion - EE",style: AppStyles.bodySmall(context));
+      return Text("Occasion - EE", style: AppStyles.bodySmall(context));
     case 'USED_WORN':
-      return Text("Occasion - UN",style: AppStyles.bodySmall(context));
+      return Text("Occasion - UN", style: AppStyles.bodySmall(context));
     case 'USED_DAMAGED':
-      return Text("Occasion - AR",style: AppStyles.bodySmall(context));
+      return Text("Occasion - AR", style: AppStyles.bodySmall(context));
     case 'UNKNOWN':
-      return Text("Inconnu",style: AppStyles.bodySmall(context));
-      default:
-        return Text("Inconnu",style: AppStyles.bodySmall(context));
+      return Text("Inconnu", style: AppStyles.bodySmall(context));
+    default:
+      return Text("Inconnu", style: AppStyles.bodySmall(context));
   }
 }

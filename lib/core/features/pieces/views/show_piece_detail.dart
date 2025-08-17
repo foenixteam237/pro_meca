@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/pieces.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
 
 void showPieceBottomSheet(BuildContext context, Piece piece) {
   int newQuantity = piece.stock;
-  final TextEditingController quantityController =
-  TextEditingController(text: piece.stock.toString());
+  final TextEditingController quantityController = TextEditingController(
+    text: piece.stock.toString(),
+  );
 
   showModalBottomSheet(
     context: context,
@@ -33,17 +36,24 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10),
                   ),
-                  child: Image.asset(
-                    "assets/images/moteur.jpg",
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      height: 180,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.inventory, size: 48),
-                    ),
-                  ),
+                  child: piece.logo!.isNotEmpty
+                      ? Image.network(
+                          piece.logo!,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 180,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.inventory, size: 48),
+                          ),
+                        )
+                      : Image.asset(
+                          'assets/images/moteur.jpg',
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
 
                 const SizedBox(height: 16),
@@ -58,48 +68,45 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                       children: [
                         Text(
                           "Catégorie: ${piece.category.name.toUpperCase()}",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).hintColor,
-                          ),
+                          style: AppStyles.bodyMedium(
+                            context,
+                          ).copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          piece.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text(piece.name, style: AppStyles.bodySmall(context)),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _getConditionColor(piece.condition),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            _formatCondition(piece.condition),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
+                    Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getConditionColor(piece.condition),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _formatCondition(piece.condition),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "Stock: ${piece.stock}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                          const SizedBox(height: 4),
+                          Text(
+                            "Stock: ${piece.stock}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -118,22 +125,31 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                 const SizedBox(height: 8),
 
                 // TEXTFIELD POUR EDITER LA QUANTITÉ
-                TextField(
-                  controller: quantityController,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    contentPadding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                SizedBox(
+                  width: Responsive.responsiveValue(
+                    context,
+                    mobile: MediaQuery.of(context).size.width * 0.5,
+                    tablet: 200,
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      newQuantity = int.tryParse(value) ?? newQuantity;
-                    });
-                  },
+                  child: TextField(
+                    controller: quantityController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 8,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        newQuantity = int.tryParse(value) ?? newQuantity;
+                      });
+                    },
+                  ),
                 ),
 
                 const SizedBox(height: 12),
@@ -222,10 +238,7 @@ Widget _roundActionButton({
     onTap: onTap,
     borderRadius: BorderRadius.circular(50),
     child: Container(
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       padding: const EdgeInsets.all(8),
       child: Icon(icon, color: iconColor),
     ),

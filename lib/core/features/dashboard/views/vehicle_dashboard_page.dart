@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:provider/provider.dart';
@@ -7,14 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_adaptive_colors.dart';
-import '../../../constants/app_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/visite.dart';
 import '../../../widgets/buildSmallCardShimmer.dart';
 import '../../../widgets/buildStatusCardShimmer.dart';
 import '../../diagnostic/views/visite_list_by_status.dart';
 import '../../reception/services/reception_services.dart';
-import '../../reception/widgets/vehicule_inf_shimmer.dart';
 
 class VehicleDashboardPage extends StatefulWidget {
   final BuildContext context;

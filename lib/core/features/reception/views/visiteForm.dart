@@ -33,7 +33,7 @@ class ClientVehicleFormPage extends StatefulWidget {
 class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   DateTime? selectedDate;
   File? _selectedImage;
-  List<File> _vehicleConditionImages = [];
+  final List<File> _vehicleConditionImages = [];
   bool isLoading = false;
   final ImagePicker _picker = ImagePicker();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();

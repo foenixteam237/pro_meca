@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../views/visiteForm.dart';
 

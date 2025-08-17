@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:pro_meca/core/models/brand.dart';
-import 'package:pro_meca/core/models/dataLogin.dart';
 import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

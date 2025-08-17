@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import '../../../models/piecesCategorie.dart';
+import '../../../models/categories.dart';
 import '../views/liste_pieces_screen.dart';
 
 class CategoryCard extends StatelessWidget {
@@ -9,11 +9,15 @@ class CategoryCard extends StatelessWidget {
   final String? getToken;
   final BuildContext pContext;
 
-  const CategoryCard({super.key, required this.category, this.getToken, required this.pContext});
+  const CategoryCard({
+    super.key,
+    required this.category,
+    this.getToken,
+    required this.pContext,
+  });
 
   @override
   Widget build(BuildContext context) {
-
     final height = MediaQuery.of(context).size.height;
     final double imageHeight = Responsive.responsiveValue(
       context,
@@ -49,7 +53,12 @@ class CategoryCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(pContext, MaterialPageRoute(builder: (pContext) => PiecesPage( catId: category.id,)));
+        Navigator.push(
+          pContext,
+          MaterialPageRoute(
+            builder: (pContext) => PiecesPage(catId: category.id),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(
@@ -66,26 +75,34 @@ class CategoryCard extends StatelessWidget {
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),
-              child: Image.network(
-                category.logo,
-                headers: {'Authorization': 'Bearer $getToken'},
-                height: imageHeight,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (
-                    BuildContext context,
-                    Object error,
-                    StackTrace? stackTrace,
-                    ) {
-                  debugPrint(error.toString());
-                  return Image.asset(
-                    'assets/images/v1.jpg',
-                    height: imageHeight,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  );
-                },
-              ),
+              child: category.logo.isNotEmpty
+                  ? Image.network(
+                      category.logo,
+                      headers: {'Authorization': 'Bearer $getToken'},
+                      height: imageHeight,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder:
+                          (
+                            BuildContext context,
+                            Object error,
+                            StackTrace? stackTrace,
+                          ) {
+                            debugPrint(error.toString());
+                            return Image.asset(
+                              'assets/images/v1.jpg',
+                              height: imageHeight,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                    )
+                  : Image.asset(
+                      'assets/images/v1.jpg',
+                      height: imageHeight,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
             ),
 
             /// Text Section
