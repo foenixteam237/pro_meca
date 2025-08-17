@@ -91,9 +91,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isUploadingImage = true);
     try {
       final userId = widget.member?.id ?? _user!.id;
+
       final updatedUser = await UserService().uploadUserProfileImage(
         userId: userId,
         imageFile: _selectedImage!,
+        isAdmin: widget.member!=null
       );
 
       if (updatedUser != null) {
@@ -203,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final userId = widget.member?.id ?? _user!.id;
 
       // Appel API
-      final updatedUser = await UserService().updateUserProfile(userId, updatedFields, _user!.isCompanyAdmin);
+      final updatedUser = await UserService().updateUserProfile(userId, updatedFields, widget.member != null);
       await _refreshUserData(updatedUser);
       // Vérifie que la réponse est valide
       setState(() {
@@ -439,7 +441,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Image.file(_selectedImage!, fit: BoxFit.cover);
     } else if (_user?.logo != null && _user!.logo!.isNotEmpty && widget.member != null) {
       return CachedNetworkImage(
-        imageUrl:  _user!.logo!,
+        imageUrl: _user!.logo!,
         fit: BoxFit.cover,
         httpHeaders:{'Authorization': 'Bearer $_accessToken'},
         placeholder: (context, url) => CircularProgressIndicator(),

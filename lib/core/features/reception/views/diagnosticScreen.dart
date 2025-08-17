@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -7,9 +5,11 @@ import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_adaptive_colors.dart';
-import '../../../models/diagnostic.dart';
+import '../../../models/diagnostic_update.dart';
+import '../../../models/dysfonctionnement.dart';
 import '../../../models/visite.dart';
 import '../../../widgets/build_image.dart';
 import '../services/reception_services.dart';
@@ -32,34 +32,68 @@ class DiagnosticPage extends StatefulWidget {
 
 class _DiagnosticPageState extends State<DiagnosticPage> {
   late final TextEditingController problemReportedController;
-  late final TextEditingController problemIdentifiedController;
-  late final TextEditingController errorCodeController;
-  String urgencyLevel = "négligeable";
   bool _isLoading = false;
+  String urgencyLevel = "négligeable";
+
+  // Nouvelle structure pour gérer plusieurs diagnostics
+  List<DiagnosticEntry> diagnosticEntries = [];
 
   @override
   void initState() {
     super.initState();
     problemReportedController = TextEditingController(text: widget.visite?.constatClient ?? '');
-    problemIdentifiedController = TextEditingController();
-    errorCodeController = TextEditingController();
+
+    // Ajouter un diagnostic vide par défaut
+    diagnosticEntries.add(DiagnosticEntry());
   }
 
   @override
   void dispose() {
     problemReportedController.dispose();
-    problemIdentifiedController.dispose();
-    errorCodeController.dispose();
+
+    // Disposer tous les contrôleurs des diagnostics
+    for (var entry in diagnosticEntries) {
+      entry.codeController.dispose();
+      entry.detailController.dispose();
+    }
+
     super.dispose();
+  }
+
+  // Ajouter un nouveau diagnostic
+  void _addDiagnostic() {
+    setState(() {
+      diagnosticEntries.add(DiagnosticEntry());
+    });
+  }
+
+  // Supprimer un diagnostic
+  void _removeDiagnostic(int index) {
+    if (diagnosticEntries.length > 1) {
+      setState(() {
+        // Disposer les contrôleurs avant de supprimer
+        diagnosticEntries[index].codeController.dispose();
+        diagnosticEntries[index].detailController.dispose();
+        diagnosticEntries.removeAt(index);
+      });
+    }
   }
 
   Future<void> createDiagnostic() async {
     if (_isLoading) return;
 
-    // Validate required fields
-    if (problemIdentifiedController.text.isEmpty) {
+    // Valider qu'au moins un diagnostic a été saisi
+    bool hasValidDiagnostic = false;
+    for (var entry in diagnosticEntries) {
+      if (entry.codeController.text.isNotEmpty || entry.detailController.text.isNotEmpty) {
+        hasValidDiagnostic = true;
+        break;
+      }
+    }
+
+    if (!hasValidDiagnostic) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Veuillez identifier le problème")),
+        const SnackBar(content: Text("Veuillez ajouter au moins un diagnostic")),
       );
       return;
     }
@@ -67,8 +101,22 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     setState(() => _isLoading = true);
 
     try {
+      // Préparer la liste des dysfonctionnements
+      final List<Dysfonctionnement> dysfonctionnements = diagnosticEntries
+          .where((entry) => entry.codeController.text.isNotEmpty || entry.detailController.text.isNotEmpty)
+          .map((entry) => Dysfonctionnement(
+        code: entry.codeController.text,
+        detail: entry.detailController.text,
+      ))
+          .toList();
 
-      final diagnostic = Diagnostic(visiteId: widget.idVisite, problemReported: problemReportedController.text, problemIdentified: problemIdentifiedController.text, errorCode: errorCodeController.text, urgencyLevel: urgencyLevel);
+      final diagnostic = Diagnostic(
+        id: widget.idVisite,
+        niveauUrgence: urgencyLevel,
+        dysfonctionnements: dysfonctionnements,
+        validated: false,
+      );
+
       final response = await ReceptionServices().submitDiagnostic(
           diagnostic,
           widget.accessToken!
@@ -78,7 +126,24 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Diagnostic envoyé avec succès!")),
         );
-        if (mounted) Navigator.pop(context);
+
+        if (mounted) {
+          var route = '';
+          final pref = await SharedPreferences.getInstance();
+          bool isAdmin = pref.getBool('isAdmin') ?? false;
+
+          if (isAdmin) {
+            route = '/admin_home';
+          } else {
+            route = '/technician_home';
+          }
+
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            route,
+                (Route<dynamic> route) => false,
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Échec de l'envoi du diagnostic")),
@@ -121,17 +186,17 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
               // Problem Reported Section
               _buildProblemReportedSection(context),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
 
-              // Problem Identified Section
-              _buildProblemIdentifiedSection(context),
+              // Diagnostics Section
+              _buildDiagnosticsSection(context),
 
               const SizedBox(height: 20),
 
-              // Additional Fields Section
-              _buildAdditionalFieldsSection(context),
+              // Urgency Level
+              _buildUrgencySection(context),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
 
               // Submit Button
               _buildSubmitButton(context, appColors),
@@ -175,7 +240,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
           ],
         ),
         Text(
-          widget.visite!.vehicle!.client!.firstName,
+          "${widget.visite!.vehicle!.client!.firstName} ${widget.visite!.vehicle!.client!.lastName}",
           style: AppStyles.titleMedium(context).copyWith(
               fontSize: 12
           ),
@@ -188,100 +253,148 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Problème signalé", style: AppStyles.titleMedium(context)),
+        Text("Problème signalé par le client", style: AppStyles.titleMedium(context)),
         const SizedBox(height: 8),
         _buildMultilineInput(
           controller: problemReportedController,
-          hint: "Fumée blanche.........",
+          hint: "Exemple(Fumée blanche.........)",
+          readOnly: true, // Rendre en lecture seule
         ),
       ],
     );
   }
 
-  Widget _buildProblemIdentifiedSection(BuildContext context) {
+  Widget _buildDiagnosticsSection(BuildContext context) {
+    final appColor = Provider.of<AppAdaptiveColors>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Problème identifié",
-          style: AppStyles.titleMedium(context),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Diagnostic du technicien", style: AppStyles.titleMedium(context)),
+            IconButton(
+              icon:  Icon(Icons.add_circle, color: appColor.primary),
+              onPressed: _addDiagnostic,
+              tooltip: "Ajouter un diagnostic",
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        _buildMultilineInput(
-          controller: problemIdentifiedController,
-          hint: "Votre idée du problème",
-        ),
+        const SizedBox(height: 10),
+
+        ...diagnosticEntries.asMap().entries.map((entry) {
+          final index = entry.key;
+          final diagnostic = entry.value;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 15),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Champ Code erreur
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: diagnostic.codeController,
+                      decoration: const InputDecoration(
+                        hintText: "Code erreur (facultatif)",
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  // Champ Détails du diagnostic
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: diagnostic.detailController,
+                          maxLines: 1,
+                          decoration: const InputDecoration(
+                            hintText: "Détails du diagnostic*",
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          ),
+                        ),
+                        if (diagnostic.detailController.text.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Text(
+                              "Ce champ est obligatoire",
+                              style: TextStyle(color: Colors.red, fontSize: 12),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // Bouton Supprimer
+                  if (diagnosticEntries.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, top: 12),
+                      child: IconButton(
+                        icon: const Icon(Icons.remove_circle, color: Colors.red, size: 28),
+                        onPressed: () => _removeDiagnostic(index),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ],
     );
   }
 
-  Widget _buildAdditionalFieldsSection(BuildContext context) {
-    return Column(
+  Widget _buildUrgencySection(BuildContext context) {
+    return Row(
       children: [
-        Row(
-          children: [
-            const Expanded(
-              flex: 2,
-              child: Text("Ce véhicule est-il électronique?"),
+        const Expanded(flex: 2, child: Text("Niveau d'intervention")),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 2,
-              child: TextField(
-                controller: errorCodeController,
-                decoration: const InputDecoration(
-                  hintText: "Code erreur",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            )
-          ],
-        ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            const Expanded(flex: 2, child: Text("Niveau d'urgence")),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: urgencyLevel,
-                    items: const [
-                      DropdownMenuItem(
-                        value: "négligeable",
-                        child: Text("négligeable"),
-                      ),
-                      DropdownMenuItem(
-                        value: "mineur",
-                        child: Text("mineur"),
-                      ),
-                      DropdownMenuItem(
-                        value: "majeur",
-                        child: Text("majeur"),
-                      ),
-                      DropdownMenuItem(
-                        value: "critique",
-                        child: Text("critique"),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        urgencyLevel = value ?? "négligeable";
-                      });
-                    },
-                    icon: const Icon(Icons.arrow_drop_down),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: urgencyLevel,
+                items: const [
+                  DropdownMenuItem(
+                    value: "négligeable",
+                    child: Text("négligeable"),
                   ),
-                ),
+                  DropdownMenuItem(
+                    value: "mineur",
+                    child: Text("mineur"),
+                  ),
+                  DropdownMenuItem(
+                    value: "majeur",
+                    child: Text("majeur"),
+                  ),
+                  DropdownMenuItem(
+                    value: "critique",
+                    child: Text("critique"),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    urgencyLevel = value ?? "négligeable";
+                  });
+                },
+                icon: const Icon(Icons.arrow_drop_down),
               ),
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -292,7 +405,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : createDiagnostic,
         style: AppStyles.primaryButton(context).copyWith(
-          backgroundColor: MaterialStateProperty.all<Color>(appColors.primary),
+          backgroundColor: WidgetStateProperty.all<Color>(appColors.primary),
         ),
         child: _isLoading
             ? const SizedBox(
@@ -303,7 +416,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             strokeWidth: 2,
           ),
         )
-            : Text("Validé", style: AppStyles.buttonText(context)),
+            : Text("Soumettre", style: AppStyles.buttonText(context)),
       ),
     );
   }
@@ -311,6 +424,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
   Widget _buildMultilineInput({
     required String hint,
     required TextEditingController controller,
+    bool readOnly = false,
   }) {
     return Container(
       height: Responsive.responsiveValue(
@@ -321,6 +435,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       child: TextField(
         controller: controller,
         maxLines: 5,
+        readOnly: readOnly,
         decoration: InputDecoration(
           hintText: hint,
           contentPadding: const EdgeInsets.symmetric(
@@ -339,4 +454,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       ),
     );
   }
+}
+
+// Nouvelle classe pour représenter une entrée de diagnostic
+class DiagnosticEntry {
+  final TextEditingController codeController;
+  final TextEditingController detailController;
+
+  DiagnosticEntry()
+      : codeController = TextEditingController(),
+        detailController = TextEditingController();
 }

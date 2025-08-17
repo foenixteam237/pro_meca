@@ -4,7 +4,7 @@ import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
-import 'package:pro_meca/core/features/pieces/widgets/buildPiecesContent.dart';
+import 'package:pro_meca/core/features/pieces/views/categoriePageScreen.dart';
 import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +38,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   List<Widget> _buildScreens() {
     return [
       VehicleDashboardPage(context: context),
-      CategoriesPage(),
+      CategoriesPage(parentContext: context,),
       UserListScreen(),
       HomeContent(historyList: HistoryList(title: AppLocalizations.of(context).ongoingVehicles,contextParent : context, visites: _visites, isLoading: _isLoading,  accessToken: accessToken), context: context,),
       ProfileScreen(con: context),

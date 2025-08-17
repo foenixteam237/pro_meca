@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 
+import '../../../models/pieces.dart';
 import '../../../models/piecesCategorie.dart';
 
 class PiecesService {
@@ -17,29 +18,36 @@ class PiecesService {
   );
 
   /// Récupérer la liste des pièces
-  Future<List<Map<String, dynamic>>> fetchPieces(BuildContext context) async {
+  Future<List<Piece>> fetchPieces(BuildContext context, String categoryId) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
             () async => await _dio.get(
-          '/pieces', // adapte le endpoint à ton backend
+          '/pieces/category/$categoryId',
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
+
       if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(response.data['data']);
+        // Vérifie si la réponse contient une liste dans 'data'
+        final List<dynamic> data = response.data ?? [];
+
+        // Convertit chaque élément JSON en objet Piece
+        return data.map((json) => Piece.fromJson(json)).toList();
       } else {
-        debugPrint("Erreur lors de la récupération des pièces");
+        debugPrint("Erreur lors de la récupération des pièces: ${response.statusCode}");
         return [];
       }
     } on DioException catch (e) {
+      final errorMessage = e.response?.data['message'] ?? e.message ?? 'Erreur inconnue';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(
-          "Impossible de récupérer les pièces. ${e.response?.data['message'] ?? e.message}",
-        )),
+        SnackBar(content: Text("Impossible de récupérer les pièces. $errorMessage")),
       );
       debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
       return [];
     } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur inattendue: ${e.toString()}")),
+      );
       debugPrint('Erreur: ${e.toString()}');
       return [];
     }

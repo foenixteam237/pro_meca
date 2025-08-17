@@ -1,0 +1,104 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../constants/app_adaptive_colors.dart';
+import '../../../constants/app_styles.dart';
+import '../../../models/pieces.dart';
+import '../views/show_piece_detail.dart';
+
+Widget buildPieceItems(Piece piece,BuildContext context,int index, void Function(int index) increaseQuantity, void Function(int index) decreaseQuantity) {
+  final appColor = Provider.of<AppAdaptiveColors>(context);
+  return GestureDetector(
+    onTap: () => showPieceBottomSheet(context, piece),
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        //border: Border.all(color: Colors.grey.withOpacity(0.3)), demande reflexion
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Image de la pièce
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                piece.logo!,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/images/moteur.jpg',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,)
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            // Infos (nom + quantité + en stock)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        piece.name,
+                        style: AppStyles.bodyLarge(context),
+                      ),
+                      conditionSet(piece.condition, context),
+
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        piece.stock.toString(),
+                        style: AppStyles.bodyMedium(context),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "en stock",
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget conditionSet(String condition, BuildContext context){
+
+  switch(condition){
+    case 'NEW':
+      return Text("Neuf",style: AppStyles.bodySmall(context));
+    case 'USED_GOOD':
+      return Text("Occasion - EE",style: AppStyles.bodySmall(context));
+    case 'USED_WORN':
+      return Text("Occasion - UN",style: AppStyles.bodySmall(context));
+    case 'USED_DAMAGED':
+      return Text("Occasion - AR",style: AppStyles.bodySmall(context));
+    case 'UNKNOWN':
+      return Text("Inconnu",style: AppStyles.bodySmall(context));
+      default:
+        return Text("Inconnu",style: AppStyles.bodySmall(context));
+  }
+}

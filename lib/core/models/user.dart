@@ -133,6 +133,12 @@ class User {
         'bio': String bio,
         'logo': String logo,
         'updateAt': String updatedAt,
+        'role': Map<String, dynamic> role,
+        'lastLogin': String? lastLogin,
+        'phone': String phone,
+        'isCompanyAdmin': bool isCompanyAdmin,
+        'createdAt': String createdAt,
+        'companyId': String companyId,
       } =>
         User(
           id: id,
@@ -141,13 +147,35 @@ class User {
           logo: logo,
           bio: bio,
           updatedAt: updatedAt,
-          phone:'',
-          isCompanyAdmin: false,
-          createdAt: '',
-          role: Role(id: 2, name: "", companyId: ""),
+          phone:phone,
+          isCompanyAdmin: isCompanyAdmin,
+          role: Role.fromJson(role),
+          lastLogin: lastLogin,
+          companyId: companyId,
+          createdAt: createdAt,
         ),
       _ => throw const FormatException('Invalid JSON format for User'),
     };
+  }
+
+  factory User.fromJsonUpdate(Map<String, dynamic> json) {
+    try {
+      return User(
+        id: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        email: json['email']?.toString(),
+        phone: json['phone']?.toString() ?? '',
+        isCompanyAdmin: json['isCompanyAdmin'] ?? false,
+        logo: json['logo']?.toString(),
+        bio: json['bio']?.toString(),
+        createdAt:json['createdAt']?.toString() ?? '',
+        updatedAt: json['updateAt']?.toString() ?? '',
+        role: Role.fromJson(json['role']),
+        lastLogin: json['lastLogin'].toString(),
+      );
+    } catch (e) {
+      throw FormatException('Invalid JSON format for Brand', json);
+    }
   }
 
   Map<String, dynamic> toJson() {

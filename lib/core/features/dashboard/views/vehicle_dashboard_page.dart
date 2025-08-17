@@ -48,7 +48,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
       final visites = await ReceptionServices().fetchVisitesWithVehicle();
       setState(() {
         _visites = visites;
-        statVD = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_VALIDATION_DIAGNOSTIC");
+        statVD = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_DIAGNOSTIC");
         statVI = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_VALIDATION_INTERVENTION");
         statT = Visite.getVehicleStatsByStatus(_visites, "TERMINE");
         statIT = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_INTERVENTION");
@@ -291,17 +291,6 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
             ),
           ),
           GestureDetector(
-            onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "avin",))),
-            child: _buildSmallCard(
-              context,
-              icon: Icons.rule_folder_outlined,
-              title: AppLocalizations.of(context).waitingValidation,
-              today: 20,
-              month: 3,
-              total: statVI['total']!,
-            ),
-          ),
-          GestureDetector(
             onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "aint",))),
             child: _buildSmallCard(
               context,
@@ -310,6 +299,17 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
               today: 10,
               month: 4,
               total: statIT['total']!,
+            ),
+          ),
+          GestureDetector(
+            onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "avin",))),
+            child: _buildSmallCard(
+              context,
+              icon: Icons.rule_folder_outlined,
+              title: AppLocalizations.of(context).waitingValidation,
+              today: 20,
+              month: 3,
+              total: statVI['total']!,
             ),
           ),
           GestureDetector(

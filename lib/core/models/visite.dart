@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+
 import 'package:intl/intl.dart';
-import 'package:pro_meca/core/features/reception/services/reception_services.dart';
+import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
+import 'package:pro_meca/core/models/diagnostic_update.dart';
 
 class Visite {
   final String id;
@@ -10,11 +11,13 @@ class Visite {
   final String vehicleId;
   final String status;
   final String constatClient;
-  final ElementsBord elementsBord;
+  final ElementsBords elementsBord;
   final String companyId;
   final Vehicle? vehicle;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<Photo>? photos;
+  final List<Diagnostic> diagnostics;
 
   Visite({
     required this.id,
@@ -26,6 +29,8 @@ class Visite {
     required this.constatClient,
     required this.elementsBord,
     required this.companyId,
+    this.photos,
+    required this.diagnostics,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -41,115 +46,121 @@ class Visite {
       status: json['status'] as String,
       vehicle: json['vehicle'],
       constatClient: json['constatClient'] as String,
-      elementsBord: ElementsBord.fromJson(
+      elementsBord: ElementsBords.fromJson(
         json['elementsBord'] as Map<String, dynamic>,
       ),
-      companyId: json['companyId'] as String,
+      companyId: json['companyId'] as String,diagnostics: (json['diagnostics'] as List<dynamic>)
+        .map((e) => Diagnostic.fromJson(e))
+        .toList(),
+      photos: (json['photos'] as List<dynamic>)
+          .map((e) => Photo.fromJson(e))
+          .toList(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
   factory Visite.fromVisiteJson(Map<String, dynamic> json, Vehicle vehicle) {
+    print("je suis ici ${json['id']}");
     return Visite(
       id: json['id'].toString(),
       dateEntree: DateTime.parse(json['dateEntree'].toString()),
       dateSortie: json['dateSortie'] != null
           ? DateTime.tryParse(json['dateSortie'])
-          : DateTime.tryParse("00/00/00"),
+          : DateTime.tryParse("01/01/1961"),
       vehicleId: json['vehicleId'].toString(),
       status: json['status'].toString(),
       vehicle: vehicle,
       constatClient: json['constatClient'].toString(),
-      elementsBord: ElementsBord.fromJson(
+      elementsBord: ElementsBords.fromJson(
         json['elementsBord'] as Map<String, dynamic>,
       ),
-      companyId: json['companyId'].toString(),
+      companyId: json['companyId'].toString(),diagnostics: (json['diagnostics'] as List<dynamic>)
+        .map((e) => Diagnostic.fromJson(e))
+        .toList(),
+      photos: (json['photos'] as List<dynamic>)
+        .map((e) => Photo.fromJson(e))
+        .toList(),
       createdAt: DateTime.parse(json['createdAt'].toString()),
       updatedAt: DateTime.parse(json['updatedAt'].toString()),
     );
   }
 
-  Future<List<Visite>?> fetchVisite(BuildContext context) async{
-    try {
-      final visites = await ReceptionServices().fetchVisitesWithVehicle();
-      return visites;
-      // Afficher les visites...
-    } on Exception catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-      return null;
-    }
-  }
 
   Map<String, dynamic> toJson() {
-
     DateTime nowUtc = dateEntree;
     DateTime camerounDate = nowUtc.add(const Duration(hours: 1)); // GMT+1
 
-    String formattedDate = DateFormat('yyyy-MM-ddTHH:mm:ss+01:00').format(camerounDate);
+    String formattedDate = DateFormat(
+      'yyyy-MM-ddTHH:mm:ss+01:00',
+    ).format(camerounDate);
     return {
       'dateEntree': formattedDate,
       'vehicleId': vehicleId,
-      'status': status,
       'constatClient': constatClient,
       'elementsBord': elementsBord.toJson(),
       'companyId': companyId,
     };
   }
 
-  static Map<String, int> getVehicleStatsByStatus(List<Visite> vehicles, String targetStatus) {
+  static Map<String, int> getVehicleStatsByStatus(
+    List<Visite> vehicles,
+    String targetStatus,
+  ) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
 
     // Filtrer d'abord les véhicules par statut
-    final filteredVehicles = vehicles.where((v) => v.status == targetStatus).toList();
+    final filteredVehicles = vehicles
+        .where((v) => v.status == targetStatus)
+        .toList();
 
     // Compter pour aujourd'hui
-    final todayCount = filteredVehicles.where((v) => v.updatedAt.isAfter(today)).length;
+    final todayCount = filteredVehicles
+        .where((v) => v.updatedAt.isAfter(today))
+        .length;
 
     // Compter pour ce mois
-    final monthCount = filteredVehicles.where((v) => v.updatedAt.isAfter(firstDayOfMonth)).length;
+    final monthCount = filteredVehicles
+        .where((v) => v.updatedAt.isAfter(firstDayOfMonth))
+        .length;
 
     // Total est simplement la longueur de la liste filtrée
     final totalCount = filteredVehicles.length;
 
-    return {
-      'today': todayCount,
-      'month': monthCount,
-      'total': totalCount,
-    };
+    return {'today': todayCount, 'month': monthCount, 'total': totalCount};
   }
 }
 
 /// Classe représentant les éléments à bord d'une voiture lors d'une visite.
-class ElementsBord {
+class ElementsBords {
   final bool extincteur;
   final bool dossier;
   final bool cric;
   final bool boitePharmacie;
   final bool boiteOutils;
   final bool essuieGlace;
+  final String? autres;
 
-  ElementsBord({
+  const ElementsBords({
     required this.extincteur,
     required this.dossier,
     required this.cric,
     required this.boitePharmacie,
     required this.boiteOutils,
     required this.essuieGlace,
+    this.autres
   });
 
-  factory ElementsBord.fromJson(Map<String, dynamic> json) {
-
-    return ElementsBord(
-      extincteur: bool.tryParse(json['extincteur'].toString(), caseSensitive: false) ?? false,
-      dossier:bool.tryParse(json['dossier'].toString(), caseSensitive: false) ?? false,
-      cric: bool.tryParse(json['cric'].toString(), caseSensitive: false) ?? false,
-      boitePharmacie: bool.tryParse(json['boitePharmacie'].toString(), caseSensitive: false) ?? false,
-      boiteOutils: bool.tryParse(json['boiteOutils'].toString(), caseSensitive: false) ?? false,
-      essuieGlace: bool.tryParse(json['essuieGlace'].toString(), caseSensitive: false) ?? false,
+  factory ElementsBords.fromJson(Map<String, dynamic> json) {
+    return ElementsBords(
+        extincteur: bool.tryParse(json['extincteur'].toString(), caseSensitive: false) ?? false,
+        dossier:bool.tryParse(json['dossier'].toString(), caseSensitive: false) ?? false,
+        cric: bool.tryParse(json['cric'].toString(), caseSensitive: false) ?? false,
+        boitePharmacie: bool.tryParse(json['boitePharmacie'].toString(), caseSensitive: false) ?? false,
+        boiteOutils: bool.tryParse(json['boiteOutils'].toString(), caseSensitive: false) ?? false,
+        essuieGlace: bool.tryParse(json['essuieGlace'].toString(), caseSensitive: false) ?? false,
+        autres: json['autres']
     );
   }
 
@@ -161,6 +172,7 @@ class ElementsBord {
       'boitePharmacie': boitePharmacie,
       'boiteOutils': boiteOutils,
       'essuie-glace': essuieGlace,
+      'autres': autres,
     };
   }
 }

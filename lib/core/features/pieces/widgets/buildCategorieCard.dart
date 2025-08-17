@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import '../../../models/piecesCategorie.dart';
+import '../views/liste_pieces_screen.dart';
 
 class CategoryCard extends StatelessWidget {
   final PieceCategorie category;
   final String? getToken;
+  final BuildContext pContext;
 
-  const CategoryCard({super.key, required this.category, this.getToken});
+  const CategoryCard({super.key, required this.category, this.getToken, required this.pContext});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,9 @@ class CategoryCard extends StatelessWidget {
     );
 
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(pContext, MaterialPageRoute(builder: (pContext) => PiecesPage( catId: category.id,)));
+      },
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300),

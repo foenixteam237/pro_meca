@@ -4,11 +4,12 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/commonUi/validationScreen.dart';
 import 'package:pro_meca/core/features/reception/views/diagnosticScreen.dart';
 import 'package:pro_meca/core/models/client.dart';
-import 'package:pro_meca/core/models/diagnostic.dart';
+import 'package:pro_meca/core/models/diagnostic_update.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
-import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../models/visite.dart';
 
 class ReceptionServices {
   final Dio _dio;
@@ -150,7 +151,7 @@ class ReceptionServices {
 
   //#################################"-CREATION D'UNE VISITE-"#############################"
   Future<int?> createVisite(
-    Map<String, dynamic> visiteData,
+    FormData visiteData,
     BuildContext context,
   ) async {
     final pref = await SharedPreferences.getInstance();
@@ -166,7 +167,7 @@ class ReceptionServices {
 
       switch (response.statusCode) {
         case 201:
-          bool? shouldNavigateToDiagnostic = await showDialog<bool>(
+          bool shouldNavigateToDiagnostic = await showDialog<bool>(
             // ignore: use_build_context_synchronously
             context: context,
             builder: (context) => AlertDialog(
@@ -189,19 +190,55 @@ class ReceptionServices {
                 ),
               ],
             ),
-          );
-          if (shouldNavigateToDiagnostic == true) {
-            // Rediriger vers la page Diagnostic
+          ) ?? false;
+          if (shouldNavigateToDiagnostic) {
+            try {
+              final responseData = response.data;
 
-            final responseData = response.data;
-            final visite = Visite.fromJson(responseData['data']);
-            Navigator.push(
+              // Vérifier que les données nécessaires existent
+              if (responseData?['data']?['id'] == null) {
+                throw Exception('ID de visite manquant dans la réponse du serveur');
+              }
+
+              final visiteId = responseData['data']['id'];
+              print('ID de visite reçu: $visiteId');
+
+              // Récupérer les détails de la visite
+              Visite visite = await fetchVisiteWithVehicle(visiteId);
+              print('Visite récupérée: ${visite.id}');
+
+              // Naviguer vers la page Diagnostic
               // ignore: use_build_context_synchronously
-              context,
-              MaterialPageRoute(
-                builder: (context) => DiagnosticPage(idVisite: visite.id, visite: visite, accessToken: accessToken,),
-              ),
-            );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DiagnosticPage(
+                    idVisite: visite.id,
+                    visite: visite,
+                    accessToken: accessToken,
+                  ),
+                ),
+              );
+            } catch (e, stackTrace) {
+              print('Erreur lors de la récupération de la visite: $e');
+              print('Stack trace: $stackTrace');
+
+              // Afficher une alerte à l'utilisateur
+              // ignore: use_build_context_synchronously
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Erreur'),
+                  content: Text('Impossible de récupérer les détails de la visite: ${e.toString()}'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            }
           } else {
             // Rediriger vers la page ConfirmationScreen
             Navigator.push(
@@ -214,6 +251,9 @@ class ReceptionServices {
               ),
             );
           }
+          return response.statusCode;
+        case 400:
+          print(response.data["message"]);
           return response.statusCode;
         default:
           debugPrint("Erreur non reconnue");
@@ -236,7 +276,7 @@ class ReceptionServices {
         return 0;
       } else {
         // Si aucune réponse n'a été reçue, c'est un problème de connexion ou autre
-        debugPrint('Erreur de connexion : ${e.message}');
+        debugPrint('Erreur de connexions : ${e.toString()}');
         return e.response!.statusCode;
       }
     } catch (e) {
@@ -247,19 +287,19 @@ class ReceptionServices {
   }
 
   //##################################################-RECUPERATION DES VISITES AVEC LA VEHICULE INCLU-###################################
-
   Future<List<Visite>> fetchVisitesWithVehicle() async {
     try {
       // 1. Récupère les visites avec timeout et gestion d'erreur
-      final Response resVisite = await _dio.get(
-        '/visites',
-        options: Options(
-          receiveTimeout: const Duration(seconds: 15),
-          sendTimeout: const Duration(seconds: 15),
-          headers: await ApiDioService().getAuthHeaders()
-        ),
+      final Response resVisite = await ApiDioService().authenticatedRequest(
+          () async => await _dio.get(
+            '/visites',
+            options: Options(
+                receiveTimeout: const Duration(seconds: 15),
+                sendTimeout: const Duration(seconds: 15),
+                headers: await ApiDioService().getAuthHeaders()
+            ),
+          )
       );
-
       if (resVisite.statusCode != 200) {
         throw DioException(
           requestOptions: resVisite.requestOptions,
@@ -269,12 +309,11 @@ class ReceptionServices {
       }
 
       final List<dynamic> visites = resVisite.data as List;
-
       // 2. Récupération parallèle des véhicules
       final List<Visite> result = await Future.wait(
         visites.map((visiteJson) async {
           try {
-            final vehicleId = visiteJson['vehicleId'] as String;
+            final vehicleId = visiteJson['vehicleId'].toString();
             final Response resVehicle = await _dio.get(
               '/vehicles/$vehicleId',
               options: Options(
@@ -292,6 +331,7 @@ class ReceptionServices {
 
             final Vehicle vehicle = Vehicle.fromJson(resVehicle.data as Map<String, dynamic>);
 
+            //return Visite.fromJson(visiteJson);
             return Visite.fromVisiteJson(visiteJson, vehicle);
           } on DioException catch (e) {
             // En cas d'erreur sur un véhicule, retourne une visite partielle
@@ -319,6 +359,75 @@ class ReceptionServices {
       throw Exception('Erreur lors du chargement des visites');
     }
   }
+
+  //##################################################-RECUPERATION D'UNE VISITE AVEC LA VEHICULE INCLU-###################################
+  Future<Visite> fetchVisiteWithVehicle(String visiteId) async {
+    try {
+      // 1. Récupérer la visite par son ID
+      final Response resVisite = await _dio.get(
+        '/visites/$visiteId',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
+          headers: await ApiDioService().getAuthHeaders(),
+        ),
+      );
+
+      if (resVisite.statusCode != 200) {
+        throw DioException(
+          requestOptions: resVisite.requestOptions,
+          response: resVisite,
+          error: 'Statut HTTP ${resVisite.statusCode}',
+        );
+      }
+
+      final Map<String, dynamic> visiteJson = resVisite.data as Map<String, dynamic>;
+
+      // 2. Récupérer le véhicule associé
+      try {
+        final String vehicleId = visiteJson['vehicleId'] as String;
+        final Response resVehicle = await _dio.get(
+          '/vehicles/$vehicleId',
+          options: Options(
+            receiveTimeout: const Duration(seconds: 10),
+            headers: await ApiDioService().getAuthHeaders(),
+          ),
+        );
+
+        if (resVehicle.statusCode != 200) {
+          throw DioException(
+            requestOptions: resVehicle.requestOptions,
+            response: resVehicle,
+            error: 'Erreur véhicule ${resVehicle.statusCode}',
+          );
+        }
+
+        final Vehicle vehicle = Vehicle.fromJson(resVehicle.data as Map<String, dynamic>);
+        return Visite.fromVisiteJson(visiteJson, vehicle);
+
+      } on DioException catch (e) {
+        debugPrint('Erreur véhicule : ${e.message}');
+        // On retourne quand même la visite sans véhicule si erreur
+        return Visite.fromJson(visiteJson);
+      }
+
+    } on DioException catch (e) {
+      debugPrint('Erreur réseau: ${e.message}');
+      if (e.response != null) {
+        throw Exception(
+          'Erreur serveur (${e.response?.statusCode}): ${e.response?.data['message'] ?? 'Pas de message'}',
+        );
+      } else if (e.type == DioExceptionType.connectionTimeout) {
+        throw Exception('Timeout de connexion au serveur');
+      } else {
+        throw Exception('Erreur réseau: ${e.message}');
+      }
+    } catch (e) {
+      debugPrint('Erreur inattendue: $e');
+      throw Exception('Erreur lors du chargement de la visite');
+    }
+  }
+
   //##################################################-RECUPERATION DES VISITES AVEC LA VEHICULE INCLU-###################################
 
   Future<List<Visite>> fetchVisitesWithVehicleStatus(String status) async {
@@ -395,11 +504,11 @@ class ReceptionServices {
 
   //##########################---CREATION D'UN DIAGNOSTIC---#############################
   Future<bool> submitDiagnostic(Diagnostic diag,String accessToken,) async {
-    print(diag.toMap());
+    print(diag.toJson());
     try {
       final response = await _dio.post(
         '/visites/diagnostics/create',
-        data: diag.toMap(),
+        data: diag.toJson(),
         options: Options(
           headers: {
             "Authorization": "Bearer $accessToken",

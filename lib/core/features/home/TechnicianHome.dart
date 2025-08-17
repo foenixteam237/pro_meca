@@ -5,7 +5,7 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
-import 'package:pro_meca/core/features/pieces/widgets/buildPiecesContent.dart';
+import 'package:pro_meca/core/features/pieces/views/categoriePageScreen.dart';
 import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -59,7 +59,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   List<Widget> _buildScreens() {
     return [
       HomeContent(historyList: HistoryList(title: AppLocalizations.of(context).ongoingVehicles, visites: _visites, contextParent: context,isLoading: _isLoading, accessToken: accessToken), onRefresh: ()=>_loadData(), context: context,),
-      CategoriesPage(),
+      CategoriesPage(parentContext: context,),
       VehicleDashboardPage(context: context,),
       ProfileScreen(con: context),
     ];

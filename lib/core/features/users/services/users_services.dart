@@ -68,8 +68,28 @@ class UserService{
         }
         return updatedUser;
       }else if(response.statusCode ==  200 && isAdmin == false){
-        final updatedUser = User.fromUserUpdateJson(response.data['data']);
-        return updatedUser;
+        Response rep = await ApiDioService().authenticatedRequest(
+              () => _dio.get(
+            '/auth/me',
+            data: json.encode(data),
+            options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+          ),
+        );
+
+        if(rep.statusCode == 200){
+          print(rep.data['user']);
+          final updatedUser = User.fromJsonUpdate(rep.data['user']);
+
+          final currentUser = await ApiDioService().getSavedUser();
+          if (currentUser != null && currentUser.id == updatedUser.id) {
+            final pref = await SharedPreferences.getInstance();
+            await pref.setString('user_data', json.encode(currentUser));
+          }
+          return updatedUser;
+        }else{
+          throw Exception('Échec de la mise à jour du profil (code ${response.statusCode})');
+        }
+
       } else {
         throw Exception('Échec de la mise à jour du profil (code ${response.statusCode})');
       }
@@ -111,6 +131,7 @@ class UserService{
   Future<User?> uploadUserProfileImage({
     required String userId,
     required File imageFile,
+    required bool isAdmin
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -119,16 +140,29 @@ class UserService{
           filename: 'profile_$userId.jpg',
         ),
       });
+      Response response;
+      if(isAdmin){
+         response = await ApiDioService().authenticatedRequest(
+                () async => await _dio.put(
+                '/auth/$userId',
+                data: formData,
+                options: Options(
+                  headers: await ApiDioService().getAuthHeaders(),
+                )
+            )
+        );
+      }else{
+         response = await ApiDioService().authenticatedRequest(
+                () async => await _dio.put(
+                '/auth/me/',
+                data: formData,
+                options: Options(
+                  headers: await ApiDioService().getAuthHeaders(),
+                )
+            )
+        );
+      }
 
-      final response = await ApiDioService().authenticatedRequest(
-          () async => await _dio.put(
-            '/auth/$userId',
-            data: formData,
-            options: Options(
-              headers: await ApiDioService().getAuthHeaders(),
-          )
-          )
-      );
       if (response.statusCode == 200) {
         final accessToken = (await SharedPreferences.getInstance()).getString(
           'accessToken',

@@ -5,12 +5,13 @@ import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/piecesCategorie.dart';
 import '../services/pieces_services.dart';
-import 'buildCategorieCard.dart';
-import 'buildCategorieShimmer.dart';
+import '../widgets/buildCategorieCard.dart';
+import '../widgets/buildCategorieShimmer.dart';
 import '../../../utils/responsive.dart';
 
 class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key});
+  final BuildContext parentContext;
+  const CategoriesPage({super.key, required this.parentContext});
   @override
   _CategoriesPageState createState() => _CategoriesPageState();
 }
@@ -105,6 +106,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         } else if (filteredCategorie.isNotEmpty) {
                           final category = displayList[index];
                           return CategoryCard(
+                            pContext: widget.parentContext,
                             category: category!,
                             getToken: _accessToken,
                           );
