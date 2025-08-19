@@ -94,7 +94,7 @@ class PiecesService {
   /// Mettre à jour une pièce existante
   Future<bool> updatePiece(
     String pieceId,
-    Map<String, dynamic> pieceData,
+    FormData pieceData,
     BuildContext context,
   ) async {
     try {
@@ -105,7 +105,7 @@ class PiecesService {
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
-      return response.statusCode == 200;
+      return response.statusCode == 201;
     } on DioException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

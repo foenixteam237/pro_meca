@@ -3,7 +3,6 @@ import 'package:pro_meca/core/features/reception/views/vehicule_selection_conten
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 void showVehicleSelectionModal(BuildContext context) {
-  print("Step 2");
   WoltModalSheet.show(
     context: context,
     pageListBuilder: (modalSheetContext) => [
@@ -12,7 +11,7 @@ void showVehicleSelectionModal(BuildContext context) {
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
-        child:  VehicleSelectionContent(context: context,),
+        child: VehicleSelectionContent(context: context),
       ),
     ],
     modalTypeBuilder: (context) {

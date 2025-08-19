@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
+import 'package:pro_meca/core/features/pieces/widgets/add_pieces_form.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import '../../../models/pieces.dart';
 import '../widgets/buildPiecesItems.dart';
 import '../widgets/buildPiecesItemsShimmer.dart';
 
 // Ajout de l'enum pour les filtres
-enum StockFilter {
-  all,
-  inStock,
-  outOfStock,
-}
+enum StockFilter { all, inStock, outOfStock }
 
 class PiecesPage extends StatefulWidget {
   final String catId;
@@ -49,7 +48,10 @@ class _PiecesPageState extends State<PiecesPage> {
     });
 
     try {
-      final List<Piece> fetchedPieces = await PiecesService().fetchPieces(context, widget.catId);
+      final List<Piece> fetchedPieces = await PiecesService().fetchPieces(
+        context,
+        widget.catId,
+      );
 
       setState(() {
         pieces = fetchedPieces;
@@ -84,7 +86,7 @@ class _PiecesPageState extends State<PiecesPage> {
         result = result.where((p) => !p.inStock!).toList();
         break;
       case StockFilter.all:
-      // Pas de filtre supplémentaire
+        // Pas de filtre supplémentaire
         break;
     }
 
@@ -210,7 +212,7 @@ class _PiecesPageState extends State<PiecesPage> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () => _addNewPiece(),
+            onPressed: () => _addNewPiece(appColor),
             icon: Icon(Icons.add, color: appColor.primary, size: 32),
             tooltip: 'Ajouter une pièce',
           ),
@@ -249,7 +251,8 @@ class _PiecesPageState extends State<PiecesPage> {
                       icon: Icon(
                         Icons.filter_alt_outlined,
                         color: currentFilter != StockFilter.all
-                            ? appColor.primary // Couleur différente quand un filtre est actif
+                            ? appColor
+                                  .primary // Couleur différente quand un filtre est actif
                             : Colors.grey,
                         size: 32,
                       ),
@@ -288,9 +291,7 @@ class _PiecesPageState extends State<PiecesPage> {
                       currentFilter == StockFilter.inStock
                           ? 'En stock'
                           : 'Rupture de stock',
-                      style: TextStyle(
-                        color: appColor.primary,
-                      ),
+                      style: TextStyle(color: appColor.primary),
                     ),
                     backgroundColor: appColor.primary.withOpacity(0.1),
                     deleteIcon: const Icon(Icons.close, size: 18),
@@ -307,10 +308,12 @@ class _PiecesPageState extends State<PiecesPage> {
 
           // État de chargement/erreur
           if (isLoading)
-             Expanded(child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) => buildPieceItemShimmer(context),
-            ))
+            Expanded(
+              child: ListView.builder(
+                itemCount: 5,
+                itemBuilder: (context, index) => buildPieceItemShimmer(context),
+              ),
+            )
           else if (errorMessage.isNotEmpty)
             Expanded(
               child: Center(
@@ -331,109 +334,62 @@ class _PiecesPageState extends State<PiecesPage> {
               ),
             )
           else if (filteredPieces.isEmpty)
-              const Expanded(
-                child: Center(
-                  child: Text(
-                    "Aucune pièce trouvée",
-                    style: TextStyle(fontSize: 18),
-                  ),
+            const Expanded(
+              child: Center(
+                child: Text(
+                  "Aucune pièce trouvée",
+                  style: TextStyle(fontSize: 18),
                 ),
-              )
-            else
+              ),
+            )
+          else
             // Liste des pièces
-              Expanded(
+            Expanded(
+              child: RefreshIndicator(
+                color: appColor.primary,
+                onRefresh: _loadPieces,
                 child: ListView.builder(
                   itemCount: filteredPieces.length,
                   itemBuilder: (context, index) {
                     final piece = filteredPieces[index];
-                    return buildPieceItems(
-                      piece,
-                      context,
-                      index,
-                      _increaseQuantity,
-                      _decreaseQuantity,
-                    );
+                    return buildPieceItems(piece, context, index);
                   },
                 ),
               ),
+            ),
         ],
       ),
     );
   }
 
-  void _increaseQuantity(int index) async {
-    final piece = filteredPieces[index];
-    final newStock = piece.stock + 1;
-
-    try {
-      // Mise à jour sur l'API
-      final response = await http.patch(
-        Uri.parse('https://votre-api.com/pieces/${piece.id}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer votre-token',
-        },
-        body: json.encode({'stock': newStock}),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          piece.stock = newStock;
-          piece.inStock = newStock > 0;
-          _applyFilters(); // Re-appliquer les filtres après modification
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Échec de la mise à jour: ${response.statusCode}'),
+  void _addNewPiece(AppAdaptiveColors appColor) {
+    WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) => [
+        WoltModalSheetPage(
+          topBar: Container(
+            padding: EdgeInsets.all(10),
+            alignment: Alignment.center,
+            child: Text(
+              "Créer une nouvelle pièce",
+              textAlign: TextAlign.center,
+              style: AppStyles.titleLarge(context),
+            ),
           ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
-    }
-  }
-
-  void _decreaseQuantity(int index) async {
-    final piece = filteredPieces[index];
-    if (piece.stock <= 0) return;
-
-    final newStock = piece.stock - 1;
-
-    try {
-      // Mise à jour sur l'API
-      final response = await http.patch(
-        Uri.parse('https://votre-api.com/pieces/${piece.id}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer votre-token',
-        },
-        body: json.encode({'stock': newStock}),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          piece.stock = newStock;
-          piece.inStock = newStock > 0;
-          _applyFilters(); // Re-appliquer les filtres après modification
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Échec de la mise à jour: ${response.statusCode}'),
+          trailingNavBarWidget: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
           ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
-    }
-  }
-
-  void _addNewPiece() {
-    // Implémentation existante...
+          child: CreatePieceForm(pContext: context),
+        ),
+      ],
+      modalTypeBuilder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        return screenWidth > 700
+            ? WoltModalType.alertDialog()
+            : WoltModalType.sideSheet();
+      },
+      onModalDismissedWithBarrierTap: () => Navigator.pop(context),
+    );
   }
 }

@@ -1,14 +1,24 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/pieces.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 
-void showPieceBottomSheet(BuildContext context, Piece piece) {
+import '../services/pieces_services.dart';
+
+void showPieceBottomSheet(
+  BuildContext context,
+  Piece piece,
+  AppAdaptiveColors appColor,
+) {
   int newQuantity = piece.stock;
   final TextEditingController quantityController = TextEditingController(
     text: piece.stock.toString(),
   );
-
+  bool isLoading = false; // Nouvelle variable d'état
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -55,9 +65,7 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                           fit: BoxFit.cover,
                         ),
                 ),
-
                 const SizedBox(height: 16),
-
                 // INFORMATIONS PRINCIPALES
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -82,7 +90,7 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
+                              horizontal: 4,
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
@@ -98,11 +106,17 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            "Stock: ${piece.stock}",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              "Stock: ${piece.stock}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -110,84 +124,49 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 24),
-
+                const SizedBox(height: 16),
                 // TITRE NOUVELLE QUANTITÉ
-                const Text(
-                  "NOUVELLE QUANTITÉ",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                const Center(
+                  child: Text(
+                    "NOUVELLE QUANTITÉ",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 // TEXTFIELD POUR EDITER LA QUANTITÉ
-                SizedBox(
-                  width: Responsive.responsiveValue(
-                    context,
-                    mobile: MediaQuery.of(context).size.width * 0.5,
-                    tablet: 200,
-                  ),
-                  child: TextField(
-                    controller: quantityController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                Center(
+                  child: SizedBox(
+                    width: Responsive.responsiveValue(
+                      context,
+                      mobile: MediaQuery.of(context).size.width * 0.5,
+                      tablet: 200,
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        newQuantity = int.tryParse(value) ?? newQuantity;
-                      });
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // BOUTONS + / -
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _roundActionButton(
-                      icon: Icons.remove,
-                      color: Colors.red.shade100,
-                      iconColor: Colors.red.shade800,
-                      onTap: () {
-                        if (newQuantity > 0) {
-                          setState(() {
-                            newQuantity--;
-                            quantityController.text = newQuantity.toString();
-                          });
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 32),
-                    _roundActionButton(
-                      icon: Icons.add,
-                      color: Colors.green.shade100,
-                      iconColor: Colors.green.shade800,
-                      onTap: () {
+                    child: TextField(
+                      controller: quantityController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 8,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onChanged: (value) {
                         setState(() {
-                          newQuantity++;
-                          quantityController.text = newQuantity.toString();
+                          newQuantity = int.tryParse(value) ?? newQuantity;
                         });
                       },
                     ),
-                  ],
+                  ),
                 ),
-
                 const SizedBox(height: 32),
-
                 // ACTIONS
                 Row(
                   children: [
@@ -206,14 +185,55 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context, newQuantity);
+                        onPressed: () async {
+                          setState(() {
+                            isLoading = true; // Démarrer le chargement
+                          });
+                          if (await updatePiece(
+                            newQuantity,
+                            piece.id,
+                            context,
+                          )) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: appColor.primary,
+                                content: Text(
+                                  "Quantité mise à jour avec succès!!!!!",
+                                  style: AppStyles.bodyMedium(context),
+                                ),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "Impossible de modifier la pièce.",
+                                ),
+                              ),
+                            );
+                          }
+                          setState(() {
+                            isLoading = false; // Arrêter le chargement
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Theme.of(context).primaryColor,
+                          backgroundColor: appColor.primary,
                         ),
-                        child: const Text("METTRE À JOUR"),
+                        child: isLoading
+                            ? SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                "METTRE À JOUR",
+                                style: TextStyle(color: Colors.white),
+                              ),
                       ),
                     ),
                   ],
@@ -227,25 +247,23 @@ void showPieceBottomSheet(BuildContext context, Piece piece) {
   );
 }
 
-// Bouton rond réutilisable
-Widget _roundActionButton({
-  required IconData icon,
-  required Color color,
-  required Color iconColor,
-  required VoidCallback onTap,
-}) {
-  return InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(50),
-    child: Container(
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      padding: const EdgeInsets.all(8),
-      child: Icon(icon, color: iconColor),
-    ),
-  );
+Future<bool> updatePiece(int qte, String id, BuildContext context) async {
+  try {
+    final formData = FormData();
+    Map<String, dynamic> pieceData = {"stock": qte};
+
+    formData.fields.add(MapEntry('data', jsonEncode(pieceData)));
+    return await PiecesService().updatePiece(id, formData, context);
+  } catch (e) {
+    print(e);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Impossible de modifier la pièce. $e}")),
+    );
+    return false;
+  }
 }
 
-// Couleur selon état
+// Couleur selon état (inchangé)
 Color _getConditionColor(String condition) {
   switch (condition) {
     case 'NEW':
@@ -261,7 +279,7 @@ Color _getConditionColor(String condition) {
   }
 }
 
-// Format texte état
+// Format texte état (inchangé)
 String _formatCondition(String condition) {
   switch (condition) {
     case 'NEW':

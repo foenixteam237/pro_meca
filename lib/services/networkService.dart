@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class NetworkService {
   // Vérifie l'accès réel à internet
   static Future<bool> hasInternetAccess() async {
-    const timeout = Duration(seconds: 10);
+    const timeout = Duration(seconds: 30);
     const testUrls = [
       'https://www.google.com',
       'https://www.cloudflare.com',

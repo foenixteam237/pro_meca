@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
+import 'package:provider/provider.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/pieces.dart';
 import '../views/show_piece_detail.dart';
 
-Widget buildPieceItems(
-  Piece piece,
-  BuildContext context,
-  int index,
-  void Function(int index) increaseQuantity,
-  void Function(int index) decreaseQuantity,
-) {
-  //final appColor = Provider.of<AppAdaptiveColors>(context);
+Widget buildPieceItems(Piece piece, BuildContext context, int index) {
+  final appColor = Provider.of<AppAdaptiveColors>(context);
   return GestureDetector(
-    onTap: () => showPieceBottomSheet(context, piece),
+    onTap: () => showPieceBottomSheet(context, piece, appColor),
     child: Container(
       margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
       decoration: BoxDecoration(

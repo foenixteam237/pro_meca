@@ -34,6 +34,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     _loadData();
     _controller = PersistentTabController(initialIndex: 0);
   }
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
@@ -47,8 +48,6 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         _isLoading = false;
       });
     } catch (e, stack) {
-      // Affiche une erreur (ex: snackbar) ou log
-      print("Erreur lors du chargement des visites: $e");
       print(stack);
       setState(() {
         _visites = [];
@@ -56,11 +55,22 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       });
     }
   }
+
   List<Widget> _buildScreens() {
     return [
-      HomeContent(historyList: HistoryList(title: AppLocalizations.of(context).ongoingVehicles, visites: _visites, contextParent: context,isLoading: _isLoading, accessToken: accessToken), onRefresh: ()=>_loadData(), context: context,),
-      CategoriesPage(parentContext: context,),
-      VehicleDashboardPage(context: context,),
+      HomeContent(
+        historyList: HistoryList(
+          title: AppLocalizations.of(context).ongoingVehicles,
+          visites: _visites,
+          contextParent: context,
+          isLoading: _isLoading,
+          accessToken: accessToken,
+        ),
+        onRefresh: () => _loadData(),
+        context: context,
+      ),
+      CategoriesPage(parentContext: context),
+      VehicleDashboardPage(context: context),
       ProfileScreen(con: context),
     ];
   }
