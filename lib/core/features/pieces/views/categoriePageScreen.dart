@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/categories.dart';
@@ -66,6 +67,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
     final displayList = _isLoading
         ? List.generate(4, (index) => null)
         : filteredCategorie;
+    final appColors = Provider.of<AppAdaptiveColors>(context);
 
     return Scaffold(
       body: SafeArea(
@@ -78,8 +80,17 @@ class _CategoriesPageState extends State<CategoriesPage> {
             children: [
               _buildSearchBar(context),
               const SizedBox(height: 16),
-              Text('Catégories', style: AppStyles.titleLarge(context)),
-              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Catégories', style: AppStyles.titleLarge(context)),
+                  Icon(
+                    Icons.add_box,
+                    color: appColors.primary,
+                  )
+                ],
+              ),
+              const SizedBox(height: 14),
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
@@ -129,7 +140,36 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
     );
   }
-
+  void _addNewCategorie(AppAdaptiveColors appColor) {
+    WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) => [
+        WoltModalSheetPage(
+          topBar: Container(
+            padding: EdgeInsets.all(10),
+            alignment: Alignment.center,
+            child: Text(
+              "Créer une nouvelle pièce",
+              textAlign: TextAlign.center,
+              style: AppStyles.titleLarge(context),
+            ),
+          ),
+          trailingNavBarWidget: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+          ),
+          child: Text("data"),
+        ),
+      ],
+      modalTypeBuilder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        return screenWidth > 700
+            ? WoltModalType.alertDialog()
+            : WoltModalType.sideSheet();
+      },
+      onModalDismissedWithBarrierTap: () => Navigator.pop(context),
+    );
+  }
   Widget _buildSearchBar(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Row(
@@ -156,11 +196,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             },
           ),
         ),
-        const SizedBox(width: 10),
-        Container(
-          padding: const EdgeInsets.all(10),
-          child: Icon(Icons.filter_list, color: appColors.primary),
-        ),
+        
       ],
     );
   }

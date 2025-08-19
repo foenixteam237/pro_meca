@@ -1,17 +1,21 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/widgets/imagePicker.dart';
 import 'package:provider/provider.dart';
 
 class CreatePieceForm extends StatefulWidget {
   final BuildContext pContext;
-  const CreatePieceForm({super.key, required this.pContext});
+  final String idCateg;
+  const CreatePieceForm({super.key, required this.pContext, required this.idCateg});
   @override
   State<CreatePieceForm> createState() => _CreatePieceFormState();
 }
@@ -34,10 +38,13 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
   final TextEditingController _dateAchatController = TextEditingController();
   final TextEditingController _prixVenteController = TextEditingController();
   // Dropdown État
-  String? _etat = "Neuf";
+  String? _etat = "PRO_PARTICULIER";
+  String? _type = "NEW";
   // Checkbox utilisé
   bool _utilise = false;
   File? _selectedImage;
+  bool _isLoading = false;
+
 
   void _showPermissionError([String? message]) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -85,6 +92,64 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
 
     } on PlatformException catch (e) {
      _showPermissionError(e.message);
+    }
+  }
+
+  Map<String, dynamic> _buildRequestData() {
+    return {
+      "name": _nomPieceController.text.trim(),
+      "reference": _referenceController.text.trim(),
+      "barcode": _codeBarreController.text.trim(),
+      "source" : {
+        "type": _etat,
+        "contactName": _vendeurController.text.trim(),
+        "phone": _telephoneController.text.trim(),
+        "location": _localisationController.text.trim(),
+        "notes": _notesController.text.trim(),
+      },
+      "stock": int.tryParse(_quantiteController.text) ?? 0,
+      "criticalStock": int.tryParse(_limiteCritiqueController.text) ?? 0,
+      "location": _emplacementController.text.trim(),
+      "condition": _type,
+      "purchaseDate": _dateAchatController.text.trim(),
+      "sellingPrice": double.tryParse(_prixVenteController.text) ?? 0.0,
+      "isUsed": _utilise,
+      "categoryId": widget.idCateg
+    };
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return; // formulaire non valide
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final data = _buildRequestData();
+
+      FormData formData = FormData();
+      formData.fields.add(MapEntry('data', jsonEncode(data)));
+      if (_selectedImage != null) {
+        formData.files.add(
+          MapEntry(
+            "logo",
+            await MultipartFile.fromFile(
+              _selectedImage!.path,
+              filename: _selectedImage!.path.split('/').last,
+            ),
+          ),
+        );
+      }
+      bool create = await PiecesService().addPiece(formData, context);
+      if (create) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur: $e")),
+      );
+    }finally{
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -202,19 +267,25 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
             const SizedBox(height: 8),
             // Checkbox utilisé
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Checkbox(
-                  activeColor: appColor.primary,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(4)),
-                  ),
-                  side: BorderSide(color: appColor.primary, width: 2),
-                  value: _utilise,
-                  onChanged: (val) {
-                    setState(() => _utilise = val ?? false);
-                  },
+                Row(
+                  children: [
+                    Checkbox(
+                      activeColor: appColor.primary,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(4)),
+                      ),
+                      side: BorderSide(color: appColor.primary, width: 2),
+                      value: _utilise,
+                      onChanged: (val) {
+                        setState(() => _utilise = val ?? false);
+                      },
+                    ),
+                    Text("Utilisé", style: AppStyles.bodyLarge(context)),
+                  ],
                 ),
-                Text("Utilisé", style: AppStyles.bodyLarge(context)),
+                _buildDropdownType(),
               ],
             ),
             const SizedBox(height: 20),
@@ -230,6 +301,7 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
                   _buildActionButton("Créer la pièce", appColor.primary, () {
                     if (_formKey.currentState!.validate()) {
                       // 🚀 Ici tu envoies les données au backend
+                      _submitForm();
                       debugPrint(
                         "Création de la pièce : ${_nomPieceController.text}",
                       );
@@ -291,14 +363,43 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
             borderSide: BorderSide.none,
           ),
         ),
-        items: const [
-          DropdownMenuItem(value: "Neuf", child: Text("Neuf")),
-          DropdownMenuItem(value: "Utilisé", child: Text("Utilisé")),
-          DropdownMenuItem(value: "Endommagé", child: Text("Endommagé")),
+        items:  [
+          DropdownMenuItem(value: "PRO_PARTICULIER", child: Text("Ancien mécanicien", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "BUYAM_SELLAM", child: Text("Vendeur informel", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "GARAGE", child: Text("Professionnel ",style: AppStyles.bodyMedium(context)),),
+          DropdownMenuItem(value: "PARTICULIER", child: Text("Vendeur particulier", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "RECUPERATION", child: Text("Pièces récupérées", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "Autres", child: Text("Source inconnue",style: AppStyles.bodyMedium(context))),
         ],
         onChanged: (val) => setState(() => _etat = val),
         validator: (val) =>
             val == null ? "Champ requis" : null, // Validation pour le dropdown
+      ),
+    );
+  }
+  Widget _buildDropdownType() {
+    return SizedBox(
+      width: (MediaQuery.of(context).size.width / 2) - 28,
+      child: DropdownButtonFormField<String>(
+        value: _type,
+        decoration: InputDecoration(
+          filled: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        items:  [
+          DropdownMenuItem(value: "NEW", child: Text("Neuve", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "USED_GOOD", child: Text("Excellent état", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "USED_WORN", child: Text("Usure normale ",style: AppStyles.bodyMedium(context)),),
+          DropdownMenuItem(value: "USED_DAMAGED", child: Text("À réparer", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "RECUPERATION", child: Text("Pièces récupérées", style: AppStyles.bodyMedium(context))),
+          DropdownMenuItem(value: "UNKNOWN", child: Text("UNKNOWN",style: AppStyles.bodyMedium(context))),
+        ],
+        onChanged: (val) => setState(() => _type = val),
+        validator: (val) =>
+        val == null ? "Champ requis" : null, // Validation pour le dropdown
       ),
     );
   }
@@ -312,7 +413,14 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       onPressed: onPressed,
-      child: Text(text, style: const TextStyle(color: Colors.white)),
+      child: _isLoading && color != Colors.red ? const SizedBox(
+        height: 22,
+        width: 22,
+        child: CircularProgressIndicator(
+          color: Colors.white,
+          strokeWidth: 2,
+        ),
+      ) : Text(text, style: const TextStyle(color: Colors.white)),
     );
   }
 }

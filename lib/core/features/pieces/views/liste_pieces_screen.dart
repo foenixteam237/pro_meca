@@ -4,8 +4,6 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/features/pieces/widgets/add_pieces_form.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import '../../../models/pieces.dart';
@@ -249,7 +247,7 @@ class _PiecesPageState extends State<PiecesPage> {
                     IconButton(
                       onPressed: _showFilterDialog,
                       icon: Icon(
-                        Icons.filter_alt_outlined,
+                        Icons.filter_list,
                         color: currentFilter != StockFilter.all
                             ? appColor
                                   .primary // Couleur différente quand un filtre est actif
@@ -352,9 +350,61 @@ class _PiecesPageState extends State<PiecesPage> {
                   itemCount: filteredPieces.length,
                   itemBuilder: (context, index) {
                     final piece = filteredPieces[index];
-                    return buildPieceItems(piece, context, index);
+                    return Dismissible(
+                      key: ValueKey(piece.id),
+                      direction: DismissDirection.horizontal,
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      secondaryBackground: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      confirmDismiss: (direction) async {
+                        return await showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text("Confirmation"),
+                            content: const Text("Voulez-vous vraiment supprimer cette pièce ?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                                child: const Text("Annuler"),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                                child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      onDismissed: (direction) async {
+                        try {
+                          await PiecesService().deletePiece(piece.id, context); //
+                          setState(() {
+                            filteredPieces.removeAt(index);
+                            pieces.removeWhere((p) => p.id == piece.id);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Pièce supprimée avec succès ✅")),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Erreur suppression: $e")),
+                          );
+                        }
+                      },
+                      child: buildPieceItems(piece, context, index),
+                    );
                   },
                 ),
+
               ),
             ),
         ],
@@ -380,7 +430,7 @@ class _PiecesPageState extends State<PiecesPage> {
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
           ),
-          child: CreatePieceForm(pContext: context),
+          child: CreatePieceForm(pContext: context, idCateg: widget.catId,),
         ),
       ],
       modalTypeBuilder: (context) {

@@ -267,17 +267,14 @@ class UserService{
 
   Future<User> createUser(FormData formData) async {
     try {
-      final accessToken = (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
+     // final accessToken = (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
       print(formData.fields);
       final response = await ApiDioService().authenticatedRequest(
-            () => _dio.post(
+            () async => _dio.post(
           '/auth/create',
           data: formData,
           options: Options(
-            headers: {
-              'Authorization': 'Bearer $accessToken',
-              'Content-Type': 'multipart/form-data',
-            },
+            headers: await ApiDioService().getAuthHeaders(),
           ),
         ),
       );
@@ -307,4 +304,25 @@ class UserService{
     }
     return Exception(e.message ?? 'Erreur réseau');
   }
+
+  Future<bool> deleteUser(String id) async {
+    try{
+      final response = await ApiDioService().authenticatedRequest(
+            () async => _dio.delete(
+          '/auth/$id',
+          options: Options(
+            headers: await ApiDioService().getAuthHeaders(),
+          ),
+        ),
+      );
+
+      return response.statusCode == 204;
+
+    }catch(e){
+      throw Exception('Erreur inattendue : $e');
+    }
+  }
+
+
+
 }

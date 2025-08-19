@@ -167,14 +167,14 @@ class _UserListScreenState extends State<UserListScreen> {
                   children: [
                     Text('Liste des utilisateurs', style: AppStyles.titleMedium(context)),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         IconButton(
                           onPressed: () {
                             _showRoleFilter(context);
                           },
-                          icon: const Icon(Icons.filter_alt_outlined, color: Colors.blue),
+                          icon:  Icon(Icons.filter_list, color: appColors.primary),
                           tooltip: "Filtrer par rôle",
                         ),
                         IconButton(
@@ -185,7 +185,7 @@ class _UserListScreenState extends State<UserListScreen> {
                               MaterialPageRoute(builder: (context) => const AddUserScreen()),
                             );
                           },
-                          icon: const Icon(Icons.add_circle, color: Colors.blue),
+                          icon:  Icon(Icons.add_circle, color: appColors.primary),
                           tooltip: "Ajouter un utilisateur",
                         ),
                      ]
@@ -204,31 +204,85 @@ class _UserListScreenState extends State<UserListScreen> {
                     separatorBuilder: (_, __) =>  Divider(color: Colors.grey.withOpacity(0.4), height: 1),
                     itemBuilder: (context, index) {
                       final user = filteredUsers[index];
-                      return ListTile(
-                        leading: buildImage(user.logo, context, _accessToken),
-                        title: Text(
-                          user.name,
-                          style: AppStyles.bodyMedium(context).copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: appColors.customText(context),
-                          ),
+
+                      return Dismissible(
+                        key: ValueKey(user.id), // ⚠️ assure-toi que User a un id unique
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        subtitle: Text(
-                          user.role.name.toUpperCase(),
-                          style: AppStyles.bodySmall(context).copyWith(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w100
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 0),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ProfileScreen(con: context, member: user)),
+                        confirmDismiss: (direction) async {
+                          return await showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text("Confirmation"),
+                              content: Text("Voulez-vous supprimer ${user.name} ?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text("Annuler"),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            ),
                           );
                         },
+                        onDismissed: (direction) async {
+                          try {
+                            bool delete = await UserService().deleteUser(user.id);
+                            if (delete) {
+                              setState(() {
+                                users.removeWhere((u) => u.id == user.id);
+                                filteredUsers.removeAt(index);
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Erreur suppression: ${user.id}")),
+                              );
+                            }else{
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Erreur de suppression ${user.name}")),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Erreur suppression: $e")),
+                            );
+                          }
+                        },
+                        child: ListTile(
+                          leading: buildImage(user.logo, context, _accessToken),
+                          title: Text(
+                            user.name,
+                            style: AppStyles.bodyMedium(context).copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: appColors.customText(context),
+                            ),
+                          ),
+                          subtitle: Text(
+                            user.role.name.toUpperCase(),
+                            style: AppStyles.bodySmall(context).copyWith(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w100,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => ProfileScreen(con: context, member: user)),
+                            );
+                          },
+                        ),
                       );
                     },
+
                   ),
                 ),
               ],

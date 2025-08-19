@@ -34,6 +34,8 @@ class PiecesService {
         // Vérifie si la réponse contient une liste dans 'data'
         final List<dynamic> data = response.data ?? [];
 
+        print(data);
+
         // Convertit chaque élément JSON en objet Piece
         return data.map((json) => Piece.fromJson(json)).toList();
       } else {
@@ -63,17 +65,18 @@ class PiecesService {
 
   /// Ajouter une nouvelle pièce
   Future<bool> addPiece(
-    Map<String, dynamic> pieceData,
+    FormData pieceData,
     BuildContext context,
   ) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
-          '/pieces',
+          '/pieces/create',
           data: pieceData,
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
+      print(response);
       return response.statusCode == 201;
     } on DioException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
