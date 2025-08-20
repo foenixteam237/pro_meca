@@ -1,84 +1,38 @@
+import 'dysfonctionnement.dart';
+
 class Diagnostic {
   final String visiteId;
-  final String problemReported;
-  final String problemIdentified;
-  final String errorCode;
-  final String urgencyLevel;
+  final String niveauUrgence;
+  final bool validated;
+  final List<Dysfonctionnement> dysfonctionnements;
 
   Diagnostic({
     required this.visiteId,
-    required this.problemReported,
-    required this.problemIdentified,
-    required this.errorCode,
-    required this.urgencyLevel,
+    required this.niveauUrgence,
+    required this.validated,
+    required this.dysfonctionnements,
   });
 
   // Convert a Diagnostic into a Map
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'visiteId': visiteId,
-      'constatClient': problemReported,
-      'note': problemIdentified,
-      'codeErreur': errorCode,
-      'niveauUrgence': urgencyLevel,
+      'niveauUrgence': niveauUrgence,
+      'validated': validated,
+      'dysfonctionnements': dysfonctionnements.map((e) => e.toJson()).toList(),
     };
   }
-
   // Create a Diagnostic from a Map
   factory Diagnostic.fromMap(Map<String, dynamic> map) {
     return Diagnostic(
       visiteId: map['visiteId'] as String,
-      problemReported: map['constatClient'] as String,
-      problemIdentified: map['note'] as String,
-      errorCode: map['codeErreur'] as String,
-      urgencyLevel: map['niveauUrgence'] as String,
+      niveauUrgence: map['niveauUrgence'] as String,
+      validated: map['validated'] as bool,
+      dysfonctionnements: (map['dysfonctionnements'] as List<dynamic>)
+          .map((e) => Dysfonctionnement.fromJson(e))
+          .toList(),
     );
   }
 
-  // Optionally, you can add a copyWith method for immutability
-  Diagnostic copyWith({
-    String? visiteId,
-    String? problemReported,
-    String? problemIdentified,
-    String? errorCode,
-    String? urgencyLevel,
-  }) {
-    return Diagnostic(
-      visiteId: visiteId ?? this.visiteId,
-      problemReported: problemReported ?? this.problemReported,
-      problemIdentified: problemIdentified ?? this.problemIdentified,
-      errorCode: errorCode ?? this.errorCode,
-      urgencyLevel: urgencyLevel ?? this.urgencyLevel,
-    );
-  }
 
-  // Override toString for better debugging
-  @override
-  String toString() {
-    return 'Diagnostic(visiteId: $visiteId, problemReported: $problemReported, '
-        'problemIdentified: $problemIdentified, errorCode: $errorCode, '
-        'urgencyLevel: $urgencyLevel)';
-  }
-
-  // Override equality operators
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Diagnostic &&
-        other.visiteId == visiteId &&
-        other.problemReported == problemReported &&
-        other.problemIdentified == problemIdentified &&
-        other.errorCode == errorCode &&
-        other.urgencyLevel == urgencyLevel;
-  }
-
-  @override
-  int get hashCode {
-    return visiteId.hashCode ^
-    problemReported.hashCode ^
-    problemIdentified.hashCode ^
-    errorCode.hashCode ^
-    urgencyLevel.hashCode;
-  }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
-import 'package:pro_meca/core/features/reception/widgets/showVehicleSelectionModal.dart';
+import 'package:pro_meca/core/features/visites/widgets/showVehicleSelectionModal.dart';
 import 'package:provider/provider.dart';
 import '../../../../l10n/arb/app_localizations.dart';
 import 'completeVehiculeCard.dart';
@@ -14,7 +14,7 @@ class HomeContent extends StatefulWidget {
     super.key,
     required this.historyList,
     this.onRefresh,
-    required this.context
+    required this.context,
   });
 
   @override
@@ -70,7 +70,11 @@ class _HomeContentState extends State<HomeContent> {
     );
   }
 
-  Widget _sectionTitle(String title, AppLocalizations l10n, BuildContext context) {
+  Widget _sectionTitle(
+    String title,
+    AppLocalizations l10n,
+    BuildContext context,
+  ) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

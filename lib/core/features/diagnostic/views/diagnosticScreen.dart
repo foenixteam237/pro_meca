@@ -13,6 +13,8 @@ import '../../../models/diagnostic_update.dart';
 import '../../../models/dysfonctionnement.dart';
 import '../../../models/visite.dart';
 import '../../../widgets/build_image.dart';
+import '../widgets/build_problem_reported_section.dart';
+import '../widgets/build_vehicle_info_section.dart';
 
 class DiagnosticPage extends StatefulWidget {
   final String idVisite;
@@ -190,12 +192,12 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Vehicle Info Section
-              _buildVehicleInfoSection(context, isMobile, appColors, l10n),
+              buildVehicleInfoSection(context, isMobile, appColors, l10n, widget.visite, widget.accessToken),
 
               const SizedBox(height: 20),
 
               // Problem Reported Section
-              _buildProblemReportedSection(context),
+              buildProblemReportedSection(context, problemReportedController),
 
               const SizedBox(height: 10),
 
@@ -215,48 +217,6 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildVehicleInfoSection(
-    BuildContext context,
-    bool isMobile,
-    AppAdaptiveColors appColors,
-    AppLocalizations l10n,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            buildImage(
-              widget.visite!.vehicle!.logo,
-              context,
-              widget.accessToken!,
-            ),
-            SizedBox(width: isMobile ? 10 : 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  "${l10n.immatVehicule}: ${widget.visite!.vehicle!.licensePlate}",
-                  style: AppStyles.titleMedium(context),
-                ),
-                Text(
-                  "Entrée: ${DateFormat.yMMMd().format(widget.visite!.dateEntree)}",
-                  style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
-                ),
-              ],
-            ),
-          ],
-        ),
-        Text(
-          "${widget.visite!.vehicle!.client!.firstName} ${widget.visite!.vehicle!.client!.lastName}",
-          style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
-        ),
-      ],
     );
   }
 

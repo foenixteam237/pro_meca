@@ -15,7 +15,6 @@ class DiagnosticServices {
   //##########################---CREATION D'UN DIAGNOSTIC---#############################
 
   Future<bool> submitDiagnostic(Diagnostic diag, String accessToken) async {
-    print(diag.toJson());
     try {
       final response = await _dio.post(
         '/visites/diagnostics/create',
@@ -41,4 +40,36 @@ class DiagnosticServices {
       return false;
     }
   }
+
+  /*#############################Recupération des diagnostics d'une visite############################*/
+
+
+  Future<List<Diagnostic>> fetchDiagnostic(String idVisite) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+            () async => await _dio.get(
+          '/visites/diagnostics/$idVisite',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        print(data);
+        if (data is List) {
+          return data.map((json) => Diagnostic.fromJson(json)).toList();
+        }
+
+        throw Exception("Format de réponse inattendu : ${data.runtimeType}");
+      } else {
+        throw Exception("Erreur API: ${response.statusCode} - ${response.statusMessage}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Erreur Dio: ${e.message}");
+    } catch (e) {
+      throw Exception("Erreur inconnue: $e");
+    }
+  }
+
 }
+

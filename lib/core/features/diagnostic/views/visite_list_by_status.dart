@@ -6,12 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/visite.dart';
-import '../../reception/services/reception_services.dart';
+import '../../visites/services/reception_services.dart';
 
 class VisiteListByStatus extends StatefulWidget {
   final BuildContext contextParent;
   final String status;
-  const VisiteListByStatus({super.key, required this.contextParent, required this.status});
+  const VisiteListByStatus({
+    super.key,
+    required this.contextParent,
+    required this.status,
+  });
 
   @override
   State<VisiteListByStatus> createState() => _VisiteListByStatusState();
@@ -26,6 +30,7 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
     super.initState();
     _loadData();
   }
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
@@ -33,7 +38,9 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
     try {
       final pref = await SharedPreferences.getInstance();
       accessToken = pref.getString("accessToken") ?? "";
-      final visites = await ReceptionServices().fetchVisitesWithVehicleStatus(widget.status);
+      final visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
+        widget.status,
+      );
       setState(() {
         _visites = visites;
         _isLoading = false;
@@ -41,7 +48,6 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
     } catch (e, stack) {
       // Affiche une erreur (ex: snackbar) ou log
       print("Erreur lors du chargement des visites: $e");
-      print(stack);
       setState(() {
         _visites = [];
         _isLoading = false;
@@ -73,10 +79,7 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Text(
-            "Liste des visites",
-            style: AppStyles.titleMedium(context),
-          ),
+          Text("Liste des visites", style: AppStyles.titleMedium(context)),
           const Spacer(),
           Text(
             "01/01/2025",
@@ -89,7 +92,6 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -105,13 +107,16 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
                 _buildSearchBar(context),
                 _buildEntryBanner(context),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: HistoryList(
-                      title: "",
-                      visites: _visites,
-                      isLoading: _isLoading,
-                      contextParent: widget.contextParent,
-                      accessToken: accessToken
+                    title: "",
+                    visites: _visites,
+                    isLoading: _isLoading,
+                    contextParent: widget.contextParent,
+                    accessToken: accessToken,
                   ),
                 ),
                 const SizedBox(height: 30),

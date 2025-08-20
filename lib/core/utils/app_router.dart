@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/features/auth/views/login_screen.dart';
 import 'package:pro_meca/core/features/home/AdminHome.dart';
-import 'package:pro_meca/core/features/reception/views/choseBrandScreen.dart';
+import 'package:pro_meca/core/features/visites/views/choseBrandScreen.dart';
 
 import '../features/home/TechnicianHome.dart';
 import '../../welcome_screen.dart';

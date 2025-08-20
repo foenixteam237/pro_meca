@@ -4,7 +4,7 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/models/visite.dart';
 
-import '../../reception/services/reception_services.dart';
+import '../../visites/services/reception_services.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -44,10 +44,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: Text('Tableau de bord', style: AppStyles.titleLarge(context)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
         ],
       ),
       body: Padding(
@@ -65,7 +62,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: EdgeInsets.all(AppStyles.paddingMedium),
                       child: Column(
                         children: [
-                          Text('$_sortiesCount', style: AppStyles.headline2(context)),
+                          Text(
+                            '$_sortiesCount',
+                            style: AppStyles.headline2(context),
+                          ),
                           Text('Sorties', style: AppStyles.bodyMedium(context)),
                           Text(
                             '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
@@ -82,7 +82,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: EdgeInsets.all(AppStyles.paddingMedium),
                       child: Column(
                         children: [
-                          Text('$_enAttenteCount', style: AppStyles.headline2(context)),
+                          Text(
+                            '$_enAttenteCount',
+                            style: AppStyles.headline2(context),
+                          ),
                           Text(
                             'En attente',
                             style: AppStyles.bodyMedium(context),
@@ -103,7 +106,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: EdgeInsets.all(AppStyles.paddingMedium),
                 child: Column(
                   children: [
-                    Text('$_terminesCount', style: AppStyles.headline2(context)),
+                    Text(
+                      '$_terminesCount',
+                      style: AppStyles.headline2(context),
+                    ),
                     Text(
                       'Pièces sorties',
                       style: AppStyles.bodyMedium(context),
@@ -147,9 +153,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         trailing: Chip(
                           label: Text(
                             visite.status,
-                            style: AppStyles.bodySmall(context).copyWith(
-                              color: Colors.white,
-                            ),
+                            style: AppStyles.bodySmall(
+                              context,
+                            ).copyWith(color: Colors.white),
                           ),
                           backgroundColor: visite.status == 'Avertissement'
                               ? Colors.orange

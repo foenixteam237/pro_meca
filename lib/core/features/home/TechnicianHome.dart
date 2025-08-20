@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/visite.dart';
-import '../reception/services/reception_services.dart';
+import '../visites/services/reception_services.dart';
 import 'widgets/buildHomeContent.dart';
 import '../dashboard/views/vehicle_dashboard_page.dart';
 

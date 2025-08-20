@@ -4,7 +4,6 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/commonUi/validationScreen.dart';
 import 'package:pro_meca/core/features/diagnostic/views/diagnosticScreen.dart';
 import 'package:pro_meca/core/models/client.dart';
-import 'package:pro_meca/core/models/diagnostic_update.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';

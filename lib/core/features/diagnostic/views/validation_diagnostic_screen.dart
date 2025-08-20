@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
 import 'package:pro_meca/core/models/visite.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 
-class ValidationDiagnosticScreen extends StatelessWidget {
+import '../../../models/diagnostic.dart';
+import '../widgets/build_problem_reported_section.dart';
+import '../widgets/build_vehicle_info_section.dart';
+
+class ValidationDiagnosticScreen extends StatefulWidget {
   final String idVisite;
   final String accessToken;
   final Visite visite;
+
   const ValidationDiagnosticScreen({
     super.key,
     required this.idVisite,
@@ -17,11 +25,59 @@ class ValidationDiagnosticScreen extends StatelessWidget {
   });
 
   @override
+  State<ValidationDiagnosticScreen> createState() =>
+      _ValidationDiagnosticScreenState();
+}
+
+class _ValidationDiagnosticScreenState
+    extends State<ValidationDiagnosticScreen> {
+  late final TextEditingController problemReportedController;
+  List<Diagnostic> diagnostics = [];
+  bool isLoadingDiagnostics = false;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialisation du controller avec la valeur de la visite
+    problemReportedController = TextEditingController(
+      text: widget.visite.constatClient ?? '',
+    );
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async{
+    setState(() {
+      isLoadingDiagnostics = true;
+    });
+
+    try{
+      final list = await DiagnosticServices().fetchDiagnostic(widget.idVisite);
+      print(list);
+    }catch (e){
+      throw Exception("Erreur inconnue $e");
+    }finally{
+      setState(() {
+        isLoadingDiagnostics = false;
+      });
+    }
+  }
+  @override
+  void dispose() {
+    // N'oubliez pas de disposer le controller
+    problemReportedController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
-    AppLocalizations l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       appBar: CustomAppBar(
         profileImagePath: "assets/images/images.jpeg",
@@ -35,133 +91,43 @@ class ValidationDiagnosticScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header - Profil technicien
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 24,
-                    backgroundImage: AssetImage("assets/technician.jpg"),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        "Eric Anderson",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        "Technicien",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Icon(Icons.info_outline, color: Colors.blue),
-                ],
+              buildVehicleInfoSection(
+                context,
+                isMobile,
+                appColors,
+                l10n,
+                widget.visite,
+                widget.accessToken,
               ),
               const SizedBox(height: 20),
-
-              // Infos véhicule
-              Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundImage: AssetImage("assets/toyota.png"),
-                    radius: 20,
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        "N0567AZ",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        "Model: COROLLA LE",
-                        style: TextStyle(color: Colors.grey, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  const Text(
-                    "M MARTIN PETER",
-                    style: TextStyle(color: Colors.black54, fontSize: 13),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Problème signalé
-              const Text(
-                "Problème signalé par le client",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                height: 80,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  "Fumée blanche.........",
-                  style: TextStyle(color: Colors.black87, fontSize: 14),
-                ),
-              ),
-              const SizedBox(height: 20),
+              buildProblemReportedSection(context, problemReportedController),
 
               // Images véhicule
-              const Text(
-                "Images du véhicule",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-              ),
+              Text("Images du véhicule", style: AppStyles.titleLarge(context)),
               const SizedBox(height: 8),
               SizedBox(
-                height: 70,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    VehicleImageCard("assets/car.jpg"),
-                    VehicleImageCard("assets/car_engine.jpg"),
-                    VehicleImageCard("assets/car_diagnose.jpg"),
-                    VehicleImageCard("assets/workshop.jpg"),
-                  ],
+                height: Responsive.responsiveValue(
+                  context,
+                  mobile: screenHeight * 0.1,
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Niveau intervention
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    "Niveau d'intervention",
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                  ),
-                  Text(
-                    "Normal",
-                    style: TextStyle(color: Colors.green, fontSize: 14),
-                  ),
-                ],
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.visite.diagnostics.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final diagnostic = widget.visite.diagnostics[index];
+                    return Text("${diagnostic.niveauUrgence} est son id");
+                  },
+                ),
               ),
               const SizedBox(height: 20),
 
               // Diagnostic technicien
-              const Text(
+              Text(
                 "Diagnostic fait par le technicien",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                style: AppStyles.titleLarge(context),
               ),
               const SizedBox(height: 10),
               DiagnosticRow(code: "N/A", desc: "Moteur sèche"),
-              DiagnosticRow(code: "ER2376", desc: "Huile vidange"),
               const SizedBox(height: 20),
 
               // Interventions à faire
@@ -181,7 +147,7 @@ class ValidationDiagnosticScreen extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
-                        "assets/intervention.jpg",
+                        "assets/images/moteur.jpg",
                         width: 70,
                         height: 70,
                         fit: BoxFit.cover,
@@ -215,13 +181,20 @@ class ValidationDiagnosticScreen extends StatelessWidget {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: appColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      onPressed: () {},
-                      child: const Text("Détails"),
+                      onPressed: () {
+                        print(widget.visite.diagnostics.toList().length);
+                      },
+                      child: Text(
+                        "Détails",
+                        style: AppStyles.buttonText(
+                          context,
+                        ).copyWith(fontSize: 12),
+                      ),
                     ),
                   ],
                 ),
@@ -232,7 +205,7 @@ class ValidationDiagnosticScreen extends StatelessWidget {
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: appColors.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 60,
                       vertical: 14,
@@ -242,10 +215,7 @@ class ValidationDiagnosticScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {},
-                  child: const Text(
-                    "Validé",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                  child: Text("Validé", style: AppStyles.buttonText(context)),
                 ),
               ),
             ],
@@ -267,7 +237,18 @@ class VehicleImageCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Image.asset(image, width: 80, height: 70, fit: BoxFit.cover),
+        child: Image.asset(
+          image,
+          width: 80,
+          height: 70,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            width: 80,
+            height: 70,
+            color: Colors.grey.shade300,
+            child: const Icon(Icons.image_not_supported, color: Colors.grey),
+          ),
+        ),
       ),
     );
   }
@@ -280,23 +261,50 @@ class DiagnosticRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text("$code   $desc", style: const TextStyle(fontSize: 14)),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Champ Code erreur
+        Expanded(
+          flex: 2,
+          child: TextField(
+            readOnly: true,
+            controller: TextEditingController(text: code),
+            decoration: const InputDecoration(
+              hintText: "Code erreur (facultatif)",
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 16,
+              ),
+            ),
           ),
-          const Icon(Icons.check_circle, color: Colors.green),
-          const SizedBox(width: 8),
-          const Icon(Icons.cancel, color: Colors.red),
-        ],
-      ),
+        ),
+
+        const SizedBox(width: 4),
+        // Champ Détails du diagnostic
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                readOnly: true,
+                controller: TextEditingController(text: desc),
+                maxLines: 1,
+                decoration: const InputDecoration(
+                  hintText: "Détails du diagnostic*",
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/visite.dart';
 import '../../widgets/buildHistoryList.dart';
-import '../reception/services/reception_services.dart';
+import '../visites/services/reception_services.dart';
 import '../users/views/user_list_page.dart';
 import 'widgets/buildHomeContent.dart';
 import '../dashboard/views/vehicle_dashboard_page.dart';
@@ -38,12 +38,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   List<Widget> _buildScreens() {
     return [
       VehicleDashboardPage(context: context),
-      CategoriesPage(parentContext: context,),
+      CategoriesPage(parentContext: context),
       UserListScreen(),
-      HomeContent(historyList: HistoryList(title: AppLocalizations.of(context).ongoingVehicles,contextParent : context, visites: _visites, isLoading: _isLoading,  accessToken: accessToken), context: context,),
+      HomeContent(
+        historyList: HistoryList(
+          title: AppLocalizations.of(context).ongoingVehicles,
+          contextParent: context,
+          visites: _visites,
+          isLoading: _isLoading,
+          accessToken: accessToken,
+        ),
+        context: context,
+      ),
       ProfileScreen(con: context),
     ];
   }
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
@@ -66,6 +76,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       });
     }
   }
+
   List<PersistentBottomNavBarItem> _navBarsItems(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -117,7 +128,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         name: "Dilane",
         role: l10n.adminRole,
         nameColor: appColors.primary,
-
       ),
       resizeToAvoidBottomInset: false,
       backgroundColor: appColors.customBackground(context),

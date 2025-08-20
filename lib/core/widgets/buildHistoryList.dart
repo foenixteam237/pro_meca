@@ -3,7 +3,7 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_adaptive_colors.dart';
-import '../features/reception/widgets/vehicule_inf_shimmer.dart';
+import '../features/visites/widgets/vehicule_inf_shimmer.dart';
 import '../models/visite.dart';
 import 'buildHistoryItem.dart';
 
@@ -31,29 +31,32 @@ class HistoryList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if(title.isNotEmpty) ...[Padding(
-          padding: const EdgeInsets.only(top: 20, bottom: 4),
-          child: Row(
-            children: [
-              Text(title, style: AppStyles.titleMedium(context)),
-              const Spacer(),
-              GestureDetector(
-                onTap: onVoirPlus,
-                child: Text(
-                  "Voir plus",
-                  style: TextStyle(
-                    color: appColors.primary,
+        if (title.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 20, bottom: 4),
+            child: Row(
+              children: [
+                Text(title, style: AppStyles.titleMedium(context)),
+                const Spacer(),
+                GestureDetector(
+                  onTap: onVoirPlus,
+                  child: Text(
+                    "Voir plus",
+                    style: TextStyle(color: appColors.primary),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),],
+        ],
         if (isLoading)
           Padding(
             padding: const EdgeInsets.all(5.0),
             child: Column(
-              children: List.generate(10, (_) => const VehicleInfoCardShimmer()),
+              children: List.generate(
+                10,
+                (_) => const VehicleInfoCardShimmer(),
+              ),
             ),
           )
         else if (visites.isEmpty)
@@ -62,7 +65,9 @@ class HistoryList extends StatelessWidget {
             child: Center(child: Text("Aucune visite trouvée.")),
           )
         else
-          ...visites.map((v) => buildHistoryItem(v, contextParent, accessToken)), // À compléter
+          ...visites.map(
+            (v) => buildHistoryItem(v, contextParent, accessToken),
+          ), // À compléter
       ],
     );
   }

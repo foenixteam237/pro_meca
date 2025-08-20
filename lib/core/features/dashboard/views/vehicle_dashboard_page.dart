@@ -11,7 +11,7 @@ import '../../../models/visite.dart';
 import '../../../widgets/buildSmallCardShimmer.dart';
 import '../../../widgets/buildStatusCardShimmer.dart';
 import '../../diagnostic/views/visite_list_by_status.dart';
-import '../../reception/services/reception_services.dart';
+import '../../visites/services/reception_services.dart';
 
 class VehicleDashboardPage extends StatefulWidget {
   final BuildContext context;
@@ -35,6 +35,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
     super.initState();
     _loadData();
   }
+
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
@@ -46,9 +47,15 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
       setState(() {
         _visites = visites;
         statVD = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_DIAGNOSTIC");
-        statVI = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_VALIDATION_INTERVENTION");
+        statVI = Visite.getVehicleStatsByStatus(
+          _visites,
+          "ATTENTE_VALIDATION_INTERVENTION",
+        );
         statT = Visite.getVehicleStatsByStatus(_visites, "TERMINE");
-        statIT = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_INTERVENTION");
+        statIT = Visite.getVehicleStatsByStatus(
+          _visites,
+          "ATTENTE_INTERVENTION",
+        );
         _isLoading = false;
       });
     } catch (e, stack) {
@@ -105,7 +112,13 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
 
   Widget _buildStatusCardWithImage(BuildContext context) {
     return GestureDetector(
-      onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "adia",))),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              VisiteListByStatus(contextParent: widget.context, status: "adia"),
+        ),
+      ),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         padding: const EdgeInsets.all(12),
@@ -131,8 +144,8 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ),
-             Text(
-               statVD['total'].toString() ,
+            Text(
+              statVD['total'].toString(),
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
@@ -142,13 +155,13 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
   }
 
   Widget _buildSmallCard(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required int today,
-        required int month,
-        required int total,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required int today,
+    required int month,
+    required int total,
+  }) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
 
     return Container(
@@ -157,15 +170,11 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
         mobile: MediaQuery.of(context).size.width * 0.45,
         tablet: MediaQuery.of(context).size.width * 0.22,
       ),
-      constraints: const BoxConstraints(
-        minHeight: 100,
-        maxHeight: 120,
-      ),
+      constraints: const BoxConstraints(minHeight: 100, maxHeight: 120),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
-
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -213,25 +222,21 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
           ),
             */
           // Compteur "Total" avec animation plus visible
-
           Expanded(
             child: _buildAnimatedCounterRow(
               label: "Total",
               value: total,
               textStyle: AppStyles.titleMedium(context),
-              valueStyle:  TextStyle(
+              valueStyle: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 30,
-                color: appColors.primary, // Vous pouvez utiliser appColors.primary
+                color:
+                    appColors.primary, // Vous pouvez utiliser appColors.primary
               ),
               duration: const Duration(milliseconds: 1500),
             ),
           ),
-          Icon(
-            Icons.navigate_next_rounded,
-            size: 34,
-            color: appColors.primary,
-          )
+          Icon(Icons.navigate_next_rounded, size: 34, color: appColors.primary),
         ],
       ),
     );
@@ -246,27 +251,27 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
   }) {
     return Center(
       child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(label, style: textStyle),
-              TweenAnimationBuilder<int>(
-                tween: IntTween(begin: 0, end: value),
-                duration: duration,
-                builder: (context, value, child) {
-                  return Text(
-                    '$value',
-                    style: valueStyle ?? textStyle,
-                  );
-                },
-                curve: Curves.easeOut,
-              ),
-            ],
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(label, style: textStyle),
+          TweenAnimationBuilder<int>(
+            tween: IntTween(begin: 0, end: value),
+            duration: duration,
+            builder: (context, value, child) {
+              return Text('$value', style: valueStyle ?? textStyle);
+            },
+            curve: Curves.easeOut,
           ),
+        ],
+      ),
     );
   }
 
   Widget _buildStatusGrid(BuildContext context, List<Visite> visites) {
-    final statsAttenteV = Visite.getVehicleStatsByStatus(visites, "ATTENTE_VALIDATION_DIAGNOSTIC");
+    final statsAttenteV = Visite.getVehicleStatsByStatus(
+      visites,
+      "ATTENTE_VALIDATION_DIAGNOSTIC",
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.count(
@@ -275,52 +280,93 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
         mainAxisSpacing: 12,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        children: _isLoading ?[buildSmallCardShimmer(context),buildSmallCardShimmer(context),buildSmallCardShimmer(context),buildSmallCardShimmer(context),] : [
-          GestureDetector(
-            onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "avdia",))),
-            child: _buildSmallCard(
-              context,
-              icon: Icons.access_time_outlined,
-              title: AppLocalizations.of(context).waitingValidationDiagnostic,
-              today: statsAttenteV['today']!,
-              month: statsAttenteV['month']!,
-              total: statsAttenteV['total']!,
-            ),
-          ),
-          GestureDetector(
-            onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "aint",))),
-            child: _buildSmallCard(
-              context,
-              icon: Icons.settings,
-              title: AppLocalizations.of(context).waitingInterventions,
-              today: 10,
-              month: 4,
-              total: statIT['total']!,
-            ),
-          ),
-          GestureDetector(
-            onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "avin",))),
-            child: _buildSmallCard(
-              context,
-              icon: Icons.rule_folder_outlined,
-              title: AppLocalizations.of(context).waitingValidation,
-              today: 20,
-              month: 3,
-              total: statVI['total']!,
-            ),
-          ),
-          GestureDetector(
-            onTap: ()=> Navigator.push(context, MaterialPageRoute(builder: (context) => VisiteListByStatus(contextParent: widget.context, status: "term",))),
-            child: _buildSmallCard(
-              context,
-              icon: Icons.directions_car_filled,
-              title: AppLocalizations.of(context).finished,
-              today: 10,
-              month: 4,
-              total: statT['total']!,
-            ),
-          ),
-        ],
+        children: _isLoading
+            ? [
+                buildSmallCardShimmer(context),
+                buildSmallCardShimmer(context),
+                buildSmallCardShimmer(context),
+                buildSmallCardShimmer(context),
+              ]
+            : [
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VisiteListByStatus(
+                        contextParent: widget.context,
+                        status: "avdia",
+                      ),
+                    ),
+                  ),
+                  child: _buildSmallCard(
+                    context,
+                    icon: Icons.access_time_outlined,
+                    title: AppLocalizations.of(
+                      context,
+                    ).waitingValidationDiagnostic,
+                    today: statsAttenteV['today']!,
+                    month: statsAttenteV['month']!,
+                    total: statsAttenteV['total']!,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VisiteListByStatus(
+                        contextParent: widget.context,
+                        status: "aint",
+                      ),
+                    ),
+                  ),
+                  child: _buildSmallCard(
+                    context,
+                    icon: Icons.settings,
+                    title: AppLocalizations.of(context).waitingInterventions,
+                    today: 10,
+                    month: 4,
+                    total: statIT['total']!,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VisiteListByStatus(
+                        contextParent: widget.context,
+                        status: "avin",
+                      ),
+                    ),
+                  ),
+                  child: _buildSmallCard(
+                    context,
+                    icon: Icons.rule_folder_outlined,
+                    title: AppLocalizations.of(context).waitingValidation,
+                    today: 20,
+                    month: 3,
+                    total: statVI['total']!,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VisiteListByStatus(
+                        contextParent: widget.context,
+                        status: "term",
+                      ),
+                    ),
+                  ),
+                  child: _buildSmallCard(
+                    context,
+                    icon: Icons.directions_car_filled,
+                    title: AppLocalizations.of(context).finished,
+                    today: 10,
+                    month: 4,
+                    total: statT['total']!,
+                  ),
+                ),
+              ],
       ),
     );
   }
@@ -338,16 +384,18 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
               children: [
                 _buildSearchBar(context),
                 _buildEntryBanner(context),
-                _isLoading ? buildStatusCardWithImageShimmer(context) : _buildStatusCardWithImage(context),
+                _isLoading
+                    ? buildStatusCardWithImageShimmer(context)
+                    : _buildStatusCardWithImage(context),
                 _buildStatusGrid(context, _visites),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: HistoryList(
-                      title: "Historiques",
-                      visites: _visites,
-                      isLoading: _isLoading,
-                      contextParent: widget.context,
-                      accessToken: accessToken
+                    title: "Historiques",
+                    visites: _visites,
+                    isLoading: _isLoading,
+                    contextParent: widget.context,
+                    accessToken: accessToken,
                   ),
                 ),
                 const SizedBox(height: 30),
