@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/visites/services/reception_services.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_adaptive_colors.dart';
@@ -66,8 +68,57 @@ class HistoryList extends StatelessWidget {
           )
         else
           ...visites.map(
-            (v) => buildHistoryItem(v, contextParent, accessToken),
-          ), // À compléter
+            (v) => Dismissible(
+              key: ValueKey(
+                v.id,
+              ), // ⚠️ Utilise un identifiant unique de ta visite
+              direction: DismissDirection
+                  .endToStart, // ou DismissDirection.horizontal pour les deux côtés
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              confirmDismiss: (direction) async {
+                // Optionnel : demander confirmation avant suppression
+                return await showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("Confirmer la suppression"),
+                    content: const Text(
+                      "Voulez-vous vraiment supprimer cette visite ?",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: const Text("Annuler"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: const Text("Supprimer"),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              onDismissed: (direction) async {
+                // Ici tu appelles ton API / Provider pour supprimer la visite
+                // Exemple :
+                // context.read<VisiteProvider>().deleteVisite(v.id, accessToken);
+                await ReceptionServices().deleteVisite(v.id);
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      "Visite du véhicule immatriculé ${v.vehicle!.licensePlate} a été supprimée avec succès.",
+                    ),
+                  ),
+                );
+              },
+              child: buildHistoryItem(v, contextParent, accessToken),
+            ),
+          ),
       ],
     );
   }

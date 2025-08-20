@@ -59,7 +59,7 @@ Widget buildHistoryItem(
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: Text(
-                        DateFormat.yMMMd().format(visite.dateEntree),
+                        DateFormat.yMMMd().format(visite.updatedAt),
                         style: const TextStyle(fontSize: 12),
                       ),
                     ),

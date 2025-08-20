@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
+import 'package:pro_meca/core/models/dysfonctionnement.dart';
+import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/diagnostic.dart';
@@ -33,8 +36,11 @@ class _ValidationDiagnosticScreenState
     extends State<ValidationDiagnosticScreen> {
   late final TextEditingController problemReportedController;
   List<Diagnostic> diagnostics = [];
+  List<Dysfonctionnement> dysfonctionnements = [];
+  List<Photo>? photos = [];
   bool isLoadingDiagnostics = false;
   String? errorMessage;
+  Map<String, String> header = {};
 
   @override
   void initState() {
@@ -46,22 +52,26 @@ class _ValidationDiagnosticScreenState
     _loadCategories();
   }
 
-  Future<void> _loadCategories() async{
+  Future<void> _loadCategories() async {
     setState(() {
       isLoadingDiagnostics = true;
     });
 
-    try{
-      final list = await DiagnosticServices().fetchDiagnostic(widget.idVisite);
-      print(list);
-    }catch (e){
+    try {
+      dysfonctionnements = widget.visite.diagnostics
+          .expand((diagnostic) => diagnostic.dysfonctionnements)
+          .toList();
+      photos = widget.visite.photos;
+      header = await ApiDioService().getAuthHeaders();
+    } catch (e) {
       throw Exception("Erreur inconnue $e");
-    }finally{
+    } finally {
       setState(() {
         isLoadingDiagnostics = false;
       });
     }
   }
+
   @override
   void dispose() {
     // N'oubliez pas de disposer le controller
@@ -110,13 +120,22 @@ class _ValidationDiagnosticScreenState
                   context,
                   mobile: screenHeight * 0.1,
                 ),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: widget.visite.diagnostics.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final diagnostic = widget.visite.diagnostics[index];
-                    return Text("${diagnostic.niveauUrgence} est son id");
-                  },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (photos != null && photos!.isNotEmpty)
+                      ...photos!
+                          .map((photo) => VehicleImageCard(photo.logo, header))
+                          .toList()
+                    else
+                      ...List.generate(
+                        4,
+                        (index) => VehicleImageCard(
+                          "assets/images/moteur.jpg",
+                          header,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -127,8 +146,15 @@ class _ValidationDiagnosticScreenState
                 style: AppStyles.titleLarge(context),
               ),
               const SizedBox(height: 10),
-              DiagnosticRow(code: "N/A", desc: "Moteur sèche"),
-              const SizedBox(height: 20),
+              // Liste des diagnostics
+              if (dysfonctionnements.isNotEmpty)
+                ...dysfonctionnements.map(
+                  (dys) =>
+                      DiagnosticRow(code: dys.code ?? "N/A", desc: dys.detail),
+                )
+              else
+                const Text("Aucun diagnostic trouvé pour cette visite."),
+              const SizedBox(height: 10),
 
               // Interventions à faire
               const Text(
@@ -229,7 +255,8 @@ class _ValidationDiagnosticScreenState
 // Widget pour images véhicule
 class VehicleImageCard extends StatelessWidget {
   final String image;
-  const VehicleImageCard(this.image, {super.key});
+  final Map<String, String> headers;
+  const VehicleImageCard(this.image, this.headers, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -237,16 +264,22 @@ class VehicleImageCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Image.asset(
+        child: Image.network(
           image,
           width: 80,
           height: 70,
+          headers: headers,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
             width: 80,
             height: 70,
             color: Colors.grey.shade300,
-            child: const Icon(Icons.image_not_supported, color: Colors.grey),
+            child: Image.asset(
+              "assets/images/moteur.jpg",
+              width: 70,
+              height: 70,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
@@ -261,50 +294,53 @@ class DiagnosticRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Champ Code erreur
-        Expanded(
-          flex: 2,
-          child: TextField(
-            readOnly: true,
-            controller: TextEditingController(text: code),
-            decoration: const InputDecoration(
-              hintText: "Code erreur (facultatif)",
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 16,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Champ Code erreur
+          Expanded(
+            flex: 2,
+            child: TextField(
+              readOnly: true,
+              controller: TextEditingController(text: code),
+              decoration: const InputDecoration(
+                hintText: "Code erreur (facultatif)",
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
               ),
             ),
           ),
-        ),
 
-        const SizedBox(width: 4),
-        // Champ Détails du diagnostic
-        Expanded(
-          flex: 5,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                readOnly: true,
-                controller: TextEditingController(text: desc),
-                maxLines: 1,
-                decoration: const InputDecoration(
-                  hintText: "Détails du diagnostic*",
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 16,
+          const SizedBox(width: 10),
+          // Champ Détails du diagnostic
+          Expanded(
+            flex: 5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  readOnly: true,
+                  controller: TextEditingController(text: desc),
+                  maxLines: 1,
+                  decoration: const InputDecoration(
+                    hintText: "Détails du diagnostic*",
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -12,7 +12,6 @@ import '../../../constants/app_adaptive_colors.dart';
 import '../../../models/diagnostic_update.dart';
 import '../../../models/dysfonctionnement.dart';
 import '../../../models/visite.dart';
-import '../../../widgets/build_image.dart';
 import '../widgets/build_problem_reported_section.dart';
 import '../widgets/build_vehicle_info_section.dart';
 
@@ -192,7 +191,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Vehicle Info Section
-              buildVehicleInfoSection(context, isMobile, appColors, l10n, widget.visite, widget.accessToken),
+              buildVehicleInfoSection(
+                context,
+                isMobile,
+                appColors,
+                l10n,
+                widget.visite,
+                widget.accessToken,
+              ),
 
               const SizedBox(height: 20),
 

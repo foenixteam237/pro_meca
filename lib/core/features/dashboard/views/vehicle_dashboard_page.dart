@@ -380,26 +380,29 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
           onRefresh: _loadData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              children: [
-                _buildSearchBar(context),
-                _buildEntryBanner(context),
-                _isLoading
-                    ? buildStatusCardWithImageShimmer(context)
-                    : _buildStatusCardWithImage(context),
-                _buildStatusGrid(context, _visites),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: HistoryList(
-                    title: "Historiques",
-                    visites: _visites,
-                    isLoading: _isLoading,
-                    contextParent: widget.context,
-                    accessToken: accessToken,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Column(
+                children: [
+                  //_buildSearchBar(context), à implementer en cas de besoin
+                  //_buildEntryBanner(context),
+                  _isLoading
+                      ? buildStatusCardWithImageShimmer(context)
+                      : _buildStatusCardWithImage(context),
+                  _buildStatusGrid(context, _visites),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: HistoryList(
+                      title: "Historiques",
+                      visites: _visites,
+                      isLoading: _isLoading,
+                      contextParent: widget.context,
+                      accessToken: accessToken,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 30),
-              ],
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         ),

@@ -2,10 +2,7 @@ class Dysfonctionnement {
   final String? code;
   final String detail;
 
-  const Dysfonctionnement({
-     this.code,
-    required this.detail,
-  });
+  const Dysfonctionnement({this.code, required this.detail});
 
   factory Dysfonctionnement.fromJson(Map<String, dynamic> json) {
     return Dysfonctionnement(
@@ -15,9 +12,6 @@ class Dysfonctionnement {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'code': code!.isEmpty ? "NO CODE" : code,
-      'detail': detail,
-    };
+    return {'code': code!.isEmpty ? "N/A" : code, 'detail': detail};
   }
 }

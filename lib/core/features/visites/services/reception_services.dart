@@ -509,4 +509,41 @@ class ReceptionServices {
       throw Exception('Erreur lors du chargement des visites');
     }
   }
+
+  Future<void> deleteVisite(String id) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.delete(
+          '/visites/$id',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception("Erreur API : ${response.statusCode}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Erreur Dio : ${e.message}");
+    }
+  }
+
+  ///A utiliser pour récupérer les statistiques d'une visite mais après
+  Future<Map<String, dynamic>> getVisiteStats(String id) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/visites/status/$id',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      } else {
+        throw Exception("Erreur API : ${response.statusCode}");
+      }
+    } on DioException catch (e) {
+      throw Exception("Erreur Dio : ${e.message}");
+    }
+  }
 }
