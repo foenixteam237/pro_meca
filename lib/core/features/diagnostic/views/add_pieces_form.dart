@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/models/categories.dart';
 import 'package:pro_meca/core/models/pieces.dart';
+import 'package:provider/provider.dart';
 
 class PieceSelectionModal extends StatefulWidget {
   final Function(Map<String, dynamic>)? onPieceAdded;
@@ -527,29 +529,9 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
   }
 
   Widget _buildActionButtons() {
+    final appColor = Provider.of<AppAdaptiveColors>(context);
     return Row(
       children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _selectedPieceId == null ? null : _addPiece,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _selectedPieceId == null
-                  ? Colors.grey[400]
-                  : Colors.green[600],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Ajouter',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
             onPressed: widget.onCancel,
@@ -564,6 +546,28 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
             ),
             child: const Text(
               'Annuler',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 16),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _selectedPieceId == null ? null : _addPiece,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _selectedPieceId == null
+                  ? Colors.grey[400]
+                  : appColor.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              'Ajouter',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
