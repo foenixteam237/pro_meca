@@ -52,6 +52,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   country_code_picker: ^3.3.0
   cached_network_image: ^3.4.1
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:

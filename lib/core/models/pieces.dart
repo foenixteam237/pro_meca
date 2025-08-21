@@ -80,6 +80,32 @@ class Piece {
       inStock: json['stock'] > 0,
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'reference': reference,
+      'barcode': barcode,
+      'logo': logo,
+      'sourceId': sourceId,
+      'originVehicle': originVehicle,
+      'recoveryDate': recoveryDate?.toIso8601String(),
+      'isUsed': isUsed,
+      'stock': stock,
+      'criticalStock': criticalStock,
+      'location': location,
+      'condition': condition,
+      'sellingPrice': sellingPrice,
+      'purchaseDate': purchaseDate?.toIso8601String(),
+      'taxRate': taxRate,
+      'categoryId': categoryId,
+      'notes': notes,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'category': category.toJson(),
+      'source': source,
+    };
+  }
 }
 
 class Category {
@@ -102,5 +128,8 @@ class Category {
       description: json['description'],
       logo: json['logo'],
     );
+  }
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'description': description, 'logo': logo};
   }
 }

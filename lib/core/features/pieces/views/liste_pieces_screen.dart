@@ -3,6 +3,7 @@ import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/features/pieces/widgets/add_pieces_form.dart';
+import 'package:pro_meca/core/widgets/show_wolt_modal_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
@@ -210,7 +211,12 @@ class _PiecesPageState extends State<PiecesPage> {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () => _addNewPiece(appColor),
+            onPressed: () => ShowWoltModalSheet(
+              appColor,
+              context,
+              "Ajouter une pièce",
+              CreatePieceForm(pContext: context, idCateg: widget.catId),
+            ),
             icon: Icon(Icons.add, color: appColor.primary, size: 32),
             tooltip: 'Ajouter une pièce',
           ),
@@ -370,7 +376,9 @@ class _PiecesPageState extends State<PiecesPage> {
                           context: context,
                           builder: (ctx) => AlertDialog(
                             title: const Text("Confirmation"),
-                            content: const Text("Voulez-vous vraiment supprimer cette pièce ?"),
+                            content: const Text(
+                              "Voulez-vous vraiment supprimer cette pièce ?",
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(false),
@@ -378,7 +386,10 @@ class _PiecesPageState extends State<PiecesPage> {
                               ),
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(true),
-                                child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+                                child: const Text(
+                                  "Supprimer",
+                                  style: TextStyle(color: Colors.red),
+                                ),
                               ),
                             ],
                           ),
@@ -386,13 +397,18 @@ class _PiecesPageState extends State<PiecesPage> {
                       },
                       onDismissed: (direction) async {
                         try {
-                          await PiecesService().deletePiece(piece.id, context); //
+                          await PiecesService().deletePiece(
+                            piece.id,
+                            context,
+                          ); //
                           setState(() {
                             filteredPieces.removeAt(index);
                             pieces.removeWhere((p) => p.id == piece.id);
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Pièce supprimée avec succès ✅")),
+                            const SnackBar(
+                              content: Text("Pièce supprimée avec succès ✅"),
+                            ),
                           );
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -404,42 +420,10 @@ class _PiecesPageState extends State<PiecesPage> {
                     );
                   },
                 ),
-
               ),
             ),
         ],
       ),
-    );
-  }
-
-  void _addNewPiece(AppAdaptiveColors appColor) {
-    WoltModalSheet.show(
-      context: context,
-      pageListBuilder: (modalSheetContext) => [
-        WoltModalSheetPage(
-          topBar: Container(
-            padding: EdgeInsets.all(10),
-            alignment: Alignment.center,
-            child: Text(
-              "Créer une nouvelle pièce",
-              textAlign: TextAlign.center,
-              style: AppStyles.titleLarge(context),
-            ),
-          ),
-          trailingNavBarWidget: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-          child: CreatePieceForm(pContext: context, idCateg: widget.catId,),
-        ),
-      ],
-      modalTypeBuilder: (context) {
-        final screenWidth = MediaQuery.of(context).size.width;
-        return screenWidth > 700
-            ? WoltModalType.alertDialog()
-            : WoltModalType.sideSheet();
-      },
-      onModalDismissedWithBarrierTap: () => Navigator.pop(context),
     );
   }
 }

@@ -64,10 +64,7 @@ class PiecesService {
   }
 
   /// Ajouter une nouvelle pièce
-  Future<bool> addPiece(
-    FormData pieceData,
-    BuildContext context,
-  ) async {
+  Future<bool> addPiece(FormData pieceData, BuildContext context) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
@@ -158,10 +155,7 @@ class PiecesService {
       final headers = await ApiDioService().getAuthHeaders();
 
       final response = await ApiDioService().authenticatedRequest(
-        () => _dio.get(
-          '/categories', // adapte ce endpoint selon ton backend
-          options: Options(headers: headers),
-        ),
+        () => _dio.get('/categories', options: Options(headers: headers)),
       );
 
       if (response.statusCode == 200 && response.data is List) {
@@ -170,6 +164,70 @@ class PiecesService {
       } else {
         debugPrint(
           "Erreur lors de la récupération des catégories de pièces: code ${response.statusCode}",
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erreur serveur inattendue")),
+        );
+        return [];
+      }
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data?['message'] ?? e.message;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Impossible de récupérer les catégories : $errorMessage",
+          ),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return [];
+    } catch (e, stack) {
+      debugPrint('Erreur inconnue: $e');
+      debugPrint('StackTrace: $stack');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Erreur inattendue lors de la récupération."),
+        ),
+      );
+      return [];
+    }
+  }
+
+  Future<List<PieceCategorie>> fetchCategorieWithPieces(
+    BuildContext context,
+  ) async {
+    try {
+      // Récupère les catégories simples
+      final headers = await ApiDioService().getAuthHeaders();
+
+      final response = await ApiDioService().authenticatedRequest(
+        () => _dio.get('/categories', options: Options(headers: headers)),
+      );
+
+      if (response.statusCode == 200 && response.data is List) {
+        final List<dynamic> rawCategories = response.data;
+
+        List<PieceCategorie> categories = [];
+
+        for (final jsonCat in rawCategories) {
+          try {
+            // Récupérer les pièces de cette catégorie
+            final String categoryId = jsonCat['id'].toString();
+            final pieces = await fetchPieces(context, categoryId);
+            // Fusionner les données en injectant "pieces"
+            final enrichedJson = Map<String, dynamic>.from(jsonCat)
+              ..['pieces'] = pieces.map((p) => p.toJson()).toList();
+            // Construire la catégorie complète
+            categories.add(PieceCategorie.fromJson(enrichedJson));
+          } catch (e) {
+            debugPrint("Erreur lors de l'enrichissement de la catégorie: $e");
+          }
+        }
+
+        return categories;
+      } else {
+        debugPrint(
+          "Erreur lors de la récupération des catégories: code ${response.statusCode}",
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Erreur serveur inattendue")),

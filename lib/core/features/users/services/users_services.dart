@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,23 +8,22 @@ import '../../../../services/dio_api_services.dart';
 import '../../../models/role.dart';
 import '../../../models/user.dart';
 
-class UserService{
+class UserService {
   final Dio _dio;
   UserService()
-      : _dio = Dio(
-    BaseOptions(
-      baseUrl: ApiDioService().apiUrl,
-      contentType: 'application/json',
-      responseType: ResponseType.json,
-    ),
-  );
-
+    : _dio = Dio(
+        BaseOptions(
+          baseUrl: ApiDioService().apiUrl,
+          contentType: 'application/json',
+          responseType: ResponseType.json,
+        ),
+      );
 
   Future<User> updateUserProfile(
-      String userId,
-      Map<String, dynamic> data,
-      bool isAdmin
-      ) async {
+    String userId,
+    Map<String, dynamic> data,
+    bool isAdmin,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
     if (accessToken == null) {
@@ -34,24 +32,23 @@ class UserService{
 
     try {
       Response response;
-      if(isAdmin){
-         response = await ApiDioService().authenticatedRequest(
-              () => _dio.put(
+      if (isAdmin) {
+        response = await ApiDioService().authenticatedRequest(
+          () => _dio.put(
             '/auth/$userId',
             data: json.encode(data),
             options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
           ),
         );
-      }else{
-         response = await ApiDioService().authenticatedRequest(
-              () => _dio.patch(
+      } else {
+        response = await ApiDioService().authenticatedRequest(
+          () => _dio.patch(
             '/auth/me',
             data: json.encode(data),
             options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
           ),
         );
       }
-
 
       if (response.statusCode == 200 && isAdmin) {
         final updatedUser = User.fromUserJson(response.data['data']);
@@ -67,16 +64,16 @@ class UserService{
           );
         }
         return updatedUser;
-      }else if(response.statusCode ==  200 && isAdmin == false){
+      } else if (response.statusCode == 200 && isAdmin == false) {
         Response rep = await ApiDioService().authenticatedRequest(
-              () => _dio.get(
+          () => _dio.get(
             '/auth/me',
             data: json.encode(data),
             options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
           ),
         );
 
-        if(rep.statusCode == 200){
+        if (rep.statusCode == 200) {
           print(rep.data['user']);
           final updatedUser = User.fromJsonUpdate(rep.data['user']);
 
@@ -86,12 +83,15 @@ class UserService{
             await pref.setString('user_data', json.encode(currentUser));
           }
           return updatedUser;
-        }else{
-          throw Exception('Échec de la mise à jour du profil (code ${response.statusCode})');
+        } else {
+          throw Exception(
+            'Échec de la mise à jour du profil (code ${response.statusCode})',
+          );
         }
-
       } else {
-        throw Exception('Échec de la mise à jour du profil (code ${response.statusCode})');
+        throw Exception(
+          'Échec de la mise à jour du profil (code ${response.statusCode})',
+        );
       }
     } on DioException catch (e) {
       switch (e.type) {
@@ -103,7 +103,8 @@ class UserService{
           throw Exception('Délai de réponse dépassé.');
         case DioExceptionType.badResponse:
           final statusCode = e.response?.statusCode;
-          final message = e.response?.data?['message'] ?? 'Erreur côté serveur.';
+          final message =
+              e.response?.data?['message'] ?? 'Erreur côté serveur.';
           if (statusCode == 400) {
             throw Exception('Requête invalide : $message');
           } else if (statusCode == 401) {
@@ -121,7 +122,9 @@ class UserService{
           throw Exception('Requête annulée.');
         case DioExceptionType.unknown:
         default:
-          throw Exception('Erreur réseau ou inconnue. Vérifiez votre connexion.');
+          throw Exception(
+            'Erreur réseau ou inconnue. Vérifiez votre connexion.',
+          );
       }
     } catch (e) {
       throw Exception('Erreur inattendue : $e');
@@ -131,7 +134,7 @@ class UserService{
   Future<User?> uploadUserProfileImage({
     required String userId,
     required File imageFile,
-    required bool isAdmin
+    required bool isAdmin,
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -141,25 +144,21 @@ class UserService{
         ),
       });
       Response response;
-      if(isAdmin){
-         response = await ApiDioService().authenticatedRequest(
-                () async => await _dio.put(
-                '/auth/$userId',
-                data: formData,
-                options: Options(
-                  headers: await ApiDioService().getAuthHeaders(),
-                )
-            )
+      if (isAdmin) {
+        response = await ApiDioService().authenticatedRequest(
+          () async => await _dio.put(
+            '/auth/$userId',
+            data: formData,
+            options: Options(headers: await ApiDioService().getAuthHeaders()),
+          ),
         );
-      }else{
-         response = await ApiDioService().authenticatedRequest(
-                () async => await _dio.put(
-                '/auth/me/',
-                data: formData,
-                options: Options(
-                  headers: await ApiDioService().getAuthHeaders(),
-                )
-            )
+      } else {
+        response = await ApiDioService().authenticatedRequest(
+          () async => await _dio.put(
+            '/auth/me/',
+            data: formData,
+            options: Options(headers: await ApiDioService().getAuthHeaders()),
+          ),
         );
       }
 
@@ -183,7 +182,9 @@ class UserService{
             )!,
             user: updatedUser,
             rememberMe:
-            (await SharedPreferences.getInstance()).getBool('remember_me') ??
+                (await SharedPreferences.getInstance()).getBool(
+                  'remember_me',
+                ) ??
                 false,
           );
         }
@@ -200,7 +201,7 @@ class UserService{
     try {
       print("On essaie de charger les users");
       final response = await ApiDioService().authenticatedRequest(
-            () async => await _dio.get(
+        () async => await _dio.get(
           '/auth/users',
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
@@ -208,6 +209,46 @@ class UserService{
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
         return data.map((json) => User.fromUserJson(json)).toList();
+      } else {
+        throw Exception('Erreur serveur : ${response.statusCode}');
+      }
+    } on DioException catch (dioError) {
+      if (dioError.type == DioExceptionType.connectionTimeout ||
+          dioError.type == DioExceptionType.sendTimeout ||
+          dioError.type == DioExceptionType.receiveTimeout) {
+        throw Exception('La requête a expiré. Vérifie ta connexion internet.');
+      } else if (dioError.type == DioExceptionType.badResponse) {
+        final statusCode = dioError.response?.statusCode ?? 0;
+        final message = dioError.response?.data['message'] ?? 'Erreur inconnue';
+        throw Exception('Erreur serveur [$statusCode] : $message');
+      } else if (dioError.type == DioExceptionType.connectionError) {
+        throw Exception('Impossible de se connecter au serveur.');
+      } else {
+        throw Exception('Erreur Dio : ${dioError.message}');
+      }
+    } catch (e) {
+      // Pour toutes les autres erreurs non Dio
+      throw Exception('Une erreur inattendue est survenue : $e');
+    }
+  }
+
+  Future<List<User>> getAllTechnician() async {
+    try {
+      print("On essaie de charger les users");
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/auth/users',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+
+        // Filtrer uniquement les utilisateurs avec le rôle "technician"
+        return data
+            .map((json) => User.fromUserJson(json))
+            .where((user) => user.role.name == 'technicien') // Filtrage
+            .toList();
       } else {
         throw Exception('Erreur serveur : ${response.statusCode}');
       }
@@ -240,7 +281,7 @@ class UserService{
       }
 
       final response = await ApiDioService().authenticatedRequest(
-            () => _dio.get(
+        () => _dio.get(
           '/auth/roles',
           options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
         ),
@@ -256,7 +297,9 @@ class UserService{
           throw Exception('Format de données inattendu.');
         }
       } else {
-        throw Exception('Erreur ${response.statusCode}: ${response.statusMessage}');
+        throw Exception(
+          'Erreur ${response.statusCode}: ${response.statusMessage}',
+        );
       }
     } on DioException catch (e) {
       throw Exception(e.message ?? 'Erreur réseau');
@@ -267,15 +310,13 @@ class UserService{
 
   Future<User> createUser(FormData formData) async {
     try {
-     // final accessToken = (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
+      // final accessToken = (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
       print(formData.fields);
       final response = await ApiDioService().authenticatedRequest(
-            () async => _dio.post(
+        () async => _dio.post(
           '/auth/create',
           data: formData,
-          options: Options(
-            headers: await ApiDioService().getAuthHeaders(),
-          ),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
 
@@ -306,23 +347,17 @@ class UserService{
   }
 
   Future<bool> deleteUser(String id) async {
-    try{
+    try {
       final response = await ApiDioService().authenticatedRequest(
-            () async => _dio.delete(
+        () async => _dio.delete(
           '/auth/$id',
-          options: Options(
-            headers: await ApiDioService().getAuthHeaders(),
-          ),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
 
       return response.statusCode == 204;
-
-    }catch(e){
+    } catch (e) {
       throw Exception('Erreur inattendue : $e');
     }
   }
-
-
-
 }

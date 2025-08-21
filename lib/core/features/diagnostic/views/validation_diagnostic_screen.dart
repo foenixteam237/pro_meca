@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
-import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
+import 'package:pro_meca/core/features/diagnostic/views/intervention_create_page.dart';
 import 'package:pro_meca/core/models/dysfonctionnement.dart';
 import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/visite.dart';
@@ -124,9 +124,9 @@ class _ValidationDiagnosticScreenState
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (photos != null && photos!.isNotEmpty)
-                      ...photos!
-                          .map((photo) => VehicleImageCard(photo.logo, header))
-                          .toList()
+                      ...photos!.map(
+                        (photo) => VehicleImageCard(photo.logo, header),
+                      )
                     else
                       ...List.generate(
                         4,
@@ -149,8 +149,30 @@ class _ValidationDiagnosticScreenState
               // Liste des diagnostics
               if (dysfonctionnements.isNotEmpty)
                 ...dysfonctionnements.map(
-                  (dys) =>
-                      DiagnosticRow(code: dys.code ?? "N/A", desc: dys.detail),
+                  (dys) => GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => InterventionForm(
+                          header: buildVehicleInfoSection(
+                            context,
+                            isMobile,
+                            appColors,
+                            l10n,
+                            widget.visite,
+                            widget.accessToken,
+                          ),
+                          visiteId: widget.idVisite,
+                          dys: dys,
+                          techName: "Dilane Tech",
+                        ),
+                      ),
+                    ),
+                    child: DiagnosticRow(
+                      code: dys.code ?? "N/A",
+                      desc: dys.detail,
+                    ),
+                  ),
                 )
               else
                 const Text("Aucun diagnostic trouvé pour cette visite."),
@@ -260,27 +282,40 @@ class VehicleImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const double imageWidth = 80;
+    const double imageHeight = 70;
     return Container(
       margin: const EdgeInsets.only(right: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
           image,
-          width: 80,
-          height: 70,
+          width: imageWidth,
+          height: imageHeight,
           headers: headers,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            width: 80,
-            height: 70,
-            color: Colors.grey.shade300,
-            child: Image.asset(
-              "assets/images/moteur.jpg",
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-            ),
-          ),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              width: imageWidth,
+              height: imageHeight,
+              color: Colors.grey.shade300,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: imageWidth,
+              height: imageHeight,
+              color: Colors.grey.shade300,
+              child: Image.asset(
+                "assets/images/moteur.jpg",
+                width: imageWidth,
+                height: imageHeight,
+                fit: BoxFit.cover,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -295,22 +330,25 @@ class DiagnosticRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10.0),
+      padding: const EdgeInsets.only(bottom: 10.0, top: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Champ Code erreur
           Expanded(
             flex: 2,
-            child: TextField(
-              readOnly: true,
-              controller: TextEditingController(text: code),
-              decoration: const InputDecoration(
-                hintText: "Code erreur (facultatif)",
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 16,
+            child: AbsorbPointer(
+              child: TextField(
+                readOnly: true,
+                controller: TextEditingController(text: code),
+                decoration: const InputDecoration(
+                  hintText: "Code erreur (facultatif)",
+                  label: Text("Code erreur"),
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
+                  ),
                 ),
               ),
             ),
@@ -323,16 +361,19 @@ class DiagnosticRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextField(
-                  readOnly: true,
-                  controller: TextEditingController(text: desc),
-                  maxLines: 1,
-                  decoration: const InputDecoration(
-                    hintText: "Détails du diagnostic*",
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 16,
+                AbsorbPointer(
+                  child: TextField(
+                    readOnly: true,
+                    controller: TextEditingController(text: desc),
+                    maxLines: 1,
+                    decoration: const InputDecoration(
+                      hintText: "Détails du diagnostic*",
+                      label: Text("Détails du diagnostic"),
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
                     ),
                   ),
                 ),
