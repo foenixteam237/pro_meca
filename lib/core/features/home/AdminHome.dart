@@ -127,6 +127,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
         role: l10n.adminRole,
+        accessToken: accessToken,
         nameColor: appColors.primary,
       ),
       resizeToAvoidBottomInset: false,

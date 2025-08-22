@@ -17,12 +17,14 @@ class InterventionForm extends StatefulWidget {
   final String visiteId;
   final Dysfonctionnement dys;
   final String? techName;
+  final String accessToken;
   const InterventionForm({
     super.key,
     required this.header,
     required this.visiteId,
     required this.dys,
     required this.techName,
+    required this.accessToken
   });
 
   @override
@@ -49,8 +51,10 @@ class _InterventionFormState extends State<InterventionForm> {
   List<SubType> interventionSubTypes = [];
 
   // Données pour les techniciens (à récupérer depuis l'API)
-
   List<User> assigneesTech = [];
+
+  // Liste des pièces ajoutées
+  List<Map<String, dynamic>> piecesList = [];
 
   List<Map<String, dynamic>> priorities = [
     {'value': 4, 'name': 'Haute'},
@@ -66,7 +70,7 @@ class _InterventionFormState extends State<InterventionForm> {
   void initState() {
     super.initState();
     _loadTypesIntervention();
-    _loadTechnicians(); // À implémenter pour charger les techniciens depuis l'API
+    _loadTechnicians();
   }
 
   Future<void> _loadTypesIntervention() async {
@@ -112,9 +116,7 @@ class _InterventionFormState extends State<InterventionForm> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Erreur lors du chargement des types d\'intervention: $error',
-          ),
+          content: Text('Erreur lors du chargement des techniciens: $error'),
         ),
       );
     }
@@ -131,7 +133,7 @@ class _InterventionFormState extends State<InterventionForm> {
         maxChildSize: 0.95,
         builder: (context, controller) => PieceSelectionModal(
           onPieceAdded: (pieceData) {
-            print('Pièce ajoutée: $pieceData');
+            _addPiece(pieceData);
             Navigator.pop(context);
           },
           onCancel: () {
@@ -140,6 +142,75 @@ class _InterventionFormState extends State<InterventionForm> {
         ),
       ),
     );
+  }
+
+  void _addPiece(Map<String, dynamic> pieceData) {
+    setState(() {
+      // Vérifier si la pièce existe déjà en comparant les ID
+      int existingIndex = piecesList.indexWhere(
+        (piece) => piece['id'] == pieceData['id'],
+      );
+
+      if (existingIndex != -1) {
+        // La pièce existe déjà, on additionne les quantités
+        int existingQuantity = piecesList[existingIndex]['quantity'] ?? 0;
+        int newQuantity = pieceData['quantity'] ?? 0;
+        piecesList[existingIndex]['quantity'] = existingQuantity + newQuantity;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Quantité de "${pieceData['name'] ?? 'Inconnue'}" mise à jour: ${piecesList[existingIndex]['quantity']}',
+            ),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // Nouvelle pièce, on l'ajoute à la liste
+        piecesList.add(pieceData);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Pièce "${pieceData['name'] ?? 'Inconnue'}" ajoutée avec succès',
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      print('Liste des pièces mise à jour: $piecesList');
+    });
+  }
+
+  void _removePiece(int index) {
+    setState(() {
+      piecesList.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Pièce retirée'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  double _calculateTotalPiecesPrice() {
+    return piecesList.fold(0.0, (sum, piece) {
+      double unitPrice = piece['unitPrice']?.toDouble() ?? 0.0;
+      int quantity = piece['quantity'] ?? 1;
+      return sum + (unitPrice * quantity);
+    });
+  }
+
+  double _calculateTotalPrice() {
+    double piecesTotal = _calculateTotalPiecesPrice();
+    double laborPrice = double.tryParse(_priceController.text) ?? 0.0;
+    return piecesTotal + laborPrice;
   }
 
   void _loadSubTypes(String interventionTypeId, String interventionTypeName) {
@@ -175,7 +246,7 @@ class _InterventionFormState extends State<InterventionForm> {
           ? _otherTypeController.text
           : selectedSubTypeName,
       "dateDebut": DateTime.now().toIso8601String(),
-      "pieces": [], // À compléter avec la liste des pièces
+      "pieces": piecesList,
       "priority": priorities.firstWhere(
         (p) => p['name'] == selectedPriority,
         orElse: () => {'value': 3},
@@ -210,6 +281,7 @@ class _InterventionFormState extends State<InterventionForm> {
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
         role: l10n.technicianRole,
+        accessToken: widget.accessToken,
         nameColor: appColors.primary,
       ),
       body: isLoading
@@ -327,6 +399,9 @@ class _InterventionFormState extends State<InterventionForm> {
                         child: TextFormField(
                           controller: _priceController,
                           keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            setState(() {}); // Pour recalculer les prix
+                          },
                           decoration: InputDecoration(
                             hintText: 'Prix main d\'oeuvre',
                             label: Text('Prix main d\'oeuvre'),
@@ -356,7 +431,7 @@ class _InterventionFormState extends State<InterventionForm> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Listes des pièces',
+                            'Listes des pièces (${piecesList.length})',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -389,13 +464,53 @@ class _InterventionFormState extends State<InterventionForm> {
 
                       SizedBox(height: 16),
 
-                      // Parts List
-                      _buildPartItem('Oil moteur', 'Prix: 35000', false),
-                      _buildPartItem(
-                        'Plaquettes de frein avant',
-                        'Prix: 24000',
-                        true,
-                      ),
+                      // Parts List - Affichage dynamique des pièces
+                      if (piecesList.isEmpty)
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.grey[300]!,
+                              style: BorderStyle.solid,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            color: appColors.customBackground(context),
+                          ),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.build_outlined,
+                                  size: 48,
+                                  color: appColors.primary,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Aucune pièce ajoutée',
+                                  style: AppStyles.bodyMedium(context),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Cliquez sur "Ajouter" pour sélectionner des pièces',
+                                  style: AppStyles.bodySmall(context),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        ...piecesList.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          Map<String, dynamic> piece = entry.value;
+
+                          return _buildPartItem(
+                            piece['name'] ?? 'Pièce inconnue',
+                            'Prix: ${piece['unitPrice']?.toString() ?? '0'} Fcfa',
+                            piece['quantity'],
+                            index,
+                          );
+                        }),
 
                       SizedBox(height: 24),
 
@@ -410,12 +525,18 @@ class _InterventionFormState extends State<InterventionForm> {
 
                       SizedBox(height: 16),
 
-                      _buildPriceRow('Prix total des pièces', '178000 Fcfa'),
-                      _buildPriceRow('Prix main d\'oeuvre', '20000 Fcfa'),
+                      _buildPriceRow(
+                        'Prix total des pièces',
+                        '${_calculateTotalPiecesPrice().toStringAsFixed(0)} Fcfa',
+                      ),
+                      _buildPriceRow(
+                        'Prix main d\'oeuvre',
+                        '${_priceController.text.isNotEmpty ? _priceController.text : '0'} Fcfa',
+                      ),
                       Divider(color: Colors.grey[300]),
                       _buildPriceRow(
                         'Montant total',
-                        '198000 Fcfa',
+                        '${_calculateTotalPrice().toStringAsFixed(0)} Fcfa',
                         isTotal: true,
                       ),
 
@@ -659,33 +780,60 @@ class _InterventionFormState extends State<InterventionForm> {
     );
   }
 
-  Widget _buildPartItem(String name, String price, bool isRetired) {
+  Widget _buildPartItem(String name, String price, int qte, int index) {
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
       child: Row(
         children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.build_outlined,
+              color: Colors.blue[700],
+              size: 20,
+            ),
+          ),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(
+                  name,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                ),
+                SizedBox(height: 4),
                 Text(
                   price,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Quantité: $qte",
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () => _removePiece(index),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isRetired ? Colors.red : Colors.red,
+              backgroundColor: Colors.red,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              minimumSize: Size(0, 32),
             ),
             child: Text(
               'Retirer',
@@ -706,13 +854,18 @@ class _InterventionFormState extends State<InterventionForm> {
           Text(
             label,
             style: isTotal
-                ? AppStyles.bodyMedium(context)
+                ? AppStyles.bodyMedium(
+                    context,
+                  ).copyWith(fontWeight: FontWeight.w600)
                 : AppStyles.bodySmall(context),
           ),
           Text(
             amount,
             style: isTotal
-                ? AppStyles.bodyMedium(context)
+                ? AppStyles.bodyMedium(context).copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue[700],
+                  )
                 : AppStyles.bodySmall(context),
           ),
         ],

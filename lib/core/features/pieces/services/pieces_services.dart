@@ -34,8 +34,6 @@ class PiecesService {
         // Vérifie si la réponse contient une liste dans 'data'
         final List<dynamic> data = response.data ?? [];
 
-        print(data);
-
         // Convertit chaque élément JSON en objet Piece
         return data.map((json) => Piece.fromJson(json)).toList();
       } else {

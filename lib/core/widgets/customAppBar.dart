@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
@@ -12,6 +13,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color nameColor;
   final Color roleColor;
   final Color appBarColor;
+  final String accessToken;
   final VoidCallback? onInfoPressed;
   const CustomAppBar({
     super.key,
@@ -19,6 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.name,
     required this.role,
     required this.nameColor,
+    required this.accessToken,
     this.roleColor = Colors.black45,
     this.appBarColor = AppColors.background,
     this.onInfoPressed,
@@ -60,10 +63,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Row(
               children: [
-                // Image de profil
-                CircleAvatar(
-                  radius: avatarRadius.toDouble(),
-                  backgroundImage: AssetImage(profileImagePath),
+                Container(
+                  width: avatarRadius.toDouble()* 2.5,
+                  height: avatarRadius.toDouble() * 2.5,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
+                  child: ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: ApiDioService().apiUrl+user!.logo!,
+                      fit: BoxFit.cover,
+                      httpHeaders:{'Authorization': 'Bearer $accessToken'},
+                      placeholder: (context, url) => CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => Icon(Icons.person),
+                    ),
+                  ),
                 ),
                 SizedBox(width: screenWidth * 0.02), // 2% de la largeur
                 // Nom et rôle

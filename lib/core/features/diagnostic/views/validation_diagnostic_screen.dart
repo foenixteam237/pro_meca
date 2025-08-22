@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
 import 'package:pro_meca/core/features/diagnostic/views/intervention_create_page.dart';
+import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_shimmer.dart';
 import 'package:pro_meca/core/models/dysfonctionnement.dart';
 import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/visite.dart';
@@ -11,7 +13,8 @@ import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 
-import '../../../models/diagnostic.dart';
+//import 'package:pro_meca/core/models/diagnostic.dart';
+import 'package:pro_meca/core/models/diagnostic_update.dart';
 import '../widgets/build_problem_reported_section.dart';
 import '../widgets/build_vehicle_info_section.dart';
 
@@ -47,7 +50,7 @@ class _ValidationDiagnosticScreenState
     super.initState();
     // Initialisation du controller avec la valeur de la visite
     problemReportedController = TextEditingController(
-      text: widget.visite.constatClient ?? '',
+      text: widget.visite.constatClient,
     );
     _loadCategories();
   }
@@ -56,15 +59,29 @@ class _ValidationDiagnosticScreenState
     setState(() {
       isLoadingDiagnostics = true;
     });
-
     try {
-      dysfonctionnements = widget.visite.diagnostics
-          .expand((diagnostic) => diagnostic.dysfonctionnements)
-          .toList();
-      photos = widget.visite.photos;
-      header = await ApiDioService().getAuthHeaders();
+      // Exécuter les appels de manière concurrente
+      final diagnosticsFuture = DiagnosticServices().fetchDiagnostic(
+        widget.idVisite,
+      );
+      final headersFuture = ApiDioService().getAuthHeaders();
+
+      // Attendre les deux futures
+      diagnostics = await diagnosticsFuture;
+      header = await headersFuture;
+
+      setState(() {
+        // Aplatir la liste des dysfonctionnements
+        dysfonctionnements = diagnostics
+            .expand((diag) => diag.dysfonctionnements)
+            .toList();
+        photos = widget.visite.photos;
+        isLoadingDiagnostics = false;
+      });
     } catch (e) {
-      throw Exception("Erreur inconnue $e");
+      // Gestion des erreurs plus informative
+      print("Erreur lors du chargement des catégories : $e");
+      // Vous pouvez également afficher un message d'erreur à l'utilisateur ici
     } finally {
       setState(() {
         isLoadingDiagnostics = false;
@@ -93,6 +110,7 @@ class _ValidationDiagnosticScreenState
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
         role: l10n.technicianRole,
+        accessToken: widget.accessToken,
         nameColor: appColors.primary,
       ),
       body: SafeArea(
@@ -147,35 +165,42 @@ class _ValidationDiagnosticScreenState
               ),
               const SizedBox(height: 10),
               // Liste des diagnostics
-              if (dysfonctionnements.isNotEmpty)
-                ...dysfonctionnements.map(
-                  (dys) => GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => InterventionForm(
-                          header: buildVehicleInfoSection(
-                            context,
-                            isMobile,
-                            appColors,
-                            l10n,
-                            widget.visite,
-                            widget.accessToken,
-                          ),
-                          visiteId: widget.idVisite,
-                          dys: dys,
-                          techName: "Dilane Tech",
-                        ),
-                      ),
+              isLoadingDiagnostics
+                  ? DiagnosticRowShimmer()
+                  : dysfonctionnements.isEmpty
+                  ? const Text("Aucun diagnostic disponible.")
+                  : Column(
+                      children: dysfonctionnements
+                          .map(
+                            (dys) => GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => InterventionForm(
+                                    header: buildVehicleInfoSection(
+                                      context,
+                                      isMobile,
+                                      appColors,
+                                      l10n,
+                                      widget.visite,
+                                      widget.accessToken,
+                                    ),
+                                    visiteId: widget.idVisite,
+                                    accessToken: widget.accessToken,
+                                    dys: dys,
+                                    techName: "Dilane Tech",
+                                  ),
+                                ),
+                              ),
+                              child: DiagnosticRow(
+                                code: dys.code ?? "N/A",
+                                desc: dys.detail,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
-                    child: DiagnosticRow(
-                      code: dys.code ?? "N/A",
-                      desc: dys.detail,
-                    ),
-                  ),
-                )
-              else
-                const Text("Aucun diagnostic trouvé pour cette visite."),
+
               const SizedBox(height: 10),
 
               // Interventions à faire

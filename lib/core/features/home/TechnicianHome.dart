@@ -119,6 +119,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
         role: l10n.technicianRole,
+        accessToken: accessToken,
         nameColor: appColors.primary,
       ),
       resizeToAvoidBottomInset: false,

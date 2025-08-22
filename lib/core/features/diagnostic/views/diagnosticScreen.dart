@@ -182,6 +182,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
         profileImagePath: "assets/images/images.jpeg",
         name: "Dilane",
         role: l10n.technicianRole,
+        accessToken: widget.accessToken ?? "",
         nameColor: appColors.primary,
       ),
       body: SafeArea(
