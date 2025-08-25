@@ -441,16 +441,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Image.file(_selectedImage!, fit: BoxFit.cover);
     } else if (_user?.logo != null && _user!.logo!.isNotEmpty && widget.member != null) {
       return CachedNetworkImage(
-        imageUrl: _user!.logo!,
+        imageUrl: img,
         fit: BoxFit.cover,
         httpHeaders:{'Authorization': 'Bearer $_accessToken'},
         placeholder: (context, url) => CircularProgressIndicator(),
         errorWidget: (context, url, error) => Icon(Icons.person),
       );
     } else {
-      if (_user?.logo != null) {
+      if (_user?.logo != null ) {
         return CachedNetworkImage(
-          imageUrl:  _user!.logo!,
+          imageUrl: img.contains(ApiDioService().apiUrl) ? img : ApiDioService().apiUrl+img,
           fit: BoxFit.cover,
           httpHeaders:{'Authorization': 'Bearer $_accessToken'},
           placeholder: (context, url) => CircularProgressIndicator(),

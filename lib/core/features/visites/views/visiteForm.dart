@@ -39,6 +39,10 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String clientId = "";
 
+  //Variable temporaire pour stocker les ids si client ou vehicle a été enregistré
+  String tmpClientId = "";
+  String tmpgVehicleId = "";
+
   final Map<String, TextEditingController> controllers = {
     'firstName': TextEditingController(),
     'lastName': TextEditingController(),
@@ -220,12 +224,16 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
           await vehicle.toJson(_selectedImage),
         );
 
-        if (widget.vehicle == null || createdVehicle.isEmpty) {
+        if (widget.vehicle == null || tmpgVehicleId.isEmpty) {
           createdVehicle = await ReceptionServices().createVehicle(
             vehicleFormData,
           );
+          tmpgVehicleId = createdVehicle!;
         } else if(widget.vehicle != null){
           createdVehicle = widget.vehicle?.id;
+          tmpgVehicleId = widget.vehicle!.id!;
+        }else{
+          createdVehicle = tmpgVehicleId;
         }
 
         if (createdVehicle != null) {

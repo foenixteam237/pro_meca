@@ -109,19 +109,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget buildProfileImage(String imagePath, num avatarRadius){
+  Widget buildProfileImage(String imagePath, num avatarRadius) {
     if (imagePath.isNotEmpty) {
-     return Container(
-        width: avatarRadius.toDouble()* 2.5,
+      return Container(
+        width: avatarRadius.toDouble() * 2.5,
         height: avatarRadius.toDouble() * 2.5,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle),
         child: ClipOval(
-          child:  CachedNetworkImage(
-            imageUrl: imagePath,
+          child: CachedNetworkImage(
+            imageUrl:imagePath.contains(ApiDioService().apiUrl) ? imagePath: ApiDioService().apiUrl + imagePath,
             fit: BoxFit.cover,
-            httpHeaders:{'Authorization': 'Bearer $accessToken'},
+            httpHeaders: {'Authorization': 'Bearer $accessToken'},
             placeholder: (context, url) => CircularProgressIndicator(),
             errorWidget: (context, url, error) => Icon(Icons.person),
           ),
@@ -129,13 +127,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       );
     } else {
       return Container(
-        width: avatarRadius.toDouble()* 2.5,
+        width: avatarRadius.toDouble() * 2.5,
         height: avatarRadius.toDouble() * 2.5,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle),
         child: ClipOval(
-          child:  Image.asset("assets/images/images.jpeg", fit: BoxFit.cover),
+          child: Image.asset("assets/images/images.jpeg", fit: BoxFit.cover),
         ),
       );
     }
