@@ -37,6 +37,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   bool isLoading = false;
   final ImagePicker _picker = ImagePicker();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String clientId = "";
 
   final Map<String, TextEditingController> controllers = {
     'firstName': TextEditingController(),
@@ -188,14 +189,18 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
-      String clientId = "";
-      if (widget.vehicle?.client?.id == null)
+
+
+      if (widget.vehicle?.client?.id == null || clientId.isEmpty) {
         clientId = await ReceptionServices().createClient(
           client.toMap(),
           context,
         );
-      if (widget.vehicle?.client?.id != null)
+      }
+
+      if (widget.vehicle?.client?.id != null) {
         clientId = widget.vehicle!.clientId;
+      }
 
       if (clientId.isNotEmpty) {
         final vehicle = Vehicle(
@@ -215,11 +220,11 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
           await vehicle.toJson(_selectedImage),
         );
 
-        if (widget.vehicle == null) {
+        if (widget.vehicle == null || createdVehicle.isEmpty) {
           createdVehicle = await ReceptionServices().createVehicle(
             vehicleFormData,
           );
-        } else {
+        } else if(widget.vehicle != null){
           createdVehicle = widget.vehicle?.id;
         }
 
@@ -479,7 +484,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                             onChanged: (value) => setState(
                               () => onboardItems[entry.key] = value ?? false,
                             ),
-                            activeColor: AppColors.primary,
+                            activeColor: appColor.primary,
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -588,7 +593,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                 style: AppStyles.bodySmall(context),
               ),
             ),
-            const Icon(Icons.calendar_today, color: AppColors.primary),
+             Icon(Icons.calendar_today, color: appColor.primary),
           ],
         ),
       ),

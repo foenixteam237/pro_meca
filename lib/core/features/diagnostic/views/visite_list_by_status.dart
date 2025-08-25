@@ -45,7 +45,7 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
         _visites = visites;
         _isLoading = false;
       });
-    } catch (e, stack) {
+    } catch (e) {
       // Affiche une erreur (ex: snackbar) ou log
       print("Erreur lors du chargement des visites: $e");
       setState(() {

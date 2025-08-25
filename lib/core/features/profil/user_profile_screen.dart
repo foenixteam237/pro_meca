@@ -91,11 +91,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isUploadingImage = true);
     try {
       final userId = widget.member?.id ?? _user!.id;
-
+      final bool? isAdmin = (await SharedPreferences.getInstance()).getBool("isAdmin");
       final updatedUser = await UserService().uploadUserProfileImage(
         userId: userId,
         imageFile: _selectedImage!,
-        isAdmin: widget.member!=null
+        isAdmin: isAdmin ?? false
       );
 
       if (updatedUser != null) {
@@ -448,13 +448,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         errorWidget: (context, url, error) => Icon(Icons.person),
       );
     } else {
-      return CachedNetworkImage(
-        imageUrl: ApiDioService().apiUrl+img,
-        fit: BoxFit.cover,
-        httpHeaders:{'Authorization': 'Bearer $_accessToken'},
-        placeholder: (context, url) => CircularProgressIndicator(),
-        errorWidget: (context, url, error) => Icon(Icons.person),
-      );
+      if (_user?.logo != null) {
+        return CachedNetworkImage(
+          imageUrl:  _user!.logo!,
+          fit: BoxFit.cover,
+          httpHeaders:{'Authorization': 'Bearer $_accessToken'},
+          placeholder: (context, url) => CircularProgressIndicator(),
+          errorWidget: (context, url, error) => Icon(Icons.person),
+        );
+      }else{
+        return Icon(Icons.person, size: 100);
+      }
     }
   }
   Widget _buildUserInfoSection(

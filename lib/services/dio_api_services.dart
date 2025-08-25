@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:pro_meca/core/models/brand.dart';
-import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -169,43 +167,6 @@ class ApiDioService {
       final errorData = response.data;
       print(formData.fields.toString());
       throw Exception('Failed to create vehicle: ${errorData['message']}');
-    }
-  }
-
-  Future<List<Brand>> getAllBrands() async {
-    final response = await authenticatedRequest(
-      () async => await _dio.get(
-        '/brands',
-        options: Options(headers: await getAuthHeaders()),
-      ),
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> brandsJson = response.data;
-      return brandsJson.map((json) => Brand.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load brands');
-    }
-  }
-
-  Future<List<Modele>?> getModelsByBrand(String brandId) async {
-    final response = await authenticatedRequest(
-      () async => await _dio.get(
-        '/brands/$brandId',
-        options: Options(headers: await getAuthHeaders()),
-      ),
-    );
-    if (response.statusCode == 200) {
-      final dynamic responseData = response.data;
-      if (responseData is List) {
-        return responseData.map((json) => Modele.fromJson(json)).toList();
-      } else if (responseData is Map<String, dynamic>) {
-        final brand = Brand.fromJson(responseData);
-        return brand.modeles;
-      } else {
-        throw FormatException('Unexpected response format');
-      }
-    } else {
-      throw Exception('Failed to load models');
     }
   }
 }

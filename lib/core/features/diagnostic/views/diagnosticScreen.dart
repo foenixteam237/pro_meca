@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
 import 'package:pro_meca/core/utils/responsive.dart';

@@ -8,7 +8,10 @@ import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../models/brand.dart';
+import '../../../models/modele.dart';
 import '../../../models/visite.dart';
+import '../../../widgets/show_modal_bottm.dart';
 
 class ReceptionServices {
   final Dio _dio;
@@ -21,6 +24,43 @@ class ReceptionServices {
         ),
       );
 
+
+  Future<List<Brand>> getAllBrands() async {
+    final response = await ApiDioService().authenticatedRequest(
+          () async => await _dio.get(
+        '/brands',
+        options: Options(headers: await ApiDioService().getAuthHeaders()),
+      ),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> brandsJson = response.data;
+      return brandsJson.map((json) => Brand.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load brands');
+    }
+  }
+
+  Future<List<Modele>?> getModelsByBrand(String brandId) async {
+    final response = await ApiDioService().authenticatedRequest(
+          () async => await _dio.get(
+        '/brands/$brandId',
+        options: Options(headers: await ApiDioService().getAuthHeaders()),
+      ),
+    );
+    if (response.statusCode == 200) {
+      final dynamic responseData = response.data;
+      if (responseData is List) {
+        return responseData.map((json) => Modele.fromJson(json)).toList();
+      } else if (responseData is Map<String, dynamic>) {
+        final brand = Brand.fromJson(responseData);
+        return brand.modeles;
+      } else {
+        throw FormatException('Unexpected response format');
+      }
+    } else {
+      throw Exception('Failed to load models');
+    }
+  }
   //#################################--CREATION D'UN NOUVEAU CLIENT LORS DE LA RECEPTION--###############################
   Future<String> createClient(
     Map<String, dynamic> clientData,
@@ -246,7 +286,12 @@ class ReceptionServices {
             }
           } else {
             // Rediriger vers la page ConfirmationScreen
-            Navigator.push(
+
+
+            showPieceSelectionModal(context, ConfirmationScreen(
+              message: "Votre véhicule a été enregistré avec succès",
+            ),);
+            /*Navigator.push(
               // ignore: use_build_context_synchronously
               context,
               MaterialPageRoute(
@@ -254,7 +299,7 @@ class ReceptionServices {
                   message: "Votre véhicule a été enregistré avec succès",
                 ),
               ),
-            );
+            );*/
           }
           return response.statusCode;
         case 400:
@@ -333,7 +378,6 @@ class ReceptionServices {
                 error: 'Erreur véhicule ${resVehicle.statusCode}',
               );
             }
-
             final Vehicle vehicle = Vehicle.fromJson(
               resVehicle.data as Map<String, dynamic>,
             );

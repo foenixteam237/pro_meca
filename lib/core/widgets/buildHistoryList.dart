@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/visites/services/reception_services.dart';
-import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_adaptive_colors.dart';

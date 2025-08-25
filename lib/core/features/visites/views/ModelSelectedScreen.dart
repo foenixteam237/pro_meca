@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/visites/services/reception_services.dart';
 import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../constants/app_adaptive_colors.dart';
-import '../../../services/api_services.dart';
 import '../../../widgets/shimmerRound.dart';
 import 'visiteForm.dart';
 
@@ -37,7 +36,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   Timer? _debounce; // Ajout d'un Timer pour le debounce
   late String _idSelectedBrand;
   late String _accessToken;
-  final apiService = ApiService();
+  final apiService = ReceptionServices();
   bool _isLoading = true;
   @override
   void initState() {
@@ -102,6 +101,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Scaffold(
       // Ajout d'un Scaffold
       resizeToAvoidBottomInset: false,
@@ -117,9 +117,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
           ),
           vertical: 10,
         ),
-        constraints: BoxConstraints(
-          maxHeight: height * 0.9,
-        ),
+        constraints: BoxConstraints(maxHeight: height * 0.9),
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -134,7 +132,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
                   width: 30,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: index < 2 ? AppColors.primary : Colors.grey[300],
+                    color: index < 2 ? appColors.primary : Colors.grey[300],
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -168,8 +166,8 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppColors.primary),
-                        backgroundColor: AppColors.primary,
+                        side: BorderSide(color: appColors.primary),
+                        backgroundColor: appColors.primary,
                       ),
                       child: Text(
                         'Retour',
@@ -198,7 +196,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: appColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: Text(
@@ -217,7 +215,6 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   }
 
   Widget _buildImage(String? logo) {
-
     if (logo != null) {
       return Image.network(
         logo,
@@ -241,8 +238,7 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
   }
 
   Widget _buildModelGrid() {
-
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     if (_isLoading) {
       return BrandShimmerWidget();
     }
@@ -270,18 +266,17 @@ class _ModelSelectionScreenState extends State<ModelSelectionScreen> {
                 backgroundColor: _selectedModel == model.name
                     ? appColors.primary
                     : Colors.grey[300],
-                child:
-                model.logo.toString().isNotEmpty && model.logo != null
+                child: model.logo.toString().isNotEmpty && model.logo != null
                     ? Image.network(
-                  model.logo.toString(),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      Icon(Icons.directions_car),
-                )
+                        model.logo.toString(),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Icon(Icons.directions_car),
+                      )
                     : Image.asset(
-                  'assets/images/welcome_image.png',
-                  fit: BoxFit.fill,
-                ),
+                        'assets/images/welcome_image.png',
+                        fit: BoxFit.fill,
+                      ),
               ),
               const SizedBox(height: 2),
               // Nom du modèle

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,35 +8,31 @@ import '../../../models/visite.dart';
 import '../../../widgets/build_image.dart';
 
 Widget buildVehicleInfoSection(
-    BuildContext context,
-    bool isMobile,
-    AppAdaptiveColors appColors,
-    AppLocalizations l10n,
-    Visite? visite,
-    String? accessToken
-    ) {
+  BuildContext context,
+  bool isMobile,
+  AppAdaptiveColors appColors,
+  AppLocalizations l10n,
+  Visite? visite,
+  String? accessToken,
+) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
         children: [
-          buildImage(
-            visite!.vehicle!.logo,
-            context,
-            accessToken!,
-          ),
+          buildImage(visite!.vehicle!.logo, context, accessToken!),
           SizedBox(width: isMobile ? 10 : 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
-                "${l10n.immatVehicule}: ${visite!.vehicle!.licensePlate}",
+                "${l10n.immatVehicule}: ${visite.vehicle!.licensePlate}",
                 style: AppStyles.titleMedium(context),
               ),
               Text(
-                "Entrée: ${DateFormat.yMMMd().format(visite!.dateEntree)}",
+                "Entrée: ${DateFormat.yMMMd().format(visite.dateEntree)}",
                 style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
               ),
             ],
@@ -45,7 +40,7 @@ Widget buildVehicleInfoSection(
         ],
       ),
       Text(
-        "${visite!.vehicle!.client!.firstName} ${visite!.vehicle!.client!.lastName}",
+        "${visite.vehicle!.client!.firstName} ${visite.vehicle!.client!.lastName}",
         style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
       ),
     ],

@@ -6,7 +6,7 @@ class Dysfonctionnement {
 
   factory Dysfonctionnement.fromJson(Map<String, dynamic> json) {
     return Dysfonctionnement(
-      code: json['code'] as String,
+      code: json['code'] == null ? "N/A" : json['code'] as String,
       detail: json['detail'] as String,
     );
   }

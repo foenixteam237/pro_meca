@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
-import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/features/pieces/widgets/add_pieces_form.dart';
 import 'package:pro_meca/core/widgets/show_wolt_modal_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 import '../../../models/pieces.dart';
 import '../widgets/buildPiecesItems.dart';

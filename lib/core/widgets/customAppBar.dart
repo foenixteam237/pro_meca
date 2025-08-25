@@ -63,22 +63,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Row(
               children: [
-                Container(
-                  width: avatarRadius.toDouble()* 2.5,
-                  height: avatarRadius.toDouble() * 2.5,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  child: ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: ApiDioService().apiUrl+user!.logo!,
-                      fit: BoxFit.cover,
-                      httpHeaders:{'Authorization': 'Bearer $accessToken'},
-                      placeholder: (context, url) => CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => Icon(Icons.person),
-                    ),
-                  ),
-                ),
+                buildProfileImage(user?.logo ?? "", avatarRadius),
                 SizedBox(width: screenWidth * 0.02), // 2% de la largeur
                 // Nom et rôle
                 Column(
@@ -122,5 +107,37 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         },
       ),
     );
+  }
+
+  Widget buildProfileImage(String imagePath, num avatarRadius){
+    if (imagePath.isNotEmpty) {
+     return Container(
+        width: avatarRadius.toDouble()* 2.5,
+        height: avatarRadius.toDouble() * 2.5,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+        ),
+        child: ClipOval(
+          child:  CachedNetworkImage(
+            imageUrl: imagePath,
+            fit: BoxFit.cover,
+            httpHeaders:{'Authorization': 'Bearer $accessToken'},
+            placeholder: (context, url) => CircularProgressIndicator(),
+            errorWidget: (context, url, error) => Icon(Icons.person),
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        width: avatarRadius.toDouble()* 2.5,
+        height: avatarRadius.toDouble() * 2.5,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+        ),
+        child: ClipOval(
+          child:  Image.asset("assets/images/images.jpeg", fit: BoxFit.cover),
+        ),
+      );
+    }
   }
 }

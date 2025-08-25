@@ -27,6 +27,7 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
   String? _selectedPieceId;
 
   String _selectedCondition = 'N/A';
+  String _selectedName = "";
   int _stockQuantity = 0;
   double _unitPrice = 0;
   int _quantityToUse = 1;
@@ -130,6 +131,7 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
       _stockQuantity = piece.stock;
       _unitPrice = piece.sellingPrice.toDouble();
       _quantityToUse = 1;
+      _selectedName = piece.name;
       _selectedCondition = piece.condition;
     });
   }
@@ -140,6 +142,7 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
       _stockQuantity = 0;
       _unitPrice = 0;
       _quantityToUse = 0;
+      _selectedName = "";
       _selectedCondition = 'N/A';
     });
   }
@@ -169,6 +172,7 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
 
     final pieceData = {
       'pieceId': _selectedPieceId,
+      'name': _selectedName,
       'unitPrice': _unitPrice,
       'quantity': _quantityToUse,
     };

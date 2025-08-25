@@ -154,8 +154,8 @@ class UserService {
         );
       } else {
         response = await ApiDioService().authenticatedRequest(
-          () async => await _dio.put(
-            '/auth/me/',
+          () async => await _dio.patch(
+            '/auth/me/photo',
             data: formData,
             options: Options(headers: await ApiDioService().getAuthHeaders()),
           ),
@@ -166,6 +166,7 @@ class UserService {
         final accessToken = (await SharedPreferences.getInstance()).getString(
           'accessToken',
         );
+        print(response.data['data']);
         final updatedUser = User.fromUserJson(response.data['data']);
         final currentUser = await ApiDioService().getSavedUser();
         if (currentUser != null && currentUser.id == updatedUser.id) {

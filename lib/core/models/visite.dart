@@ -11,7 +11,7 @@ class Visite {
   final String status;
   final String constatClient;
   final ElementsBords elementsBord;
-  final String companyId;
+  final String? companyId;
   final Vehicle? vehicle;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -27,7 +27,7 @@ class Visite {
     required this.status,
     required this.constatClient,
     required this.elementsBord,
-    required this.companyId,
+    this.companyId,
     this.photos,
     required this.diagnostics,
     required this.createdAt,
@@ -35,6 +35,7 @@ class Visite {
   });
 
   factory Visite.fromJson(Map<String, dynamic> json) {
+    print(json);
     return Visite(
       id: json['id'] as String,
       dateEntree: DateTime.parse(json['dateEntree'] as String),
@@ -73,7 +74,7 @@ class Visite {
       elementsBord: ElementsBords.fromJson(
         json['elementsBord'] as Map<String, dynamic>,
       ),
-      companyId: json['companyId'].toString(),
+      //companyId: json['companyId'].toString(),
       diagnostics: (json['diagnostics'] as List<dynamic>)
           .map((e) => Diagnostic.fromJson(e))
           .toList(),
