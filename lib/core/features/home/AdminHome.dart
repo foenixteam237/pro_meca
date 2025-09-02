@@ -12,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/visite.dart';
 import '../../widgets/buildHistoryList.dart';
+import '../dashboard/views/admin_dashboard.dart';
+import '../pieces/views/admin_pieces.dart';
 import '../visites/services/reception_services.dart';
 import '../users/views/user_list_page.dart';
 import 'widgets/buildHomeContent.dart';
@@ -38,18 +40,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   List<Widget> _buildScreens() {
     return [
       VehicleDashboardPage(context: context),
-      CategoriesPage(parentContext: context),
+      PartsInventoryScreen(),
       UserListScreen(),
-      HomeContent(
-        historyList: HistoryList(
-          title: AppLocalizations.of(context).ongoingVehicles,
-          contextParent: context,
-          visites: _visites,
-          isLoading: _isLoading,
-          accessToken: accessToken,
-        ),
-        context: context,
-      ),
+      AdminDashboard(context: context,),
       ProfileScreen(con: context),
     ];
   }

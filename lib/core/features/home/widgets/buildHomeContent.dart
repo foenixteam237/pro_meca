@@ -33,6 +33,7 @@ class _HomeContentState extends State<HomeContent> {
       children: [
         RefreshIndicator(
           onRefresh: widget.onRefresh ?? () async {},
+          color: appColors.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(15),

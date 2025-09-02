@@ -125,6 +125,7 @@ class _UserListScreenState extends State<UserListScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _handleRefresh,
+          color: appColors.primary,
           child: Padding(
             padding: EdgeInsets.symmetric(
                 horizontal: Responsive.responsiveValue(context,

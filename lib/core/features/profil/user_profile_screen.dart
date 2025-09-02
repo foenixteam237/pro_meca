@@ -373,6 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
   Widget _buildProfileImage() {
+    final appColor = Provider.of<AppAdaptiveColors>(context);
     return GestureDetector(
       onTap: () {
           _selectImageSource();
@@ -394,7 +395,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: appColor.primary,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.edit, size: 20, color: Colors.white),

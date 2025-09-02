@@ -117,7 +117,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         decoration: BoxDecoration(shape: BoxShape.circle),
         child: ClipOval(
           child: CachedNetworkImage(
-            imageUrl:imagePath.contains(ApiDioService().apiUrl) ? imagePath: ApiDioService().apiUrl + imagePath,
+            imageUrl: imagePath.contains(ApiDioService().apiUrl)
+                ? imagePath
+                : ApiDioService().apiUrl + imagePath,
             fit: BoxFit.cover,
             httpHeaders: {'Authorization': 'Bearer $accessToken'},
             placeholder: (context, url) => CircularProgressIndicator(),

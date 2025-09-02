@@ -40,7 +40,6 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   String clientId = "";
 
   //Variable temporaire pour stocker les ids si client ou vehicle a été enregistré
-  String tmpClientId = "";
   String tmpgVehicleId = "";
 
   final Map<String, TextEditingController> controllers = {
@@ -106,7 +105,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         }
 
         if ((action == ImageSource.camera &&
-                await Permission.camera.isGranted) ||
+            await Permission.camera.isGranted) ||
             (action == ImageSource.gallery &&
                 await Permission.photos.isGranted)) {
           final image = await _picker.pickImage(
@@ -194,8 +193,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         updatedAt: DateTime.now(),
       );
 
-
-      if (widget.vehicle?.client?.id == null || clientId.isEmpty) {
+      if (widget.vehicle?.client?.id == null) {
         clientId = await ReceptionServices().createClient(
           client.toMap(),
           context,
@@ -224,15 +222,15 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
           await vehicle.toJson(_selectedImage),
         );
 
-        if (widget.vehicle == null || tmpgVehicleId.isEmpty) {
+        if (widget.vehicle == null && tmpgVehicleId.isEmpty) {
           createdVehicle = await ReceptionServices().createVehicle(
             vehicleFormData,
           );
           tmpgVehicleId = createdVehicle!;
-        } else if(widget.vehicle != null){
+        } else if (widget.vehicle != null) {
           createdVehicle = widget.vehicle?.id;
           tmpgVehicleId = widget.vehicle!.id!;
-        }else{
+        } else {
           createdVehicle = tmpgVehicleId;
         }
 
@@ -271,7 +269,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                 await MultipartFile.fromFile(
                   image.path,
                   filename:
-                      'condition_${position}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+                  'condition_${position}_${DateTime.now().millisecondsSinceEpoch}.jpg',
                 ),
               ),
             );
@@ -335,7 +333,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
                         3,
-                        (index) => Container(
+                            (index) => Container(
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           width: 30,
                           height: 5,
@@ -358,14 +356,14 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                     controller: controllers['lastName']!,
                     icon: Icons.person,
                     validator: (value) =>
-                        value!.isEmpty ? 'Champ obligatoire' : null,
+                    value!.isEmpty ? 'Champ obligatoire' : null,
                   ),
                   _buildStyledField(
                     hint: "Prénom du client",
                     controller: controllers['firstName']!,
                     icon: Icons.person_outline,
                     validator: (value) =>
-                        value!.isEmpty ? 'Champ obligatoire' : null,
+                    value!.isEmpty ? 'Champ obligatoire' : null,
                   ),
                   _buildStyledField(
                     hint: "Mail",
@@ -373,7 +371,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) =>
-                        value!.isNotEmpty && !value.contains('@')
+                    value!.isNotEmpty && !value.contains('@')
                         ? 'Email invalide'
                         : null,
                   ),
@@ -383,7 +381,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     validator: (value) =>
-                        value!.isEmpty ? 'Champ obligatoire' : null,
+                    value!.isEmpty ? 'Champ obligatoire' : null,
                   ),
 
                   // Détails véhicule
@@ -392,13 +390,13 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                     hint: "Numéro de châssis",
                     controller: controllers['chassis']!,
                     validator: (value) =>
-                        value!.isEmpty ? 'Champ obligatoire' : null,
+                    value!.isEmpty ? 'Champ obligatoire' : null,
                   ),
                   _buildStyledField(
                     hint: "Immatriculation",
                     controller: controllers['licensePlate']!,
                     validator: (value) =>
-                        value!.isEmpty ? 'Champ obligatoire' : null,
+                    value!.isEmpty ? 'Champ obligatoire' : null,
                   ),
                   _buildStyledField(
                     hint: "Année de sortie",
@@ -431,7 +429,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                   Center(
                     child: _buildImagePreview(
                       _selectedImage,
-                      () => _selectImageSource(isVehicleImage: true),
+                          () => _selectImageSource(isVehicleImage: true),
                       size: 100,
                     ),
                   ),
@@ -448,7 +446,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                           children: [
                             _buildImagePreview(
                               entry.value,
-                              () => _viewImage(entry.value),
+                                  () => _viewImage(entry.value),
                               size: Responsive.responsiveValue(
                                 context,
                                 mobile: 85,
@@ -472,7 +470,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                       if (_vehicleConditionImages.length < 4)
                         _buildImagePreview(
                           null,
-                          () => _selectImageSource(isVehicleImage: false),
+                              () => _selectImageSource(isVehicleImage: false),
                           size: Responsive.responsiveValue(context, mobile: 85),
                         ),
                     ],
@@ -490,11 +488,11 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                           Checkbox(
                             value: entry.value,
                             onChanged: (value) => setState(
-                              () => onboardItems[entry.key] = value ?? false,
+                                  () => onboardItems[entry.key] = value ?? false,
                             ),
                             activeColor: appColor.primary,
                             materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
+                            MaterialTapTargetSize.shrinkWrap,
                           ),
                           Text(entry.key),
                         ],
@@ -513,7 +511,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                     controller: controllers['reportedProblem']!,
                     isMultiline: true,
                     validator: (value) =>
-                        value!.isEmpty ? 'Champ obligatoire' : null,
+                    value!.isEmpty ? 'Champ obligatoire' : null,
                   ),
 
                   // Date
@@ -549,10 +547,10 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   }
 
   Widget _buildImagePreview(
-    File? image,
-    VoidCallback onTap, {
-    required double size,
-  }) {
+      File? image,
+      VoidCallback onTap, {
+        required double size,
+      }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -564,19 +562,19 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         ),
         child: image != null
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(image, fit: BoxFit.cover),
-              )
+          borderRadius: BorderRadius.circular(8),
+          child: Image.file(image, fit: BoxFit.cover),
+        )
             : const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_a_photo, size: 30, color: Colors.grey),
-                    SizedBox(height: 4),
-                    Text('Ajouter', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_a_photo, size: 30, color: Colors.grey),
+              SizedBox(height: 4),
+              Text('Ajouter', style: TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -601,7 +599,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                 style: AppStyles.bodySmall(context),
               ),
             ),
-             Icon(Icons.calendar_today, color: appColor.primary),
+            Icon(Icons.calendar_today, color: appColor.primary),
           ],
         ),
       ),

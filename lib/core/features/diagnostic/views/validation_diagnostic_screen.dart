@@ -1,10 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
 import 'package:pro_meca/core/features/diagnostic/views/intervention_create_page.dart';
+import 'package:pro_meca/core/features/diagnostic/widgets/build_intervention_widget.dart';
 import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_shimmer.dart';
 import 'package:pro_meca/core/models/dysfonctionnement.dart';
+import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
@@ -15,6 +18,7 @@ import 'package:provider/provider.dart';
 
 //import 'package:pro_meca/core/models/diagnostic.dart';
 import 'package:pro_meca/core/models/diagnostic_update.dart';
+import '../../../models/maintenance.dart';
 import '../widgets/build_problem_reported_section.dart';
 import '../widgets/build_vehicle_info_section.dart';
 
@@ -40,11 +44,13 @@ class _ValidationDiagnosticScreenState
   late final TextEditingController problemReportedController;
   List<Diagnostic> diagnostics = [];
   List<Dysfonctionnement> dysfonctionnements = [];
+  List<MaintenanceTask> mains = [];
   List<Photo>? photos = [];
   bool isLoadingDiagnostics = false;
   String? errorMessage;
   Map<String, String> header = {};
-
+  int index = 0;
+  bool isCreateInt = false;
   @override
   void initState() {
     super.initState();
@@ -96,6 +102,81 @@ class _ValidationDiagnosticScreenState
     super.dispose();
   }
 
+  void _addMainTask(MaintenanceTask main){
+    setState(() {
+      mains.add(main);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Intervention ${main.title} ajoutée avec succès',
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
+  }
+  void _removeMainTask(int index){
+    setState(() {
+      mains.removeAt(index);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Intervention retirée avec succès',
+        ),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _interventionCreate() async {
+
+    if(mains.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Aucune intervention ajoutée, veuillez ajouter au moins une intervention',
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    try {
+        setState(() => isCreateInt = true);
+
+        final main = Maintenance(diagId: widget.visite.diagnostics.first.id, maintenance: mains, replaceExisting: false, visiteId: widget.idVisite);
+
+
+        final isCreate = await DiagnosticServices().createMaintenanceTask(main.toJson());
+
+        if(isCreate){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Diagnostic validé avec succès',
+              ),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context);
+        }
+    }catch(e){
+      setState(() {
+        !isCreateInt;
+      });
+      throw(errorMessage: e);
+    }finally{
+      setState(() {
+        isCreateInt =  false;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
@@ -189,6 +270,10 @@ class _ValidationDiagnosticScreenState
                                     accessToken: widget.accessToken,
                                     dys: dys,
                                     techName: "Dilane Tech",
+                                      onTaskAdd: (taskAdd) {
+                                      //ici ajouter une logique pour ajouter l'intervention à la liste
+                                        _addMainTask(taskAdd);
+                                    }
                                   ),
                                 ),
                               ),
@@ -209,68 +294,19 @@ class _ValidationDiagnosticScreenState
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               ),
               const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue.shade100),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        "assets/images/moteur.jpg",
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Direction",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          Text(
-                            "Priorité: avertissement",
-                            style: TextStyle(
-                              color: Colors.orange,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Text(
-                            "Technicien: Dilane Tech",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: appColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () {
-                        print(widget.visite.diagnostics.toList().length);
-                      },
-                      child: Text(
-                        "Détails",
-                        style: AppStyles.buttonText(
-                          context,
-                        ).copyWith(fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: mains.map(
+                      (inter) {
+                        index++;
+                     return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: interventionItem(
+                            inter, context),
+                      );
+
+                    }
+                ).toList(),
               ),
               const SizedBox(height: 30),
 
@@ -287,8 +323,10 @@ class _ValidationDiagnosticScreenState
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  onPressed: () {},
-                  child: Text("Validé", style: AppStyles.buttonText(context)),
+                  onPressed: () {
+                    _interventionCreate();
+                  },
+                  child: isCreateInt ?  CircularProgressIndicator(color: Colors.white,) : Text("Validé", style: AppStyles.buttonText(context)),
                 ),
               ),
             ],

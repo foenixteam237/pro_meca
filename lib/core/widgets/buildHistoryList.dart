@@ -109,8 +109,12 @@ class HistoryList extends StatelessWidget {
                 // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
+                    backgroundColor: Colors.red,
                     content: Text(
                       "Visite du véhicule immatriculé ${v.vehicle!.licensePlate} a été supprimée avec succès.",
+                      style: TextStyle(
+                        color: Colors.white
+                      ),
                     ),
                   ),
                 );

@@ -10,26 +10,26 @@ import '../../../constants/app_styles.dart';
 import '../../../models/visite.dart';
 import '../../../widgets/buildSmallCardShimmer.dart';
 import '../../../widgets/buildStatusCardShimmer.dart';
-import '../../../widgets/statutCardWithImage.dart';
 import '../../diagnostic/views/visite_list_by_status.dart';
 import '../../visites/services/reception_services.dart';
 
-class VehicleDashboardPage extends StatefulWidget {
+class AdminDashboard extends StatefulWidget {
   final BuildContext context;
-  const VehicleDashboardPage({super.key, required this.context});
+  const AdminDashboard({super.key, required this.context});
 
   @override
-  State<VehicleDashboardPage> createState() => _VehicleDashboardPageState();
+  State<AdminDashboard> createState() => _AdminDashboardState();
 }
 
-class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
+class _AdminDashboardState extends State<AdminDashboard> {
   List<Visite> _visites = [];
   bool _isLoading = true;
   String accessToken = "";
   Map<String, int> statVD = {"total": 0};
-  Map<String, int> statVI = {"total": 0};
-  Map<String, int> statT = {"total": 0};
-  Map<String, int> statIT = {"total": 0};
+  Map<String, int> compta = {"total": 0};
+  Map<String, int> notification = {"total": 0};
+  Map<String, int> perfoTech = {"total": 0};
+  Map<String, int> pro = {"total": 0};
 
   @override
   void initState() {
@@ -45,18 +45,22 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
       final pref = await SharedPreferences.getInstance();
       accessToken = pref.getString("accessToken") ?? "";
       final visites = await ReceptionServices().fetchVisitesWithVehicle();
-      final statit = await ReceptionServices().fetchVisitesWithVehicleStatus(
-          "aint"
+      final statPro = await ReceptionServices().fetchVisitesWithVehicleStatus(
+          "accli"
       );
       setState(() {
         _visites = visites;
         statVD = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_DIAGNOSTIC");
-        statVI = Visite.getVehicleStatsByStatus(
+        compta = Visite.getVehicleStatsByStatus(
           _visites,
           "ATTENTE_VALIDATION_INTERVENTION",
         );
-        statT = Visite.getVehicleStatsByStatus(_visites, "TERMINE");
-        statIT = {"total": statit.length};
+        pro = {"total": statPro.length};
+        notification = Visite.getVehicleStatsByStatus(_visites, "TERMINE");
+        perfoTech = Visite.getVehicleStatsByStatus(
+          _visites,
+          "ATTENTE_INTERVENTION",
+        );
         _isLoading = false;
       });
     } catch (e, stack) {
@@ -111,6 +115,51 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
     );
   }
 
+  /*
+  Widget _buildStatusCardWithImage(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              VisiteListByStatus(contextParent: widget.context, status: "adia"),
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0011_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024",
+                height: 60,
+                width: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context).waitingDiagnotics,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+            Text(
+              statVD['total'].toString(),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+*/
   Widget _buildSmallCard(
     BuildContext context, {
     required IconData icon,
@@ -225,7 +274,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
   }
 
   Widget _buildStatusGrid(BuildContext context, List<Visite> visites) {
-    final statsAttenteV = Visite.getVehicleStatsByStatus(
+    final proformaClient = Visite.getVehicleStatsByStatus(
       visites,
       "ATTENTE_VALIDATION_DIAGNOSTIC",
     );
@@ -251,19 +300,17 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "avdia",
+                        status: "accli",
                       ),
                     ),
                   ),
                   child: _buildSmallCard(
                     context,
-                    icon: Icons.access_time_outlined,
-                    title: AppLocalizations.of(
-                      context,
-                    ).waitingValidationDiagnostic,
-                    today: statsAttenteV['today']!,
-                    month: statsAttenteV['month']!,
-                    total: statsAttenteV['total']!,
+                    icon: Icons.file_copy,
+                    title: "En attente validation proforma",
+                    today: proformaClient['today']!,
+                    month: proformaClient['month']!,
+                    total: pro['total']!,
                   ),
                 ),
                 GestureDetector(
@@ -278,11 +325,11 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                   ),
                   child: _buildSmallCard(
                     context,
-                    icon: Icons.settings,
-                    title: AppLocalizations.of(context).waitingInterventions,
+                    icon: Icons.timeline,
+                    title: "Performance techniciens",
                     today: 10,
                     month: 4,
-                    total: statIT['total']!,
+                    total: perfoTech['total']!,
                   ),
                 ),
                 GestureDetector(
@@ -297,11 +344,11 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                   ),
                   child: _buildSmallCard(
                     context,
-                    icon: Icons.rule_folder_outlined,
-                    title: AppLocalizations.of(context).waitingValidation,
+                    icon: Icons.monetization_on,
+                    title: "Comptabilité",
                     today: 20,
                     month: 3,
-                    total: statVI['total']!,
+                    total: compta['total']!,
                   ),
                 ),
                 GestureDetector(
@@ -316,11 +363,11 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                   ),
                   child: _buildSmallCard(
                     context,
-                    icon: Icons.directions_car_filled,
+                    icon: Icons.notification_important,
                     title: AppLocalizations.of(context).finished,
                     today: 10,
                     month: 4,
-                    total: statT['total']!,
+                    total: notification['total']!,
                   ),
                 ),
               ],
@@ -345,15 +392,10 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                 children: [
                   //_buildSearchBar(context), à implementer en cas de besoin
                   //_buildEntryBanner(context),
-                  _isLoading
+                  /*_isLoading
                       ? buildStatusCardWithImageShimmer(context)
-                      : buildStatusCardWithImage(context, () {Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          VisiteListByStatus(contextParent: widget.context, status: "adia"),
-                    ),
-                  );}, AppLocalizations.of(context).waitingDiagnotics,statVD['total']!),
+                      : _buildStatusCardWithImage(context),*/
+                  const SizedBox(height: 30),
                   _buildStatusGrid(context, _visites),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

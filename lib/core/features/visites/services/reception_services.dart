@@ -24,10 +24,9 @@ class ReceptionServices {
         ),
       );
 
-
   Future<List<Brand>> getAllBrands() async {
     final response = await ApiDioService().authenticatedRequest(
-          () async => await _dio.get(
+      () async => await _dio.get(
         '/brands',
         options: Options(headers: await ApiDioService().getAuthHeaders()),
       ),
@@ -42,7 +41,7 @@ class ReceptionServices {
 
   Future<List<Modele>?> getModelsByBrand(String brandId) async {
     final response = await ApiDioService().authenticatedRequest(
-          () async => await _dio.get(
+      () async => await _dio.get(
         '/brands/$brandId',
         options: Options(headers: await ApiDioService().getAuthHeaders()),
       ),
@@ -61,6 +60,7 @@ class ReceptionServices {
       throw Exception('Failed to load models');
     }
   }
+
   //#################################--CREATION D'UN NOUVEAU CLIENT LORS DE LA RECEPTION--###############################
   Future<String> createClient(
     Map<String, dynamic> clientData,
@@ -122,7 +122,6 @@ class ReceptionServices {
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
-      debugPrint('Response Status Code: ${formData.fields}');
 
       if (response.statusCode == 201) {
         final responseData = response.data;
@@ -252,16 +251,26 @@ class ReceptionServices {
 
               // Naviguer vers la page Diagnostic
               // ignore: use_build_context_synchronously
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DiagnosticPage(
-                    idVisite: visite.id,
-                    visite: visite,
-                    accessToken: accessToken,
+              if (visite.id.isNotEmpty) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DiagnosticPage(
+                      idVisite: visite.id,
+                      visite: visite,
+                      accessToken: accessToken,
+                    ),
                   ),
-                ),
-              );
+                );
+              } else {
+                showPieceSelectionModal(
+                  context,
+                  ConfirmationScreen(
+                    message:
+                        "Votre véhicule a été enregistré avec succès, mais nous n'avons pas pu récupérer les détails de la visite pour le diagnostic.",
+                  ),
+                );
+              }
             } catch (e, stackTrace) {
               print('Erreur lors de la récupération de la visite: $e');
               print('Stack trace: $stackTrace');
@@ -287,10 +296,12 @@ class ReceptionServices {
           } else {
             // Rediriger vers la page ConfirmationScreen
 
-
-            showPieceSelectionModal(context, ConfirmationScreen(
-              message: "Votre véhicule a été enregistré avec succès",
-            ),);
+            showPieceSelectionModal(
+              context,
+              ConfirmationScreen(
+                message: "Votre véhicule a été enregistré avec succès",
+              ),
+            );
             /*Navigator.push(
               // ignore: use_build_context_synchronously
               context,
@@ -434,34 +445,7 @@ class ReceptionServices {
       final Map<String, dynamic> visiteJson =
           resVisite.data as Map<String, dynamic>;
 
-      // 2. Récupérer le véhicule associé
-      try {
-        final String vehicleId = visiteJson['vehicleId'] as String;
-        final Response resVehicle = await _dio.get(
-          '/vehicles/$vehicleId',
-          options: Options(
-            receiveTimeout: const Duration(seconds: 10),
-            headers: await ApiDioService().getAuthHeaders(),
-          ),
-        );
-
-        if (resVehicle.statusCode != 200) {
-          throw DioException(
-            requestOptions: resVehicle.requestOptions,
-            response: resVehicle,
-            error: 'Erreur véhicule ${resVehicle.statusCode}',
-          );
-        }
-
-        final Vehicle vehicle = Vehicle.fromJson(
-          resVehicle.data as Map<String, dynamic>,
-        );
-        return Visite.fromVisiteJson(visiteJson, vehicle);
-      } on DioException catch (e) {
-        debugPrint('Erreur véhicule : ${e.message}');
-        // On retourne quand même la visite sans véhicule si erreur
-        return Visite.fromJson(visiteJson);
-      }
+      return Visite.fromJson(visiteJson);
     } on DioException catch (e) {
       debugPrint('Erreur réseau: ${e.message}');
       if (e.response != null) {
@@ -555,19 +539,22 @@ class ReceptionServices {
   }
 
   Future<void> deleteVisite(String id) async {
+    final apiDioService = ApiDioService();
+
     try {
-      final response = await ApiDioService().authenticatedRequest(
+      final response = await apiDioService.authenticatedRequest(
         () async => await _dio.delete(
           '/visites/$id',
-          options: Options(headers: await ApiDioService().getAuthHeaders()),
+          options: Options(headers: await apiDioService.getAuthHeaders()),
         ),
       );
-
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw Exception("Erreur API : ${response.statusCode}");
       }
     } on DioException catch (e) {
       throw Exception("Erreur Dio : ${e.message}");
+    } catch (e) {
+      throw Exception("Erreur inattendue : ${e.toString()}");
     }
   }
 

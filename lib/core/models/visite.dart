@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/models/photo_visite.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/core/models/diagnostic_update.dart';
@@ -17,6 +18,7 @@ class Visite {
   final DateTime updatedAt;
   final List<Photo>? photos;
   final List<Diagnostic> diagnostics;
+  final List<MaintenanceTask>? intervention;
 
   Visite({
     required this.id,
@@ -29,35 +31,37 @@ class Visite {
     required this.elementsBord,
     this.companyId,
     this.photos,
+    this.intervention,
     required this.diagnostics,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory Visite.fromJson(Map<String, dynamic> json) {
-    print(json);
     return Visite(
-      id: json['id'] as String,
-      dateEntree: DateTime.parse(json['dateEntree'] as String),
+      id: json['id'].toString(),
+      dateEntree: DateTime.parse(json['dateEntree'].toString()),
       dateSortie: json['dateSortie'] != null
           ? DateTime.tryParse(json['dateSortie'])
-          : null,
-      vehicleId: json['vehicleId'] as String,
-      status: json['status'] as String,
-      vehicle: json['vehicle'],
-      constatClient: json['constatClient'] as String,
+          : DateTime.tryParse("1961-01-01"),
+      vehicleId: json['vehicleId'].toString(),
+      status: json['status'].toString(),
+      vehicle: Vehicle.fromVisiteJson(json['vehicle']),
+      constatClient: json['constatClient'].toString(),
       elementsBord: ElementsBords.fromJson(
         json['elementsBord'] as Map<String, dynamic>,
       ),
-      companyId: json['companyId'] as String,
+      //companyId: json['companyId'].toString(),
       diagnostics: (json['diagnostics'] as List<dynamic>)
           .map((e) => Diagnostic.fromJson(e))
           .toList(),
       photos: (json['photos'] as List<dynamic>)
           .map((e) => Photo.fromJson(e))
           .toList(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      intervention: (json['interventions'] as List<dynamic>)
+          .map((e) => MaintenanceTask.fromJson(e)).toList(),
+      createdAt: DateTime.parse(json['createdAt'].toString()),
+      updatedAt: DateTime.parse(json['updatedAt'].toString()),
     );
   }
   factory Visite.fromVisiteJson(Map<String, dynamic> json, Vehicle vehicle) {

@@ -100,8 +100,10 @@ String _statut(String statut) {
       return "Attente intervention";
     case 'ATTENTE_PIECE':
       return "Attente pièces";
+    case 'ENCOURS':
+      return "En cours";
     default:
-      return "Element externe";
+      return "En cours";
   }
 }
 
@@ -174,7 +176,11 @@ Color _visitColor(String status) {
     case "ATTENTE_INTERVENTION":
       return Colors.blue;
     case "ATTENTE_VALIDATION_DIAGNOSTIC":
+      return Colors.purpleAccent;
+    case "ENCOURS":
       return Colors.orange;
+    case "ATTENTE_PIECE":
+      return Colors.deepOrangeAccent;
     case "TERMINE":
       return Colors.green;
     default:

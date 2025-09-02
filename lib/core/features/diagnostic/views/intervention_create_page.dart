@@ -12,19 +12,24 @@ import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:pro_meca/core/models/type_intervention.dart';
 
+import '../../../models/maintenance_task.dart';
+import '../../../widgets/functions.dart';
+
 class InterventionForm extends StatefulWidget {
   final Widget header;
   final String visiteId;
   final Dysfonctionnement dys;
   final String? techName;
   final String accessToken;
+  final Function(MaintenanceTask)? onTaskAdd;
   const InterventionForm({
     super.key,
     required this.header,
     required this.visiteId,
     required this.dys,
     required this.techName,
-    required this.accessToken
+    required this.accessToken,
+    this.onTaskAdd,
   });
 
   @override
@@ -144,7 +149,7 @@ class _InterventionFormState extends State<InterventionForm> {
     );
   }
 
-  void _addPiece(Map<String, dynamic> pieceData) {
+  void _addPiece(Map<String, dynamic> pieceData)  {
     setState(() {
       // Vérifier si la pièce existe déjà en comparant les ID
       int existingIndex = piecesList.indexWhere(
@@ -245,29 +250,23 @@ class _InterventionFormState extends State<InterventionForm> {
       "subType": showOtherTypeField
           ? _otherTypeController.text
           : selectedSubTypeName,
-      "dateDebut": DateTime.now().toIso8601String(),
+      "dateDebut": DateTime.parse(formatedDate(DateTime.now())).toIso8601String(),
       "pieces": piecesList,
       "priority": priorities.firstWhere(
         (p) => p['name'] == selectedPriority,
         orElse: () => {'value': 3},
       )['value'],
-      "costEstimate": int.tryParse(_priceController.text) ?? 0,
+      "costEstimate": _calculateTotalPrice().toInt(),
       "affectedToId": selectedAssigneeId,
       "visiteId": widget.visiteId,
+      'tech': selectedAssigneeName
     };
   }
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final formData = _prepareFormData();
-      print('Données à envoyer: $formData');
-
-      // Envoyer les données à l'API
-      // DiagnosticServices().createIntervention(formData).then((response) {
-      //   // Gérer la réponse
-      // }).catchError((error) {
-      //   // Gérer l'erreur
-      // });
+      widget.onTaskAdd?.call(MaintenanceTask.fromJson(_prepareFormData()));
+      Navigator.pop(context);
     }
   }
 
@@ -303,14 +302,14 @@ class _InterventionFormState extends State<InterventionForm> {
                         children: [
                           Expanded(
                             child: Text(
-                              'Diagnostic: Moteur sèche',
+                              'Diagnostic: ${widget.dys.detail}',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
-                          Container(
+                          /*Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 4,
@@ -322,25 +321,25 @@ class _InterventionFormState extends State<InterventionForm> {
                               'TECHNICIAN 1',
                               style: AppStyles.bodySmall(context),
                             ),
-                          ),
+                          ),*/
                         ],
                       ),
 
                       Text(
-                        'Code: N/A',
+                        'Code: ${widget.dys.code}',
                         style: AppStyles.bodySmall(
                           context,
                         ).copyWith(color: Colors.grey[600]),
                       ),
 
-                      SizedBox(height: 24),
+                      SizedBox(height: 10),
 
                       Text(
                         'Information sur l\'intervention',
                         style: AppStyles.titleLarge(context),
                       ),
 
-                      SizedBox(height: 16),
+                      SizedBox(height: 10),
 
                       // Title Input
                       Container(

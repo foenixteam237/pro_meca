@@ -13,8 +13,8 @@ import '../widgets/buildPiecesItemsShimmer.dart';
 enum StockFilter { all, inStock, outOfStock }
 
 class PiecesPage extends StatefulWidget {
-  final String catId;
-  const PiecesPage({super.key, required this.catId});
+  final String? catId;
+  const PiecesPage({super.key, this.catId});
 
   @override
   State<PiecesPage> createState() => _PiecesPageState();
@@ -47,7 +47,7 @@ class _PiecesPageState extends State<PiecesPage> {
     try {
       final List<Piece> fetchedPieces = await PiecesService().fetchPieces(
         context,
-        widget.catId,
+        widget.catId!,
       );
 
       setState(() {
@@ -213,7 +213,7 @@ class _PiecesPageState extends State<PiecesPage> {
               appColor,
               context,
               "Ajouter une pièce",
-              CreatePieceForm(pContext: context, idCateg: widget.catId),
+              CreatePieceForm(pContext: context, idCateg: widget.catId!),
             ),
             icon: Icon(Icons.add, color: appColor.primary, size: 32),
             tooltip: 'Ajouter une pièce',

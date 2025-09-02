@@ -1,9 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/brand.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../widgets/shimmerRound.dart';
 import '../services/reception_services.dart';
@@ -45,11 +48,13 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
   List<Brand> _brands = [];
   final apiService = ReceptionServices();
   bool _isLoading = true;
+  String accessToken = '';
 
   Future<void> _loadBrands() async {
     try {
       setState(() => _isLoading = true);
-
+      final pref = await SharedPreferences.getInstance();
+      accessToken = pref.getString('accessToken') ?? '';
       final List<Brand> brands = await apiService.getAllBrands();
 
       setState(() {
@@ -92,7 +97,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
       print("En cours de chargement");
       return BrandShimmerWidget();
     }
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return GridView.builder(
       itemCount: _filteredBrand.length,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -122,11 +127,19 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
                     : Colors.grey[300],
                 child:
                     brand.logoUrl.toString().isNotEmpty && brand.logoUrl != null
-                    ? Image.network(
-                        brand.logoUrl.toString(),
+                    ? CachedNetworkImage(
+                        imageUrl:
+                            brand.logoUrl.toString().contains(
+                              ApiDioService().apiUrl,
+                            )
+                            ? brand.logoUrl.toString()
+                            : ApiDioService().apiUrl + brand.logoUrl.toString(),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Icon(Icons.directions_car),
+                        httpHeaders: {'Authorization': 'Bearer $accessToken'},
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                            Icon(Icons.car_rental_sharp),
                       )
                     : Image.asset(
                         'assets/images/welcome_image.png',
@@ -138,7 +151,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
                 brand.name,
                 style: AppStyles.titleMedium(context).copyWith(
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 12
+                  fontSize: 12,
                 ),
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
@@ -152,7 +165,7 @@ class _BrandPickerWidgetState extends State<BrandPickerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(

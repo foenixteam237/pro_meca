@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:pro_meca/core/models/diagnostic_update.dart';
+import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/models/type_intervention.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 
@@ -17,15 +20,14 @@ class DiagnosticServices {
 
   Future<bool> submitDiagnostic(Diagnostic diag, String accessToken) async {
     try {
-      final response = await _dio.post(
-        '/visites/diagnostics/create',
-        data: diag.toJson(),
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $accessToken",
-            "Content-Type": "application/json",
-          },
-        ),
+      final response = await ApiDioService().authenticatedRequest(
+          () async => await _dio.post(
+            '/visites/diagnostics/create',
+            data: diag.toJson(),
+            options: Options(
+              headers: await ApiDioService().getAuthHeaders(),
+            ),
+          )
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
@@ -102,4 +104,35 @@ class DiagnosticServices {
       throw Exception("Erreur inconnue: $e");
     }
   }
+
+  /*########################################### CREATION D'UNE MAINTENANCE TASK ################################################*/
+
+  Future<bool> createMaintenanceTask(Map<String, dynamic> data) async{
+
+    print(jsonEncode(data));
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+              () async => await _dio.post(
+            '/int/create/many',
+            data: jsonEncode(data),
+            options: Options(
+              headers: await ApiDioService().getAuthHeaders(),
+            ),
+          )
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        print(response.data);
+        return false;
+      }
+    } on DioException catch (e) {
+      print(e);
+      return false;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
 }

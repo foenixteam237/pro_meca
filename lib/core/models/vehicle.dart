@@ -40,13 +40,15 @@ class Vehicle {
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
       id: json['id'] as String,
-      marqueId: json['marqueId'] as String,
-      modelId: json['modelId'] as String,
+      marqueId: json['marqueId'] ?? "",
+      modelId: json['modelId'] ?? "",
       year: json['year'] ?? 00000,
       chassis: json['chassis'] as String,
       licensePlate: json['licensePlate'] as String,
       color: json['color'] ?? "NO DEFINE",
-      logo: json['logo'] ?? "https://promeca.api.blasco.top/logo/vehicle/6886b12681f36a0.png",
+      logo:
+          json['logo'] ??
+          "https://promeca.api.blasco.top/logo/vehicle/6886b12681f36a0.png",
       kilometrage: json['kilometrage'] ?? 00000,
       clientId: json['clientId'] as String,
       companyId: json['companyId'] ?? "",
@@ -56,6 +58,27 @@ class Vehicle {
     );
   }
 
+  factory Vehicle.fromVisiteJson(Map<String, dynamic> json) {
+    print(json['marque']["id"] );
+    return Vehicle(
+      id: json['id'] as String,
+      marqueId: json['marque']["id"] ?? "",
+      modelId: json['model'] ["id"]?? "",
+      year: json['year'] ?? 00000,
+      chassis: json['chassis'] as String,
+      licensePlate: json['licensePlate'] as String,
+      color: json['color'] ?? "NO DEFINE",
+      logo:
+      json['logo'] ??
+          "https://promeca.api.blasco.top/logo/vehicle/6886b12681f36a0.png",
+      kilometrage: json['kilometrage'] ?? 00000,
+      clientId: json['clientId'] as String,
+      companyId: json['companyId'] ?? "",
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      client: Client.fromJsn(json['client'] as Map<String, dynamic>),
+    );
+  }
   Future<Map<String, dynamic>> toJson(File? logo) async {
     return {
       'marqueId': marqueId,
@@ -67,9 +90,7 @@ class Vehicle {
       'kilometrage': kilometrage,
       'clientId': clientId,
       'companyId': companyId,
-      'logo': logo != null
-    ? await MultipartFile.fromFile(logo.path)
-    : null,
+      'logo': logo != null ? await MultipartFile.fromFile(logo.path) : null,
       'createdAt': DateTime.now().toIso8601String().toString(),
       //'updatedAt': updatedAt?.toIso8601String(),
       //'client': client?.toJson(),
