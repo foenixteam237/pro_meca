@@ -21,13 +21,11 @@ class DiagnosticServices {
   Future<bool> submitDiagnostic(Diagnostic diag, String accessToken) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
-          () async => await _dio.post(
-            '/visites/diagnostics/create',
-            data: diag.toJson(),
-            options: Options(
-              headers: await ApiDioService().getAuthHeaders(),
-            ),
-          )
+        () async => await _dio.post(
+          '/visites/diagnostics/create',
+          data: diag.toJson(),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
@@ -107,23 +105,20 @@ class DiagnosticServices {
 
   /*########################################### CREATION D'UNE MAINTENANCE TASK ################################################*/
 
-  Future<bool> createMaintenanceTask(Map<String, dynamic> data) async{
-
+  Future<bool> createMaintenanceTask(Map<String, dynamic> data) async {
     print(jsonEncode(data));
     try {
       final response = await ApiDioService().authenticatedRequest(
-              () async => await _dio.post(
-            '/int/create/many',
-            data: jsonEncode(data),
-            options: Options(
-              headers: await ApiDioService().getAuthHeaders(),
-            ),
-          )
+        () async => await _dio.post(
+          '/int/create/many',
+          data: jsonEncode(data),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        print(response.data);
+        print("Erreur ${response.statusCode}");
         return false;
       }
     } on DioException catch (e) {
@@ -135,4 +130,57 @@ class DiagnosticServices {
     }
   }
 
+  Future<List<MaintenanceTask>> fetchIntervention(String visiteId) async {
+    final currentDate = DateTime.now(); // 12:24 AM WAT, 08/09/2025
+
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/int/visite/$visiteId',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        final List<MaintenanceTask> tasks = data
+            .map((json) => MaintenanceTask.fromVisiteJson(json))
+            .toList();
+        return tasks;
+      } else {
+        print('Erreur: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Erreur lors de la requête: $e');
+      return [];
+    }
+  }
+
+  Future<bool> updateInterventionStatus(
+    String interventionId,
+    bool hasBeenOrdered,
+  ) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.put(
+          '/int/$interventionId',
+          data: {"hasBeenOrdered": hasBeenOrdered},
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print(
+          'Échec de la mise à jour pour l\'intervention $interventionId: ${response.statusCode}',
+        );
+
+        return false;
+      }
+    } catch (e) {
+      print('Erreur lors de la mise à jour: $e');
+
+      return false;
+    }
+  }
 }

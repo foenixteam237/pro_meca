@@ -1,13 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:provider/provider.dart';
 
-Widget interventionItem(MaintenanceTask main, BuildContext context){
+Widget interventionItem(MaintenanceTask main, BuildContext context) {
   final appColors = Provider.of<AppAdaptiveColors>(context);
   return Container(
     padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.symmetric(vertical: 6),
     decoration: BoxDecoration(
       border: Border.all(color: Colors.blue.shade100),
       borderRadius: BorderRadius.circular(12),
@@ -27,20 +27,14 @@ Widget interventionItem(MaintenanceTask main, BuildContext context){
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children:  [
+            children: [
               Text(
                 main.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
               Text(
                 "Priorité: ${main.priority}",
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Colors.orange, fontSize: 13),
               ),
               Text(
                 "Technicien: ${main.technician}",
@@ -61,10 +55,7 @@ Widget interventionItem(MaintenanceTask main, BuildContext context){
               onPressed: () {
                 //removeMainTask;
               },
-              child: Icon(
-                Icons.delete,
-                color: AppAdaptiveColors.red_fade,
-              ),
+              child: Icon(Icons.delete, color: AppAdaptiveColors.red_fade),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -74,12 +65,16 @@ Widget interventionItem(MaintenanceTask main, BuildContext context){
                 ),
               ),
               onPressed: () {
-                print(main.technician);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Intervention: ${main.title}\nRéférence: ${main.reference}\nStatut: ${main.status}\nDate début: ${main.dateDebut.toLocal().toString().split(' ')[0]}',
+                    ),
+                    duration: Duration(seconds: 5),
+                  ),
+                );
               },
-              child: Icon(
-                Icons.info,
-                color: AppAdaptiveColors.red_fade,
-              ),
+              child: Icon(Icons.info, color: AppAdaptiveColors.red_fade),
             ),
           ],
         ),

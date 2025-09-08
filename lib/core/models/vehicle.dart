@@ -38,22 +38,23 @@ class Vehicle {
   });
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
+    //print(json);
     return Vehicle(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       marqueId: json['marqueId'] ?? "",
       modelId: json['modelId'] ?? "",
       year: json['year'] ?? 00000,
-      chassis: json['chassis'] as String,
-      licensePlate: json['licensePlate'] as String,
+      chassis: json['chassis'].toString(),
+      licensePlate: json['licensePlate'].toString(),
       color: json['color'] ?? "NO DEFINE",
       logo:
           json['logo'] ??
           "https://promeca.api.blasco.top/logo/vehicle/6886b12681f36a0.png",
       kilometrage: json['kilometrage'] ?? 00000,
-      clientId: json['clientId'] as String,
+      clientId: json['clientId'].toString(),
       companyId: json['companyId'] ?? "",
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'].toString()),
+      updatedAt: DateTime.parse(json['updatedAt'].toString()),
       client: Client.fromJsn(json['client'] as Map<String, dynamic>),
     );
   }
@@ -61,21 +62,21 @@ class Vehicle {
   factory Vehicle.fromVisiteJson(Map<String, dynamic> json) {
     print(json['marque']["id"] );
     return Vehicle(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       marqueId: json['marque']["id"] ?? "",
       modelId: json['model'] ["id"]?? "",
       year: json['year'] ?? 00000,
-      chassis: json['chassis'] as String,
-      licensePlate: json['licensePlate'] as String,
+      chassis: json['chassis'].toString(),
+      licensePlate: json['licensePlate'].toString(),
       color: json['color'] ?? "NO DEFINE",
       logo:
       json['logo'] ??
           "https://promeca.api.blasco.top/logo/vehicle/6886b12681f36a0.png",
       kilometrage: json['kilometrage'] ?? 00000,
-      clientId: json['clientId'] as String,
+      clientId: json['clientId'].toString(),
       companyId: json['companyId'] ?? "",
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'].toString()),
+      updatedAt: DateTime.parse(json['updatedAt'].toString()),
       client: Client.fromJsn(json['client'] as Map<String, dynamic>),
     );
   }

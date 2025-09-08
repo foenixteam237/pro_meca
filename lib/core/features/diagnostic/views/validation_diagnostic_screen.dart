@@ -102,29 +102,26 @@ class _ValidationDiagnosticScreenState
     super.dispose();
   }
 
-  void _addMainTask(MaintenanceTask main){
+  void _addMainTask(MaintenanceTask main) {
     setState(() {
       mains.add(main);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Intervention ${main.title} ajoutée avec succès',
-          ),
+          content: Text('Intervention ${main.title} ajoutée avec succès'),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
         ),
       );
     });
   }
-  void _removeMainTask(int index){
+
+  void _removeMainTask(int index) {
     setState(() {
       mains.removeAt(index);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Intervention retirée avec succès',
-        ),
+        content: Text('Intervention retirée avec succès'),
         backgroundColor: Colors.green,
         duration: Duration(seconds: 2),
       ),
@@ -132,8 +129,7 @@ class _ValidationDiagnosticScreenState
   }
 
   Future<void> _interventionCreate() async {
-
-    if(mains.isEmpty) {
+    if (mains.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -147,36 +143,41 @@ class _ValidationDiagnosticScreenState
     }
 
     try {
-        setState(() => isCreateInt = true);
+      setState(() => isCreateInt = true);
 
-        final main = Maintenance(diagId: widget.visite.diagnostics.first.id, maintenance: mains, replaceExisting: false, visiteId: widget.idVisite);
+      final main = Maintenance(
+        diagId: widget.visite.diagnostics!.first.id,
+        maintenance: mains,
+        replaceExisting: false,
+        visiteId: widget.idVisite,
+      );
+      print(main.toJson());
+      final isCreate = await DiagnosticServices().createMaintenanceTask(
+        main.toJson(),
+      );
 
-
-        final isCreate = await DiagnosticServices().createMaintenanceTask(main.toJson());
-
-        if(isCreate){
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Diagnostic validé avec succès',
-              ),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
-          Navigator.pop(context);
-        }
-    }catch(e){
+      if (isCreate) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Diagnostic validé avec succès'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
       setState(() {
         !isCreateInt;
       });
-      throw(errorMessage: e);
-    }finally{
+      throw (errorMessage: e);
+    } finally {
       setState(() {
-        isCreateInt =  false;
+        isCreateInt = false;
       });
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
@@ -270,10 +271,10 @@ class _ValidationDiagnosticScreenState
                                     accessToken: widget.accessToken,
                                     dys: dys,
                                     techName: "Dilane Tech",
-                                      onTaskAdd: (taskAdd) {
+                                    onTaskAdd: (taskAdd) {
                                       //ici ajouter une logique pour ajouter l'intervention à la liste
-                                        _addMainTask(taskAdd);
-                                    }
+                                      _addMainTask(taskAdd);
+                                    },
                                   ),
                                 ),
                               ),
@@ -296,17 +297,13 @@ class _ValidationDiagnosticScreenState
               const SizedBox(height: 10),
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: mains.map(
-                      (inter) {
-                        index++;
-                     return Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: interventionItem(
-                            inter, context),
-                      );
-
-                    }
-                ).toList(),
+                children: mains.map((inter) {
+                  index++;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: interventionItem(inter, context),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 30),
 
@@ -326,7 +323,9 @@ class _ValidationDiagnosticScreenState
                   onPressed: () {
                     _interventionCreate();
                   },
-                  child: isCreateInt ?  CircularProgressIndicator(color: Colors.white,) : Text("Validé", style: AppStyles.buttonText(context)),
+                  child: isCreateInt
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text("Validé", style: AppStyles.buttonText(context)),
                 ),
               ),
             ],

@@ -14,8 +14,8 @@ class Diagnostic {
   });
   factory Diagnostic.fromJson(Map<String, dynamic> json) {
     return Diagnostic(
-      id: json['id'] as String,
-      niveauUrgence: json['niveauUrgence'] as String,
+      id: json['id'].toString(),
+      niveauUrgence: json['niveauUrgence'].toString(),
       validated: json['validated'] as bool,
       dysfonctionnements: (json['dysfonctionnements'] as List<dynamic>)
           .map((e) => Dysfonctionnement.fromJson(e))

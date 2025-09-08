@@ -149,7 +149,7 @@ class _InterventionFormState extends State<InterventionForm> {
     );
   }
 
-  void _addPiece(Map<String, dynamic> pieceData)  {
+  void _addPiece(Map<String, dynamic> pieceData) {
     setState(() {
       // Vérifier si la pièce existe déjà en comparant les ID
       int existingIndex = piecesList.indexWhere(
@@ -250,20 +250,24 @@ class _InterventionFormState extends State<InterventionForm> {
       "subType": showOtherTypeField
           ? _otherTypeController.text
           : selectedSubTypeName,
-      "dateDebut": DateTime.parse(formatedDate(DateTime.now())).toIso8601String(),
+      "dateDebut": DateTime.parse(
+        formatedDate(DateTime.now()),
+      ).toIso8601String(),
       "pieces": piecesList,
       "priority": priorities.firstWhere(
         (p) => p['name'] == selectedPriority,
         orElse: () => {'value': 3},
       )['value'],
       "costEstimate": _calculateTotalPrice().toInt(),
+      "mainOeuvre": double.tryParse(_priceController.text)?.toInt() ?? 0.0,
       "affectedToId": selectedAssigneeId,
       "visiteId": widget.visiteId,
-      'tech': selectedAssigneeName
+      'tech': selectedAssigneeName,
     };
   }
 
   void _submitForm() {
+    print(MaintenanceTask.fromJson(_prepareFormData()));
     if (_formKey.currentState!.validate()) {
       widget.onTaskAdd?.call(MaintenanceTask.fromJson(_prepareFormData()));
       Navigator.pop(context);

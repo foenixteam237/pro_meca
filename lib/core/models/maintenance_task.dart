@@ -1,5 +1,5 @@
-
 class MaintenanceTask {
+  String id;
   String title;
   String typeName;
   String subType;
@@ -14,6 +14,9 @@ class MaintenanceTask {
   String? invoiceLineId;
   String? doneById;
   String? companyId;
+  bool? hasBeenOrdered;
+  String? reference;
+  String? status;
   DateTime? createdAt;
   DateTime? updatedAt;
   DateTime? deletedAt;
@@ -21,6 +24,7 @@ class MaintenanceTask {
   String visiteId;
 
   MaintenanceTask({
+    this.id = "",
     required this.title,
     required this.typeName,
     required this.subType,
@@ -29,6 +33,9 @@ class MaintenanceTask {
     this.pieces,
     this.doneById,
     this.companyId,
+    this.hasBeenOrdered,
+    this.reference,
+    this.status,
     this.invoiceLineId,
     this.createdAt,
     this.updatedAt,
@@ -43,19 +50,24 @@ class MaintenanceTask {
   });
 
   factory MaintenanceTask.fromJson(Map<String, dynamic> json) {
+    print(json['mainOeuvre']);
     return MaintenanceTask(
+      id: json['id'] ?? "",
       title: json['title'],
       typeName: json['typeName'],
       subType: json['subType'],
+      hasBeenOrdered: json['hasBeenOrdered'] ?? false,
+      reference: json['reference'].toString(),
+      status: json['status'].toString(),
       dateDebut: DateTime.parse(json['dateDebut']),
       dateFin: json['dateFin'] != null
           ? DateTime.tryParse(json['DateFin'])
           : DateTime.tryParse("1961-01-01"),
-      pieces: json['pieces'] as List<dynamic>,
+      pieces: json['pieces'] ?? [],
       priority: json['priority'],
-      doneById: json['doneById'],
+      doneById: json['doneById'].toString(),
       companyId: json['companyId'],
-      invoiceLineId: json['invoiceLineId'],
+      invoiceLineId: json['invoiceLineId'].toString(),
       mainOeuvre: json['mainOeuvre'],
       costEstimate: json['costEstimate'],
       affectedToId: json['affectedToId'],
@@ -64,7 +76,7 @@ class MaintenanceTask {
       createdAt: json['createAt'] != null
           ? DateTime.tryParse(json['createAt'])
           : DateTime.tryParse("1961-01-01"),
-      updatedAt:  json['updateAt'] != null
+      updatedAt: json['updateAt'] != null
           ? DateTime.tryParse(json['updateAt'])
           : DateTime.tryParse("1961-01-01"),
       deletedAt: json['deleteAt'] != null
@@ -72,10 +84,45 @@ class MaintenanceTask {
           : DateTime.tryParse("1961-01-01"),
       validatedAt: json['validatedAt'] != null
           ? DateTime.tryParse(json['validatedAt'])
-          : DateTime.tryParse("1961-01-01")
+          : DateTime.tryParse("1961-01-01"),
     );
   }
-
+  factory MaintenanceTask.fromVisiteJson(Map<String, dynamic> json) {
+    return MaintenanceTask(
+      id: json['id'] ?? "",
+      title: json['title'],
+      typeName: json['typeName'].toString(),
+      subType: json['subType'].toString(),
+      hasBeenOrdered: json['hasBeenOrdered'] ?? false,
+      reference: json['reference'].toString(),
+      status: json['status'].toString(),
+      dateDebut: DateTime.parse(json['dateDebut']),
+      dateFin: json['dateFin'] != null
+          ? DateTime.tryParse(json['DateFin'])
+          : DateTime.tryParse("1961-01-01"),
+      pieces: json['pieces'] ?? [],
+      priority: json['priority'],
+      doneById: json['doneById'].toString(),
+      companyId: json['companyId'],
+      invoiceLineId: json['invoiceLineId'].toString(),
+      mainOeuvre: json['mainOeuvre'] ?? 00,
+      costEstimate: json['costEstimate'] ?? 00,
+      affectedToId: json['affectedToId'],
+      visiteId: json['visiteId'],
+      createdAt: json['createAt'] != null
+          ? DateTime.tryParse(json['createAt'])
+          : DateTime.tryParse("1961-01-01"),
+      updatedAt: json['updateAt'] != null
+          ? DateTime.tryParse(json['updateAt'])
+          : DateTime.tryParse("1961-01-01"),
+      deletedAt: json['deleteAt'] != null
+          ? DateTime.tryParse(json['deleteAt'])
+          : DateTime.tryParse("1961-01-01"),
+      validatedAt: json['validatedAt'] != null
+          ? DateTime.tryParse(json['validatedAt'])
+          : DateTime.tryParse("1961-01-01"),
+    );
+  }
   Map<String, dynamic> toJson() {
     return {
       'title': title,
@@ -85,11 +132,13 @@ class MaintenanceTask {
       'pieces': pieces,
       'priority': priority,
       'costEstimate': costEstimate,
+      'mainOeuvre': mainOeuvre,
       'affectedToId': affectedToId,
       'visiteId': visiteId,
     };
   }
-/*
+
+  /*
   MaintenanceTask copyWith({
     String? title,
     String? typeName,
@@ -127,12 +176,7 @@ class Piece {
   String? name;
   double? price;
 
-  Piece({
-    required this.pieceId,
-    required this.quantity,
-    this.name,
-    this.price,
-  });
+  Piece({required this.pieceId, required this.quantity, this.name, this.price});
 
   factory Piece.fromJson(Map<String, dynamic> json) {
     return Piece(

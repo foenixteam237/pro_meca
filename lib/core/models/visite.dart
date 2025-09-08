@@ -17,7 +17,7 @@ class Visite {
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<Photo>? photos;
-  final List<Diagnostic> diagnostics;
+  final List<Diagnostic>? diagnostics;
   final List<MaintenanceTask>? intervention;
 
   Visite({
@@ -32,7 +32,7 @@ class Visite {
     this.companyId,
     this.photos,
     this.intervention,
-    required this.diagnostics,
+    this.diagnostics,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -59,7 +59,8 @@ class Visite {
           .map((e) => Photo.fromJson(e))
           .toList(),
       intervention: (json['interventions'] as List<dynamic>)
-          .map((e) => MaintenanceTask.fromJson(e)).toList(),
+          .map((e) => MaintenanceTask.fromJson(e))
+          .toList(),
       createdAt: DateTime.parse(json['createdAt'].toString()),
       updatedAt: DateTime.parse(json['updatedAt'].toString()),
     );
@@ -69,7 +70,7 @@ class Visite {
       id: json['id'].toString(),
       dateEntree: DateTime.parse(json['dateEntree'].toString()),
       dateSortie: json['dateSortie'] != null
-          ? DateTime.tryParse(json['dateSortie'])
+          ? DateTime.tryParse(json['dateSortie'].toString())
           : DateTime.tryParse("1961-01-01"),
       vehicleId: json['vehicleId'].toString(),
       status: json['status'].toString(),
@@ -79,11 +80,12 @@ class Visite {
         json['elementsBord'] as Map<String, dynamic>,
       ),
       //companyId: json['companyId'].toString(),
-      diagnostics: (json['diagnostics'] as List<dynamic>)
+      diagnostics: ((json['diagnostics'] ?? []) as List)
           .map((e) => Diagnostic.fromJson(e))
           .toList(),
-      photos: (json['photos'] as List<dynamic>)
-          .map((e) => Photo.fromJson(e))
+      photos: ((json['photos'] ?? []) as List).map((e) => Photo.fromJson(e)).toList(),
+      intervention: ((json['interventions'] ?? []) as List)
+          .map((e) => MaintenanceTask.fromVisiteJson(e))
           .toList(),
       createdAt: DateTime.parse(json['createdAt'].toString()),
       updatedAt: DateTime.parse(json['updatedAt'].toString()),

@@ -11,17 +11,13 @@ class Photo {
 
   factory Photo.fromJson(Map<String, dynamic> json) {
     return Photo(
-      logo: json['logo'] as String,
+      logo: json['logo'].toString(),
       isMain: json['isMain'] as bool,
       position: json['position'] as int,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'logo': logo,
-      'isMain': isMain,
-      'position': position,
-    };
+    return {'logo': logo, 'isMain': isMain, 'position': position};
   }
 }

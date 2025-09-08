@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_meca/core/features/diagnostic/views/validation_diagnostic_screen.dart';
+import 'package:pro_meca/core/features/diagnostic/views/validation_intervention.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_colors.dart';
@@ -127,45 +128,45 @@ void _showNextPage(
   bool isAdmin = await SharedPreferences.getInstance().then(
     (prefs) => prefs.getBool('isAdmin') ?? false,
   );
-  switch (visite.status) {
-    case "ATTENTE_DIAGNOSTIC":
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DiagnosticPage(
-            idVisite: visite.id,
-            visite: visite,
-            accessToken: accessToken,
-          ),
-        ),
-      );
 
-      break;
-    case "ATTENTE_INTERVENTION":
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Véhicule en attente intervention!")),
-      );
-      break;
-    case "ATTENTE_VALIDATION_DIAGNOSTIC":
-      if (isAdmin) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ValidationDiagnosticScreen(
-              idVisite: visite.id,
-              visite: visite,
-              accessToken: accessToken,
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Vous n'avez pas accès à cette page!")),
-        );
-      }
-      break;
-    default:
-      break;
+  if (visite.intervention!.isEmpty &&
+      visite.diagnostics!.isNotEmpty &&
+      isAdmin) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ValidationDiagnosticScreen(
+          idVisite: visite.id,
+          visite: visite,
+          accessToken: accessToken,
+        ),
+      ),
+    );
+    return;
+  } else if (visite.diagnostics!.isEmpty) {
+    print(visite.diagnostics);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DiagnosticPage(
+          idVisite: visite.id,
+          visite: visite,
+          accessToken: accessToken,
+        ),
+      ),
+    );
+  } else if (visite.intervention!.isNotEmpty) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ValidationInterventionScreen(visiteId: visite.id, isAdmin: isAdmin),
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Aucune action disponible pour cette visite.")),
+    );
   }
 }
 
