@@ -58,7 +58,18 @@ class _VisiteReportScreenState extends State<VisiteReportScreen> {
         "mainOeuvre": 120,
         "diagnostic": "P20A2 - Problème d'allumage",
         "travauxRealises": ["Remplacement bougies", "Nettoyage injecteurs"],
-        "piecesUtilisees": ["BOUGIE-1234", "BOUGIE-1235"],
+        "piecesUtilisees": [
+          {
+            "reference": "BOUGIE-1234",
+            "name": "Bougie d'allumage",
+            "quantity": 3,
+          },
+          {
+            "reference": "BOUGIE-1235",
+            "name": "Bougie d'allumage",
+            "quantity": 1,
+          },
+        ],
         "workedHours": 2.5,
         "completed": 100,
         "piecesPrevue": [
@@ -90,7 +101,18 @@ class _VisiteReportScreenState extends State<VisiteReportScreen> {
           "Remplacement plaquettes avant",
           "Contrôle disques",
         ],
-        "piecesUtilisees": ["PLAQ-5678", "PLAQ-5679"],
+        "piecesUtilisees": [
+          {
+            "reference": "PLAQ-5678",
+            "name": "Plaquette de frein avant gauche",
+            "quantity": 1,
+          },
+          {
+            "reference": "PLAQ-5679",
+            "name": "Plaquette de frein avant droite",
+            "quantity": 1,
+          },
+        ],
         "workedHours": 2.75,
         "completed": 100,
         "piecesPrevue": [
@@ -118,12 +140,12 @@ class _VisiteReportScreenState extends State<VisiteReportScreen> {
   @override
   void initState() {
     super.initState();
-    _downloadVisiteReport();
+    _downloadCompanyLogo();
     _loadGolbalreport();
   }
 
   // Téléchargement et stockage du logo
-  Future<void> _downloadVisiteReport() async {
+  Future<void> _downloadCompanyLogo() async {
     try {
       // URL du logo de l'entreprise (à remplacer par l'URL réelle)
       const String logoUrl =
@@ -485,7 +507,7 @@ class _VisiteReportScreenState extends State<VisiteReportScreen> {
                       .map<Widget>(
                         (piece) => Chip(
                           label: Text(
-                            piece,
+                            "${piece.reference} X${piece.quantity}",
                             style: const TextStyle(fontSize: 12),
                           ),
                           backgroundColor: Colors.grey[200],
