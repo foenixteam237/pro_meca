@@ -26,7 +26,7 @@ class ReportService {
 
       final response = await ApiDioService().authenticatedRequest(
         () => _dio.get(
-          '/report/visite/$visiteId',
+          '/reports/visite/$visiteId',
           options: Options(headers: headers),
         ),
       );

@@ -364,7 +364,7 @@ class PdfPreviewPage extends StatelessWidget {
                             borderRadius: pw.BorderRadius.circular(3),
                           ),
                           child: pw.Text(
-                            piece,
+                            "${piece.reference} X${piece.quantity}",
                             style: pw.TextStyle(fontSize: 8),
                           ),
                         ),

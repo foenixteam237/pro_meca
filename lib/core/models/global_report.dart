@@ -69,27 +69,27 @@ class Visite {
 }
 
 class Vehicle {
-  final String licensePlate;
+  final String? licensePlate;
   final String chassis;
   final String marque;
   final String model;
-  final int year;
+  final int? year;
 
   Vehicle({
-    required this.licensePlate,
+    this.licensePlate,
     required this.chassis,
     required this.marque,
     required this.model,
-    required this.year,
+    this.year,
   });
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
-      licensePlate: json['licensePlate'],
+      licensePlate: json['licensePlate']?.toString() ?? '',
       chassis: json['chassis'],
       marque: json['marque'],
       model: json['model'],
-      year: json['year'],
+      year: json['year'] ?? 00,
     );
   }
 
@@ -137,7 +137,7 @@ class Intervention {
   final int mainOeuvre;
   final String diagnostic;
   final List<String> travauxRealises;
-  final List<String> piecesUtilisees;
+  final List<Piece> piecesUtilisees;
   final double workedHours;
   final int completed;
   final List<Piece> piecesPrevue;
@@ -175,7 +175,7 @@ class Intervention {
       mainOeuvre: json['mainOeuvre'],
       diagnostic: json['diagnostic'],
       travauxRealises: List<String>.from(json['travauxRealises']),
-      piecesUtilisees: List<String>.from(json['piecesUtilisees']),
+      piecesUtilisees: List<Piece>.from(json['piecesUtilisees']),
       workedHours: json['workedHours'].toDouble(),
       completed: json['completed'],
       piecesPrevue: (json['piecesPrevue'] as List)
