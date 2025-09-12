@@ -4,19 +4,28 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
 import 'package:pro_meca/core/features/diagnostic/widgets/build_intervention_widget.dart';
+import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_info_section.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../l10n/arb/app_localizations.dart';
+import '../../../models/visite.dart';
+import '../../../utils/responsive.dart';
+
 class ValidationInterventionScreen extends StatefulWidget {
   final String visiteId;
   final bool isAdmin;
+  final String accessToken;
+  final Visite visite;
   const ValidationInterventionScreen({
     super.key,
     required this.visiteId,
     required this.isAdmin,
+    required this.accessToken,
+    required this.visite,
   });
 
   @override
@@ -158,34 +167,7 @@ class _ValidationInterventionScreenState
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'N0567AZ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text('TOYOTA COROLLA LE', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'M MARTIN PETER',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      'Niveau d\'intervention: Normal',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            child:buildVehicleInfoSection(context, Responsive.isMobile(context), appColors, AppLocalizations.of(context), widget.visite, widget.accessToken),
           ),
           Expanded(
             child: isLoading

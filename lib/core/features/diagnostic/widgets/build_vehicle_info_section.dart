@@ -20,6 +20,7 @@ Widget buildVehicleInfoSection(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           buildImage(visite!.vehicle!.logo, context, accessToken!),
           SizedBox(width: isMobile ? 10 : 20),
@@ -29,11 +30,11 @@ Widget buildVehicleInfoSection(
             children: [
               Text(
                 "${l10n.immatVehicule}: ${visite.vehicle!.licensePlate}",
-                style: AppStyles.titleMedium(context),
+                style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
               ),
               Text(
                 "Entrée: ${DateFormat.yMMMd().format(visite.dateEntree)}",
-                style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
+                style: AppStyles.titleMedium(context).copyWith(fontSize: 10),
               ),
             ],
           ),
@@ -41,7 +42,7 @@ Widget buildVehicleInfoSection(
       ),
       Text(
         "${visite.vehicle!.client!.firstName} ${visite.vehicle!.client!.lastName}",
-        style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
+        style: AppStyles.bodyMedium(context).copyWith(fontSize: 12),
       ),
     ],
   );

@@ -8,6 +8,7 @@ import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_adaptive_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../models/visite.dart';
+import '../../../widgets/buildSmallCard.dart';
 import '../../../widgets/buildSmallCardShimmer.dart';
 import '../../../widgets/buildStatusCardShimmer.dart';
 import '../../diagnostic/views/visite_list_by_status.dart';
@@ -160,118 +161,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 */
-  Widget _buildSmallCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required int today,
-    required int month,
-    required int total,
-  }) {
-    final appColors = Provider.of<AppAdaptiveColors>(context);
-
-    return Container(
-      width: Responsive.responsiveValue(
-        context,
-        mobile: MediaQuery.of(context).size.width * 0.45,
-        tablet: MediaQuery.of(context).size.width * 0.22,
-      ),
-      constraints: const BoxConstraints(minHeight: 100, maxHeight: 120),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // En-tête avec icône et titre
-          Row(
-            children: [
-              Icon(icon, color: appColors.primary, size: 28),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: Responsive.responsiveValue(
-                      context,
-                      mobile: 12,
-                      tablet: 14,
-                    ),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ],
-          ),
-
-          //const SizedBox(height: 20),
-          /*
-          // Compteur "Aujourd'hui" avec animation
-          _buildAnimatedCounterRow(
-            label: "Ce jour",
-            value: today,
-            textStyle: const TextStyle(fontSize: 12),
-          ),
-
-          //const SizedBox(height: 10),
-
-          // Compteur "Ce mois" avec animation
-          _buildAnimatedCounterRow(
-            label: "Ce mois",
-            value: month,
-            textStyle: const TextStyle(fontSize: 12),
-          ),
-            */
-          // Compteur "Total" avec animation plus visible
-          Expanded(
-            child: _buildAnimatedCounterRow(
-              label: "Total",
-              value: total,
-              textStyle: AppStyles.titleMedium(context),
-              valueStyle: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 30,
-                color:
-                    appColors.primary, // Vous pouvez utiliser appColors.primary
-              ),
-              duration: const Duration(milliseconds: 1500),
-            ),
-          ),
-          Icon(Icons.navigate_next_rounded, size: 34, color: appColors.primary),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnimatedCounterRow({
-    required String label,
-    required int value,
-    TextStyle? textStyle,
-    TextStyle? valueStyle,
-    Duration duration = const Duration(milliseconds: 1000),
-  }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(label, style: textStyle),
-          TweenAnimationBuilder<int>(
-            tween: IntTween(begin: 0, end: value),
-            duration: duration,
-            builder: (context, value, child) {
-              return Text('$value', style: valueStyle ?? textStyle);
-            },
-            curve: Curves.easeOut,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildStatusGrid(BuildContext context, List<Visite> visites) {
     final proformaClient = Visite.getVehicleStatsByStatus(
@@ -304,7 +193,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                   ),
-                  child: _buildSmallCard(
+                  child: buildSmallCard(
                     context,
                     icon: Icons.file_copy,
                     title: "En attente validation proforma",
@@ -323,7 +212,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                   ),
-                  child: _buildSmallCard(
+                  child: buildSmallCard(
                     context,
                     icon: Icons.timeline,
                     title: "Performance techniciens",
@@ -342,7 +231,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                   ),
-                  child: _buildSmallCard(
+                  child: buildSmallCard(
                     context,
                     icon: Icons.monetization_on,
                     title: "Comptabilité",
@@ -361,7 +250,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ),
                   ),
-                  child: _buildSmallCard(
+                  child: buildSmallCard(
                     context,
                     icon: Icons.notification_important,
                     title: AppLocalizations.of(context).finished,

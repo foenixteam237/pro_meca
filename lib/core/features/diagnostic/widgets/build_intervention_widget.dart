@@ -3,6 +3,8 @@ import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:provider/provider.dart';
 
+import '../../../constants/app_styles.dart';
+
 Widget interventionItem(MaintenanceTask main, BuildContext context) {
   final appColors = Provider.of<AppAdaptiveColors>(context);
   return Container(
@@ -30,15 +32,15 @@ Widget interventionItem(MaintenanceTask main, BuildContext context) {
             children: [
               Text(
                 main.title,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                style: AppStyles.bodyMedium(context),
               ),
               Text(
                 "Priorité: ${main.priority}",
-                style: TextStyle(color: Colors.orange, fontSize: 13),
+                style: AppStyles.bodySmall(context),
               ),
               Text(
                 "Technicien: ${main.technician}",
-                style: TextStyle(color: Colors.grey),
+                style: AppStyles.bodySmall(context),
               ),
             ],
           ),

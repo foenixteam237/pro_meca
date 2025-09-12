@@ -34,7 +34,7 @@ class CategoryCardShimmer extends StatelessWidget {
               child: Container(
                 height: Responsive.responsiveValue(
                   context,
-                  mobile: 170,
+                  mobile: 140,
                   tablet: 200,
                   desktop: 300,
                 ),

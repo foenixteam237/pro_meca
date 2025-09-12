@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
+import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
 import 'package:pro_meca/core/features/diagnostic/views/add_pieces_form.dart';
@@ -61,10 +62,13 @@ class _InterventionFormState extends State<InterventionForm> {
   // Liste des pièces ajoutées
   List<Map<String, dynamic>> piecesList = [];
 
+  //1:Très haute, 2: Haute, 3:Moyenne, 4:Basse, 5:Très basse
   List<Map<String, dynamic>> priorities = [
-    {'value': 4, 'name': 'Haute'},
+    {'value': 1, 'name': 'Très Haute'},
+    {'value': 2, 'name': 'Haute'},
     {'value': 3, 'name': 'Moyenne'},
-    {'value': 2, 'name': 'Basse'},
+    {'value': 4, 'name': 'Basse'},
+    {'value': 5, 'name': 'Très Basse'},
   ];
 
   bool isLoading = false;
@@ -167,7 +171,7 @@ class _InterventionFormState extends State<InterventionForm> {
             content: Text(
               'Quantité de "${pieceData['name'] ?? 'Inconnue'}" mise à jour: ${piecesList[existingIndex]['quantity']}',
             ),
-            backgroundColor: Colors.blue,
+            backgroundColor: AppColors.primary,
             duration: Duration(seconds: 2),
           ),
         );
@@ -288,7 +292,7 @@ class _InterventionFormState extends State<InterventionForm> {
         nameColor: appColors.primary,
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: appColors.primary,))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -445,7 +449,7 @@ class _InterventionFormState extends State<InterventionForm> {
                               _showPieceSelectionModal(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[700],
+                              backgroundColor: appColors.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -550,7 +554,7 @@ class _InterventionFormState extends State<InterventionForm> {
                         child: ElevatedButton(
                           onPressed: _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
+                            backgroundColor: appColors.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                             ),
@@ -578,6 +582,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildInterventionTypeDropdown() {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -588,7 +593,7 @@ class _InterventionFormState extends State<InterventionForm> {
         child: DropdownButton<String>(
           value: selectedInterventionTypeName,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.blue[700]),
+          icon: Icon(Icons.keyboard_arrow_down, color: appColors.primary),
           items: [
             DropdownMenuItem<String>(
               value: null,
@@ -625,6 +630,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildSubTypeDropdown() {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -635,7 +641,7 @@ class _InterventionFormState extends State<InterventionForm> {
         child: DropdownButton<String>(
           value: selectedSubTypeName,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.blue[700]),
+          icon: Icon(Icons.keyboard_arrow_down, color: appColors.primary),
           items: [
             DropdownMenuItem<String>(
               value: null,
@@ -691,6 +697,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildAssigneeDropdown() {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -701,7 +708,7 @@ class _InterventionFormState extends State<InterventionForm> {
         child: DropdownButton<String>(
           value: selectedAssigneeName,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.blue[700]),
+          icon: Icon(Icons.keyboard_arrow_down, color: appColors.primary),
           items: [
             DropdownMenuItem<String>(
               value: 'Technicien affecté',
@@ -745,6 +752,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildPriorityDropdown() {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -755,7 +763,7 @@ class _InterventionFormState extends State<InterventionForm> {
         child: DropdownButton<String>(
           value: selectedPriority,
           isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: Colors.blue[700]),
+          icon: Icon(Icons.keyboard_arrow_down, color: appColors.primary),
           items: [
             DropdownMenuItem<String>(
               value: 'Priorité',
@@ -784,6 +792,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildPartItem(String name, String price, int qte, int index) {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       padding: EdgeInsets.all(12),
@@ -802,7 +811,7 @@ class _InterventionFormState extends State<InterventionForm> {
             ),
             child: Icon(
               Icons.build_outlined,
-              color: Colors.blue[700],
+              color: appColors.primary,
               size: 20,
             ),
           ),
@@ -849,6 +858,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildPriceRow(String label, String amount, {bool isTotal = false}) {
+    final appColors =  Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -867,7 +877,7 @@ class _InterventionFormState extends State<InterventionForm> {
             style: isTotal
                 ? AppStyles.bodyMedium(context).copyWith(
                     fontWeight: FontWeight.w600,
-                    color: Colors.blue[700],
+                    color: appColors.primary,
                   )
                 : AppStyles.bodySmall(context),
           ),
