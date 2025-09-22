@@ -95,10 +95,12 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: RefreshIndicator(
+          color: appColors.primary,
           onRefresh: _loadData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),

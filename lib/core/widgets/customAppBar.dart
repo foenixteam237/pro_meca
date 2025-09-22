@@ -112,8 +112,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget buildProfileImage(String imagePath, num avatarRadius) {
     if (imagePath.isNotEmpty) {
       return Container(
-        width: avatarRadius.toDouble() * 2.5,
-        height: avatarRadius.toDouble() * 2.5,
+        width: avatarRadius.toDouble() * 1.5,
+        height: avatarRadius.toDouble() * 1.5,
         decoration: BoxDecoration(shape: BoxShape.circle),
         child: ClipOval(
           child: CachedNetworkImage(

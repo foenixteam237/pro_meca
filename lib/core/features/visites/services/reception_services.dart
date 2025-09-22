@@ -397,7 +397,7 @@ class ReceptionServices {
             return Visite.fromVisiteJson(visiteJson, vehicle);
           } on DioException catch (e) {
             // En cas d'erreur sur un véhicule, retourne une visite partielle
-            debugPrint('Erreur véhicule : ${e.message}');
+            throw('Erreur véhicule : ${e.message}');
             return Visite.fromJson(visiteJson);
           }
         }),

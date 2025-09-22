@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 import '../features/diagnostic/views/diagnosticScreen.dart';
+import '../features/diagnostic/views/page_intervention_tech.dart';
 import '../models/visite.dart';
 import '../utils/responsive.dart';
 
@@ -155,15 +156,24 @@ void _showNextPage(
         ),
       ),
     );
-  } else if (visite.intervention!.isNotEmpty) {
+  } else if (visite.intervention!.isNotEmpty && isAdmin) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
-            ValidationInterventionScreen(visiteId: visite.id, isAdmin: isAdmin),
+            ValidationInterventionScreen(visiteId: visite.id, isAdmin: isAdmin, accessToken: accessToken, visite: visite,),
       ),
     );
-  } else {
+  } else if(visite.intervention!.isNotEmpty && isAdmin == false){
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            InterventionPage(),
+      ),
+    );
+  }
+  else {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Aucune action disponible pour cette visite.")),
     );

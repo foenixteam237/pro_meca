@@ -220,22 +220,25 @@ class _ValidationDiagnosticScreenState
                   context,
                   mobile: screenHeight * 0.1,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (photos != null && photos!.isNotEmpty)
-                      ...photos!.map(
-                        (photo) => VehicleImageCard(photo.logo, header),
-                      )
-                    else
-                      ...List.generate(
-                        4,
-                        (index) => VehicleImageCard(
-                          "assets/images/moteur.jpg",
-                          header,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (photos != null && photos!.isNotEmpty)
+                        ...photos!.map(
+                              (photo) => VehicleImageCard(photo.logo, header),
+                        )
+                      else
+                        ...List.generate(
+                          4,
+                              (index) => VehicleImageCard(
+                            "assets/images/moteur.jpg",
+                            header,
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
