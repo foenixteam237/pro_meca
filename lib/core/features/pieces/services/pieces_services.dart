@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
@@ -48,6 +50,91 @@ class PiecesService {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Impossible de récupérer les pièces. $errorMessage"),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return [];
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur inattendue: ${e.toString()}")),
+      );
+      debugPrint('Erreur: ${e.toString()}');
+      return [];
+    }
+  }
+
+  /// Récupérer le nombre de catégories
+  Future<Map<String, int>> getCategoryPieceCount(BuildContext context) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/pieces/cat-pie-count',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        debugPrint("cat_pie = $data");
+        final catCount = data['cat'] as int? ?? -1;
+        final pieCount = data['pie'] as int? ?? -1;
+        final invValue = data['inv'] as int? ?? -1;
+
+        return {'cat': catCount, 'pie': pieCount, 'inv': invValue};
+      } else {
+        throw Exception('Type de réponse inattendu: ${data.runtimeType}');
+      }
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? e.message ?? 'Erreur inconnue';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Impossible de récupérer les statistiques: $errorMessage",
+          ),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return {'cat': -1, 'pie': -1, 'inv': -1};
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Statistiques indisponibles")));
+      debugPrint('Erreur: ${e.toString()}');
+      return {'cat': -1, 'pie': -1, 'inv': -1};
+    }
+  }
+
+  /// Récupérer les stocks critiques
+  Future<List<PieceCritical>> getCriticalStock(BuildContext context) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/pieces/critical/stock',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data is List) {
+        final List<dynamic> data = response.data;
+        debugPrint(data.toString());
+
+        return data.map((json) => PieceCritical.fromJson(json)).toList();
+      } else {
+        debugPrint(
+          "Erreur lors de la récupération des stocks critiques: ${response.statusCode}",
+        );
+        return [];
+      }
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? e.message ?? 'Erreur inconnue';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Impossible de récupérer les stocks critiques. $errorMessage",
+          ),
         ),
       );
       debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
@@ -158,6 +245,7 @@ class PiecesService {
 
       if (response.statusCode == 200 && response.data is List) {
         final List<dynamic> data = response.data;
+        debugPrint(data.toString());
         return data.map((json) => PieceCategorie.fromJson(json)).toList();
       } else {
         debugPrint(
@@ -253,5 +341,58 @@ class PiecesService {
       );
       return [];
     }
+  }
+}
+
+class PieceCritical {
+  final String name;
+  final String category;
+  final String date;
+  final List<String> compatibility;
+  final int quantity;
+  final int? sellingPrice;
+  final String reference;
+  final bool critical;
+  final String? logo;
+
+  // Constructeur corrigé avec des paramètres nommés
+  PieceCritical({
+    required this.name,
+    required this.category,
+    required this.date,
+    required this.compatibility,
+    required this.quantity,
+    this.sellingPrice,
+    required this.reference,
+    required this.critical,
+    this.logo,
+  });
+
+  factory PieceCritical.fromJson(Map<String, dynamic> json) {
+    return PieceCritical(
+      name: json['name'] as String,
+      category: json['category'] as String,
+      date: json['date'] as String,
+      compatibility: (json['compatibility'] as List).cast<String>(),
+      quantity: json['quantity'] as int,
+      sellingPrice: json['sellingPrice'] as int?,
+      reference: json['reference'] as String,
+      critical: json['critical'] as bool,
+      logo: json['logo'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'category': category,
+      'date': date,
+      'compatibility': compatibility,
+      'quantity': quantity,
+      'sellingPrice': sellingPrice,
+      'reference': reference,
+      'critical': critical,
+      'logo': logo,
+    };
   }
 }

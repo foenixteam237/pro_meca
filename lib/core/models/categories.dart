@@ -5,9 +5,9 @@ class PieceCategorie {
   final String name;
   final String description;
   final String logo;
-  final dynamic count;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final int count;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final List<Piece>? pieces;
 
   PieceCategorie({
@@ -15,9 +15,9 @@ class PieceCategorie {
     required this.name,
     required this.description,
     required this.logo,
-    this.count,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.count,
+    this.createdAt,
+    this.updatedAt,
     this.pieces,
   });
 
@@ -27,10 +27,12 @@ class PieceCategorie {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       logo: json['logo'] ?? '',
-      pieces: (json['pieces'] as List<dynamic>?)
-          ?.map((pieceJson) => Piece.fromJson(pieceJson))
-          .toList(),
-      count: json['_count'] ?? {"pieces": 0},
+      pieces: json['pieces'] == Null
+          ? []
+          : (json['pieces'] as List<dynamic>?)
+                ?.map((pieceJson) => Piece.fromJson(pieceJson))
+                .toList(),
+      count: json['_count'] ?? 0,
       createdAt: DateTime.parse(json['createdAt'] ?? ''),
       updatedAt: DateTime.parse(json['updatedAt'] ?? ''),
     );

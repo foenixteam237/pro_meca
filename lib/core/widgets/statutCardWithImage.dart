@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-Widget buildStatusCardWithImage(BuildContext context, void  Function() function, String label, int qte) {
+Widget buildStatusCardWithImage(
+  BuildContext context,
+  void Function() function,
+  String label,
+  int qte,
+) {
   return GestureDetector(
     onTap: function,
     child: Container(
@@ -29,7 +34,7 @@ Widget buildStatusCardWithImage(BuildContext context, void  Function() function,
             ),
           ),
           Text(
-            qte.toString(),
+            qte == -1 ? '##' : qte.toString(),
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ],

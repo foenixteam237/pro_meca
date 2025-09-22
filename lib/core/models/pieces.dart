@@ -17,6 +17,7 @@ class Piece {
   final double taxRate;
   final String categoryId;
   final String? notes;
+  final List<PieceModel>? modeleCompatibles;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Category category;
@@ -42,6 +43,7 @@ class Piece {
     required this.taxRate,
     required this.categoryId,
     this.notes,
+    this.modeleCompatibles,
     required this.createdAt,
     required this.updatedAt,
     required this.category,
@@ -73,6 +75,9 @@ class Piece {
       taxRate: json['taxRate']?.toDouble(),
       categoryId: json['categoryId'],
       notes: json['notes'],
+      modeleCompatibles: (json['modeleCompatibles'] as List<dynamic>)
+          .map((json) => PieceModel.fromJson(json))
+          .toList(),
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       category: Category.fromJson(json['category']),
@@ -100,6 +105,7 @@ class Piece {
       'taxRate': taxRate,
       'categoryId': categoryId,
       'notes': notes,
+      'modeleCompatibles': modeleCompatibles.toString(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'category': category.toJson(),
@@ -131,5 +137,19 @@ class Category {
   }
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name, 'description': description, 'logo': logo};
+  }
+}
+
+class PieceModel {
+  final String name;
+  final String slug;
+
+  PieceModel({required this.name, required this.slug});
+
+  factory PieceModel.fromJson(Map<String, dynamic> json) {
+    return PieceModel(name: json['name'], slug: json['slug']);
+  }
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'slug': slug};
   }
 }

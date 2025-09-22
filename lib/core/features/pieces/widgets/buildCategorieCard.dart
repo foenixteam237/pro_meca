@@ -124,10 +124,7 @@ class CategoryCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Nombre: ${category.count['pieces']}',
-                        style: bodyStyle,
-                      ),
+                      Text('Nombre: ${category.count}', style: bodyStyle),
                     ],
                   ),
                   const SizedBox(height: 6),
