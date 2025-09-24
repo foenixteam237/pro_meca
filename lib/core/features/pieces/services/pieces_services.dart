@@ -33,8 +33,9 @@ class PiecesService {
       );
 
       if (response.statusCode == 200) {
-        // Vérifie si la réponse contient une liste dans 'data'
-        final List<dynamic> data = response.data ?? [];
+        final List<dynamic> data = response.data is List
+            ? response.data
+            : (response.data['data'] ?? response.data['pieces'] ?? []);
 
         // Convertit chaque élément JSON en objet Piece
         return data.map((json) => Piece.fromJson(json)).toList();
@@ -59,6 +60,50 @@ class PiecesService {
         SnackBar(content: Text("Erreur inattendue: ${e.toString()}")),
       );
       debugPrint('Erreur: ${e.toString()}');
+      return [];
+    }
+  }
+
+  /// Récupérer la liste des modèles de véhicules
+  Future<List<PieceModel>> fetchVehicleModels(
+    BuildContext context, {
+    String? searchQuery,
+    String? marque,
+    int? limit = 50,
+  }) async {
+    try {
+      final Map<String, dynamic> queryParams = {};
+      if (searchQuery != null) queryParams['search'] = searchQuery;
+      if (marque != null) queryParams['marque'] = marque;
+      if (limit != null) queryParams['limit'] = limit;
+
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/models/vehicles',
+          queryParameters: queryParams,
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data is List
+            ? response.data
+            : (response.data['data'] ?? response.data['models'] ?? []);
+
+        return data.map((json) => PieceModel.fromJson(json)).toList();
+      } else {
+        debugPrint(
+          "Erreur lors de la récupération des modèles: ${response.statusCode}",
+        );
+        return [];
+      }
+    } on DioException catch (e) {
+      debugPrint(
+        'Erreur récupération modèles: ${e.response?.statusCode}: ${e.response?.data}',
+      );
+      return [];
+    } catch (e) {
+      debugPrint('Erreur inattendue modèles: ${e.toString()}');
       return [];
     }
   }
@@ -158,7 +203,7 @@ class PiecesService {
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
-      print(response);
+      debugPrint(response.data.toString());
       return response.statusCode == 201;
     } on DioException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -341,6 +386,25 @@ class PiecesService {
       );
       return [];
     }
+  }
+
+  /// Retourne la référence disponible pour le [name].
+  /// Lève une exception si le serveur renvoie une erreur.
+  Future<String> getNextReference(String name) async {
+    final response = await ApiDioService().authenticatedRequest(
+      () async => await _dio.get(
+        '/pieces/next/reference',
+        queryParameters: {'name': name},
+        options: Options(headers: await ApiDioService().getAuthHeaders()),
+      ),
+    );
+
+    // Le serveur renvoie { "reference": "ALTTOY-003" }
+    if (response.statusCode == 200 && response.data is Map) {
+      final ref = response.data['reference'] as String?;
+      if (ref != null && ref.isNotEmpty) return ref;
+    }
+    throw Exception('Référence non disponible');
   }
 }
 

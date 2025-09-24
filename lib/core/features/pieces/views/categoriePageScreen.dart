@@ -84,10 +84,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Catégories', style: AppStyles.titleLarge(context)),
-                  Icon(
-                    Icons.add_box,
-                    color: appColors.primary,
-                  )
+                  Icon(Icons.add_box, color: appColors.primary),
                 ],
               ),
               const SizedBox(height: 14),
@@ -140,6 +137,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
     );
   }
+
   void _addNewCategorie(AppAdaptiveColors appColor) {
     WoltModalSheet.show(
       context: context,
@@ -149,7 +147,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             padding: EdgeInsets.all(10),
             alignment: Alignment.center,
             child: Text(
-              "Créer une nouvelle pièce",
+              "Créer une nouvelle catégorie",
               textAlign: TextAlign.center,
               style: AppStyles.titleLarge(context),
             ),
@@ -170,6 +168,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       onModalDismissedWithBarrierTap: () => Navigator.pop(context),
     );
   }
+
   Widget _buildSearchBar(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Row(
@@ -196,7 +195,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
             },
           ),
         ),
-        
       ],
     );
   }

@@ -9,19 +9,19 @@ class Piece {
   final DateTime? recoveryDate;
   final bool isUsed;
   late final int stock;
-  final int criticalStock;
+  final int? criticalStock;
   final String? location;
   final String condition;
-  final int sellingPrice;
+  final int? sellingPrice;
   final DateTime? purchaseDate;
-  final double taxRate;
+  final double? taxRate;
   final String categoryId;
   final String? notes;
   final List<PieceModel>? modeleCompatibles;
   final DateTime createdAt;
   final DateTime updatedAt;
   final Category category;
-  final dynamic source;
+  final PieceSource? source;
   late final bool? inStock;
 
   Piece({
@@ -35,12 +35,12 @@ class Piece {
     this.recoveryDate,
     required this.isUsed,
     required this.stock,
-    required this.criticalStock,
+    this.criticalStock,
     this.location,
     required this.condition,
-    required this.sellingPrice,
+    this.sellingPrice,
     this.purchaseDate,
-    required this.taxRate,
+    this.taxRate,
     required this.categoryId,
     this.notes,
     this.modeleCompatibles,
@@ -63,11 +63,11 @@ class Piece {
       recoveryDate: json['recoveryDate'] != null
           ? DateTime.parse(json['recoveryDate'])
           : null,
-      isUsed: json['isUsed'],
-      stock: json['stock'],
+      isUsed: json['isUsed'] ?? false,
+      stock: json['stock'] ?? 0,
       criticalStock: json['criticalStock'],
       location: json['location'],
-      condition: json['condition'],
+      condition: json['condition'] ?? 'UNKNOWN',
       sellingPrice: json['sellingPrice'],
       purchaseDate: json['purchaseDate'] != null
           ? DateTime.parse(json['purchaseDate'])
@@ -75,16 +75,21 @@ class Piece {
       taxRate: json['taxRate']?.toDouble(),
       categoryId: json['categoryId'],
       notes: json['notes'],
-      modeleCompatibles: (json['modeleCompatibles'] as List<dynamic>)
-          .map((json) => PieceModel.fromJson(json))
-          .toList(),
+      modeleCompatibles: json['modeleCompatibles'] != null
+          ? (json['modeleCompatibles'] as List<dynamic>)
+                .map((json) => PieceModel.fromJson(json))
+                .toList()
+          : null,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       category: Category.fromJson(json['category']),
-      source: json['source'],
-      inStock: json['stock'] > 0,
+      source: json['source'] != null
+          ? PieceSource.fromJson(json['source'])
+          : null,
+      inStock: (json['stock'] ?? 0) > 0,
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -105,11 +110,13 @@ class Piece {
       'taxRate': taxRate,
       'categoryId': categoryId,
       'notes': notes,
-      'modeleCompatibles': modeleCompatibles.toString(),
+      'modeleCompatibles': modeleCompatibles
+          ?.map((model) => model.toJson())
+          .toList(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'category': category.toJson(),
-      'source': source,
+      'source': source?.toJson(),
     };
   }
 }
@@ -135,21 +142,104 @@ class Category {
       logo: json['logo'],
     );
   }
+
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name, 'description': description, 'logo': logo};
   }
 }
 
 class PieceModel {
+  final String id;
   final String name;
   final String slug;
+  final String? marque;
+  // final int? yearStart;
+  // final int? yearEnd;
 
-  PieceModel({required this.name, required this.slug});
+  PieceModel({
+    required this.id,
+    required this.name,
+    required this.slug,
+    this.marque,
+    // this.yearStart,
+    // this.yearEnd,
+  });
 
   factory PieceModel.fromJson(Map<String, dynamic> json) {
-    return PieceModel(name: json['name'], slug: json['slug']);
+    return PieceModel(
+      id: json['id'] ?? json['_id'],
+      name: json['name'],
+      slug: json['slug'],
+      marque: json['marque'],
+      // yearStart: json['yearStart'],
+      // yearEnd: json['yearEnd'],
+    );
   }
+
   Map<String, dynamic> toJson() {
-    return {'name': name, 'slug': slug};
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'marque': marque,
+      // 'yearStart': yearStart,
+      // 'yearEnd': yearEnd,
+    };
+  }
+
+  String get displayName {
+    // if (marque != null && yearStart != null) {
+    //   return '$marque $name ($yearStart${yearEnd != null ? '-$yearEnd' : ''})';
+    // }
+    if (marque != null) {
+      return '$marque $name';
+    }
+    return name;
+  }
+}
+
+class PieceSource {
+  final String? id;
+  final String? type;
+  final String? contactName;
+  final String? phone;
+  final String? location;
+  final String? notes;
+  final DateTime? createdAt;
+
+  PieceSource({
+    this.id,
+    this.type,
+    this.contactName,
+    this.phone,
+    this.location,
+    this.notes,
+    this.createdAt,
+  });
+
+  factory PieceSource.fromJson(Map<String, dynamic> json) {
+    return PieceSource(
+      id: json['id'],
+      type: json['type'],
+      contactName: json['contactName'],
+      phone: json['phone'],
+      location: json['location'],
+      notes: json['notes'],
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'contactName': contactName,
+      'phone': phone,
+      'location': location,
+      'notes': notes,
+      'createdAt': createdAt?.toIso8601String(),
+    };
   }
 }

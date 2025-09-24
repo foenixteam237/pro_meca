@@ -129,7 +129,7 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
     setState(() {
       _selectedPieceId = piece.id;
       _stockQuantity = piece.stock;
-      _unitPrice = piece.sellingPrice.toDouble();
+      _unitPrice = piece.sellingPrice?.toDouble() ?? 0;
       _quantityToUse = 1;
       _selectedName = piece.name;
       _selectedCondition = piece.condition;

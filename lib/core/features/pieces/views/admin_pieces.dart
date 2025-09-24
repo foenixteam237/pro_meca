@@ -113,7 +113,6 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
     // Calcul des nouvelles métriques
     _calculateMetrics();
 
-    debugPrint('catCount= $catCount, totalPieces= $totalParts');
     setState(() {
       _isLoading = false;
     });
@@ -231,15 +230,15 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
         children: [
           Text('Gestion des pièces', style: AppStyles.titleLarge(context)),
           const Spacer(),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: appColor.primary,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.more_vert, color: Colors.white, size: 20),
-          ),
+          // Container(
+          //   width: 32,
+          //   height: 32,
+          //   decoration: BoxDecoration(
+          //     color: appColor.primary,
+          //     borderRadius: BorderRadius.circular(8),
+          //   ),
+          //   child: Icon(Icons.more_vert, color: Colors.white, size: 20),
+          // ),
         ],
       ),
     );

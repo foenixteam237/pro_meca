@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
+import 'package:pro_meca/core/features/pieces/views/piece_detail_screen.dart';
 import 'package:pro_meca/core/features/pieces/widgets/add_pieces_form.dart';
 import 'package:pro_meca/core/widgets/show_wolt_modal_sheet.dart';
 import 'package:provider/provider.dart';
@@ -9,7 +10,6 @@ import '../../../models/pieces.dart';
 import '../widgets/buildPiecesItems.dart';
 import '../widgets/buildPiecesItemsShimmer.dart';
 
-// Ajout de l'enum pour les filtres
 enum StockFilter { all, inStock, outOfStock }
 
 class PiecesPage extends StatefulWidget {
@@ -28,7 +28,6 @@ class _PiecesPageState extends State<PiecesPage> {
   String errorMessage = '';
   String query = "";
 
-  // Variables pour le filtrage
   StockFilter currentFilter = StockFilter.all;
   bool isFilterDialogOpen = false;
 
@@ -53,7 +52,7 @@ class _PiecesPageState extends State<PiecesPage> {
       setState(() {
         pieces = fetchedPieces;
         isLoading = false;
-        _applyFilters(); // Appliquer les filtres après chargement
+        _applyFilters();
       });
     } catch (e) {
       setState(() {
@@ -63,18 +62,15 @@ class _PiecesPageState extends State<PiecesPage> {
     }
   }
 
-  // Fonction pour appliquer les filtres
   void _applyFilters() {
     List<Piece> result = pieces;
 
-    // Filtre par texte de recherche
     if (query.isNotEmpty) {
       result = result
           .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
 
-    // Filtre par statut de stock
     switch (currentFilter) {
       case StockFilter.inStock:
         result = result.where((p) => p.inStock!).toList();
@@ -83,7 +79,6 @@ class _PiecesPageState extends State<PiecesPage> {
         result = result.where((p) => !p.inStock!).toList();
         break;
       case StockFilter.all:
-        // Pas de filtre supplémentaire
         break;
     }
 
@@ -92,7 +87,6 @@ class _PiecesPageState extends State<PiecesPage> {
     });
   }
 
-  // Fonction pour afficher le dialogue de filtrage
   void _showFilterDialog() {
     setState(() {
       isFilterDialogOpen = true;
@@ -119,7 +113,6 @@ class _PiecesPageState extends State<PiecesPage> {
                     style: TextStyle(fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 10),
-                  // Option: Toutes les pièces
                   RadioListTile<StockFilter>(
                     title: const Text('Toutes les pièces'),
                     value: StockFilter.all,
@@ -132,7 +125,6 @@ class _PiecesPageState extends State<PiecesPage> {
                       }
                     },
                   ),
-                  // Option: En stock
                   RadioListTile<StockFilter>(
                     title: const Text('En stock'),
                     value: StockFilter.inStock,
@@ -145,7 +137,6 @@ class _PiecesPageState extends State<PiecesPage> {
                       }
                     },
                   ),
-                  // Option: Rupture de stock
                   RadioListTile<StockFilter>(
                     title: const Text('Rupture de stock'),
                     value: StockFilter.outOfStock,
@@ -177,7 +168,7 @@ class _PiecesPageState extends State<PiecesPage> {
                           Navigator.pop(context);
                           setState(() {
                             isFilterDialogOpen = false;
-                            _applyFilters(); // Appliquer les filtres
+                            _applyFilters();
                           });
                         },
                         child: const Text('Appliquer'),
@@ -213,7 +204,11 @@ class _PiecesPageState extends State<PiecesPage> {
               appColor,
               context,
               "Ajouter une pièce",
-              CreatePieceForm(pContext: context, idCateg: widget.catId!),
+              CreatePieceForm(
+                pContext: context,
+                idCateg: widget.catId!,
+                onPieceCreated: _loadPieces,
+              ),
             ),
             icon: Icon(Icons.add, color: appColor.primary, size: 32),
             tooltip: 'Ajouter une pièce',
@@ -222,7 +217,6 @@ class _PiecesPageState extends State<PiecesPage> {
       ),
       body: Column(
         children: [
-          // Barre de recherche et filtres
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(
@@ -232,7 +226,7 @@ class _PiecesPageState extends State<PiecesPage> {
                     controller: _searchController,
                     onChanged: (val) {
                       setState(() => query = val);
-                      _applyFilters(); // Appliquer les filtres à chaque changement
+                      _applyFilters();
                     },
                     decoration: InputDecoration(
                       hintText: "Rechercher une pièce...",
@@ -245,7 +239,6 @@ class _PiecesPageState extends State<PiecesPage> {
                     ),
                   ),
                 ),
-                // Bouton de filtrage avec indicateur visuel
                 Stack(
                   children: [
                     IconButton(
@@ -253,8 +246,7 @@ class _PiecesPageState extends State<PiecesPage> {
                       icon: Icon(
                         Icons.filter_list,
                         color: currentFilter != StockFilter.all
-                            ? appColor
-                                  .primary // Couleur différente quand un filtre est actif
+                            ? appColor.primary
                             : Colors.grey,
                         size: 32,
                       ),
@@ -282,7 +274,6 @@ class _PiecesPageState extends State<PiecesPage> {
             ),
           ),
 
-          // Affichage du filtre actif
           if (currentFilter != StockFilter.all)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
@@ -308,7 +299,6 @@ class _PiecesPageState extends State<PiecesPage> {
               ),
             ),
 
-          // État de chargement/erreur
           if (isLoading)
             Expanded(
               child: ListView.builder(
@@ -345,7 +335,6 @@ class _PiecesPageState extends State<PiecesPage> {
               ),
             )
           else
-            // Liste des pièces
             Expanded(
               child: RefreshIndicator(
                 color: appColor.primary,
@@ -395,10 +384,7 @@ class _PiecesPageState extends State<PiecesPage> {
                       },
                       onDismissed: (direction) async {
                         try {
-                          await PiecesService().deletePiece(
-                            piece.id,
-                            context,
-                          ); //
+                          await PiecesService().deletePiece(piece.id, context);
                           setState(() {
                             filteredPieces.removeAt(index);
                             pieces.removeWhere((p) => p.id == piece.id);
@@ -414,7 +400,20 @@ class _PiecesPageState extends State<PiecesPage> {
                           );
                         }
                       },
-                      child: buildPieceItems(piece, context, index),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PieceDetailScreen(
+                                piece: piece,
+                                onPieceUpdated: _loadPieces,
+                              ),
+                            ),
+                          );
+                        },
+                        child: buildPieceItems(piece, context, index),
+                      ),
                     );
                   },
                 ),
