@@ -412,7 +412,12 @@ class _PiecesPageState extends State<PiecesPage> {
                             ),
                           );
                         },
-                        child: buildPieceItems(piece, context, index),
+                        child: buildPieceItems(
+                          piece,
+                          context,
+                          index,
+                          onPieceUpdated: _loadPieces,
+                        ),
                       ),
                     );
                   },
