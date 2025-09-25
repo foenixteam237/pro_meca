@@ -1,146 +1,267 @@
 import 'package:flutter/material.dart';
-class InterventionPage extends StatelessWidget {
+import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
+import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/diagnostic/views/intervention_detail.dart';
+import 'package:pro_meca/core/features/diagnostic/views/technician_report.dart';
+import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_info_section.dart';
+import 'package:pro_meca/core/models/diagnostic_update.dart';
+import 'package:pro_meca/core/models/visite.dart';
+import 'package:pro_meca/core/utils/responsive.dart';
+import 'package:pro_meca/l10n/arb/app_localizations.dart';
+import 'package:provider/provider.dart';
+
+class InterventionPage extends StatefulWidget {
+  final String accessToken;
+  final Visite visite;
+  const InterventionPage({
+    super.key,
+    required this.accessToken,
+    required this.visite,
+  });
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _InterventionPageState createState() => _InterventionPageState();
+}
+
+class _InterventionPageState extends State<InterventionPage> {
+  AppAdaptiveColors? appColors;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    appColors ??= Provider.of<AppAdaptiveColors>(context);
+    final Diagnostic diagnostic = widget.visite.diagnostics!.first;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('NO567AZ - COROLLA LE'),
-        backgroundColor: Colors.blue,
-        actions: [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              backgroundImage: NetworkImage('https://via.placeholder.com/40'), // Remplacez par l'image du technicien
-              child: Text('EA'), // Initiales si image absente
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Eric Anderson', style: TextStyle(fontSize: 14)),
-                Text('Technicien', style: TextStyle(fontSize: 12, color: Colors.white70)),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.info_outline, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
+        title: Text('Interventions'),
+        backgroundColor: appColors!.primary,
       ),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
-        children: [
-          // Informations supplémentaires (M. Martin Peter)
-          Text('M MARTIN PETER', style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-          SizedBox(height: 16),
-
-          // Section Interventions en attente
-          Text('Interventions en attente', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          _buildInterventionCard(
-            imageUrl: 'https://via.placeholder.com/80', // Remplacez par l'image d'entretien
-            title: 'Entretien et révision 2501-1',
-            priority: 'Priorité normale',
-            buttons: [
-              {'text': 'Rapport', 'color': Colors.green},
-              {'text': 'Voir plus', 'color': Colors.grey},
-            ],
-          ),
-          SizedBox(height: 8),
-          _buildInterventionCard(
-            imageUrl: 'https://via.placeholder.com/80', // Remplacez par l'image de direction
-            title: 'Direction',
-            priority: 'Priorité avertissement',
-            priorityColor: Colors.orange,
-            buttons: [
-              {'text': 'Rapport', 'color': Colors.green},
-              {'text': 'Voir plus', 'color': Colors.grey},
-            ],
-          ),
-          SizedBox(height: 16),
-
-          // Section Interventions terminées
-          Text('Interventions terminées', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          _buildInterventionCard(
-            imageUrl: 'https://via.placeholder.com/80', // Remplacez par l'image de pneumatique
-            title: 'Pneumatique',
-            buttons: [
-              {'text': 'Détail', 'color': Colors.green},
-            ],
-          ),
-        ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Widget pour les informations sur la visite/voiture
+            buildVehicleInfoSection(
+              context,
+              Responsive.isMobile(context),
+              appColors!,
+              AppLocalizations.of(context),
+              widget.visite,
+              widget.accessToken,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Liste des interventions en attente',
+              style: AppStyles.titleMedium(context),
+            ),
+            SizedBox(height: 10),
+            widget.visite.intervention != null &&
+                    widget.visite.intervention!.isNotEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ...widget.visite.intervention!.map(
+                          (intervention) =>  buildInterventionCard(
+                              nom: intervention.title,
+                              priorite: intervention.priority,
+                            onVoirPlusPressed: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => InterventionDetailPage(
+                                    main: intervention,
+                                  ),
+                                ),
+                              );
+                            },
+                            onRapportPressed: (){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TechnicianReport(
+                                    visite: widget.visite,
+                                    accessToken: widget.accessToken,
+                                    maintenanceTask: intervention,
+                                  ),
+                                ),
+                              );
+                            }
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      'Aucune intervention disponible.',
+                      style: AppStyles.bodyMedium(context),
+                    ),
+                  ),
+            Text(
+              'Liste des interventions terminées',
+              style: AppStyles.titleMedium(context),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildInterventionCard({
-    required String imageUrl,
-    required String title,
-    String? priority,
-    Color? priorityColor,
-    List<Map<String, dynamic>> buttons = const [],
+  Widget buildInterventionCard({
+    required String nom,
+    required int priorite,
+    VoidCallback? onRapportPressed,
+    VoidCallback? onVoirPlusPressed,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    // Définir les couleurs selon la priorité
+    Color getPriorityColor(String priorite) {
+      switch (priorite.toLowerCase()) {
+        case 'normale':
+          return Colors.green;
+        case 'élevée':
+        case 'elevee':
+          return Colors.orange;
+        case 'critique':
+        case 'urgente':
+          return Colors.red;
+        default:
+          return Colors.grey;
+      }
+    }
+
+    String getPriorityText(int priorite) {
+      switch (priorite) {
+        case 1:
+          return "Très basse";
+        case 2:
+          return "Basse";
+        case 3:
+          return "Normale";
+        case 4:
+          return "Critique";
+        case 5:
+          return "Urgente";
+        default:
+          return "Inconnue";
+      }
+    }
+
+    return Container(
+      margin: EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: appColors!.primary),
+      ),
       child: Padding(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
+            // Image/Icône à gauche
             Container(
-              width: 80,
-              height: 80,
+              width: 60,
+              height: 90,
               decoration: BoxDecoration(
-                image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
-                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: Image.asset(
+                    'assets/images/moteur.jpg',
+                    fit: BoxFit.cover,
+                  ).image,
+                  fit: BoxFit.cover,
+                ),
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            SizedBox(width: 12),
-            // Texte et boutons
+
+            const SizedBox(width: 10),
+
+            // Contenu principal
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Nom de l'intervention
                   Text(
-                    title,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    nom,
+                    style: AppStyles.titleMedium(
+                      context,
+                    ).copyWith(fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  if (priority != null) ...[
-                    SizedBox(height: 4),
-                    Text(
-                      priority,
-                      style: TextStyle(fontSize: 14, color: priorityColor ?? Colors.black),
-                    ),
-                  ],
-                  SizedBox(height: 8),
+                  // Priorité
                   Row(
-                    children: buttons.map((button) {
-                      return Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: button['color'],
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: Text(button['text'], style: TextStyle(fontSize: 12, color: Colors.white)),
+                    children: [
+                      const Text(
+                        'Priorité: ',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      Text(
+                        getPriorityText(priorite),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: getPriorityColor(getPriorityText(priorite)),
+                          fontWeight: FontWeight.w500,
                         ),
-                      );
-                    }).toList(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  // Boutons d'action
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      buildActionButton(
+                        background: appColors!.primary,
+                        onPressed: ()=>onRapportPressed!(),
+                        text: 'Rapport',
+                      ),
+                      /*
+                      const SizedBox(width: 6),
+
+                      buildActionButton(
+                        background: appColors!.primary,
+                        text: 'Proceder',
+                        onPressed: ()=> onVoirPlusPressed!(),
+                      ),*/
+                    ],
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildActionButton({
+    required String text,
+    required VoidCallback onPressed,
+    required Color background,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: background,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 2,
+      ),
+      child: Text(
+        text,
+        style: AppStyles.buttonText(context).copyWith(fontSize: 12),
       ),
     );
   }

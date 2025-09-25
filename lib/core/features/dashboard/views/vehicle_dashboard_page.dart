@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
@@ -23,6 +24,18 @@ class VehicleDashboardPage extends StatefulWidget {
   State<VehicleDashboardPage> createState() => _VehicleDashboardPageState();
 }
 
+enum VisitStatus {
+  attenteDiagnostic("adia"),
+  attenteValidationDiagnostic("avdia"),
+  attenteValidationInterventionAdmin("avin"),
+  attenteValidationIntervention("avin"),
+  termine("term"),
+  attenteIntervention("aint"); // Assuming "aint" means "ATTENTE_INTERVENTION"
+
+  final String value;
+  const VisitStatus(this.value);
+}
+
 class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
   List<Visite> _visites = [];
   bool _isLoading = true;
@@ -42,28 +55,65 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
     setState(() {
       _isLoading = true;
     });
+
     try {
       final pref = await SharedPreferences.getInstance();
       accessToken = pref.getString("accessToken") ?? "";
+      final isAdmin = pref.getBool("isAdmin") ?? false;
+
+      // Fetch all visits with vehicle data
       final visites = await ReceptionServices().fetchVisitesWithVehicle();
-      final statit = await ReceptionServices().fetchVisitesWithVehicleStatus(
-          "aint"
-      );
+
+      final List<Visite> statit = isAdmin
+          ? await ReceptionServices().fetchVisitesWithVehicleStatus(
+              VisitStatus.attenteIntervention.value,
+            )
+          : await ReceptionServices().fetchVisitesWithVehicleStatusAndUser(
+              VisitStatus.attenteIntervention.value,
+            );
+
+      final List<Visite> statvi = isAdmin
+          ? await ReceptionServices().fetchVisitesWithVehicleStatus(
+              VisitStatus.attenteValidationInterventionAdmin.value,
+            )
+          : await ReceptionServices().fetchVisitesWithVehicleStatusAndUser(
+              VisitStatus.attenteValidationIntervention.value,
+            );
+      //print(statvi.length);
       setState(() {
         _visites = visites;
-        statVD = Visite.getVehicleStatsByStatus(_visites, "ATTENTE_DIAGNOSTIC");
-        statVI = Visite.getVehicleStatsByStatus(
-          _visites,
-          "ATTENTE_VALIDATION_INTERVENTION",
+        statVD = Visite.getVehicleStatsByStatus(
+          visites,
+          VisitStatus.attenteDiagnostic.value,
         );
-        statT = Visite.getVehicleStatsByStatus(_visites, "TERMINE");
+        statVI = isAdmin
+            ? Visite.getVehicleStatsByStatus(
+                visites,
+                VisitStatus.attenteValidationIntervention.value,
+              )
+            : {"total": statvi.length};
+        statT = Visite.getVehicleStatsByStatus(
+          visites,
+          VisitStatus.termine.value,
+        );
         statIT = {"total": statit.length};
         _isLoading = false;
       });
     } catch (e, stack) {
-      // Affiche une erreur (ex: snackbar) ou log
-      print("Erreur lors du chargement des visites: $e");
-      print(stack);
+      // Log error for debugging
+      if (kDebugMode) {
+        print("Error loading visits: $e");
+        print(stack);
+      }
+
+      // Show user-friendly error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Impossible de charger les visites."),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
       setState(() {
         _visites = [];
         _isLoading = false;
@@ -111,7 +161,6 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
       ),
     );
   }
-
 
   Widget _buildStatusGrid(BuildContext context, List<Visite> visites) {
     final statsAttenteV = Visite.getVehicleStatsByStatus(
@@ -236,13 +285,22 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                   //_buildEntryBanner(context),
                   _isLoading
                       ? buildStatusCardWithImageShimmer(context)
-                      : buildStatusCardWithImage(context, () {Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          VisiteListByStatus(contextParent: widget.context, status: "adia"),
-                    ),
-                  );}, AppLocalizations.of(context).waitingDiagnotics,statVD['total']!),
+                      : buildStatusCardWithImage(
+                          context,
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VisiteListByStatus(
+                                  contextParent: widget.context,
+                                  status: "adia",
+                                ),
+                              ),
+                            );
+                          },
+                          AppLocalizations.of(context).waitingDiagnotics,
+                          statVD['total']!,
+                        ),
                   _buildStatusGrid(context, _visites),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

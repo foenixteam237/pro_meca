@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_adaptive_colors.dart';
-import '../../../constants/app_styles.dart';
 import '../../../models/visite.dart';
 import '../../../widgets/buildSmallCard.dart';
 import '../../../widgets/buildSmallCardShimmer.dart';
-import '../../../widgets/buildStatusCardShimmer.dart';
 import '../../diagnostic/views/visite_list_by_status.dart';
 import '../../visites/services/reception_services.dart';
 
@@ -47,7 +44,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       accessToken = pref.getString("accessToken") ?? "";
       final visites = await ReceptionServices().fetchVisitesWithVehicle();
       final statPro = await ReceptionServices().fetchVisitesWithVehicleStatus(
-          "accli"
+        "accli",
       );
       setState(() {
         _visites = visites;
@@ -64,103 +61,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
         );
         _isLoading = false;
       });
-    } catch (e, stack) {
+    } catch (e) {
       // Affiche une erreur (ex: snackbar) ou log
-      print("Erreur lors du chargement des visites: $e");
-      print(stack);
       setState(() {
         _visites = [];
         _isLoading = false;
+        throw ("Erreur lors du chargement des visites: $e");
       });
     }
   }
-
-  Widget _buildSearchBar(BuildContext context) {
-    final appColors = Provider.of<AppAdaptiveColors>(context);
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Immatriculation du véhicule',
-          prefixIcon: Icon(Icons.search, color: appColors.primary),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Colors.grey),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEntryBanner(BuildContext context) {
-    final appColors = Provider.of<AppAdaptiveColors>(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Text(
-            "Véhicules entrés depuis le",
-            style: AppStyles.titleLarge(context),
-          ),
-          const Spacer(),
-          Text(
-            "01/01/2025",
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: appColors.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /*
-  Widget _buildStatusCardWithImage(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              VisiteListByStatus(contextParent: widget.context, status: "adia"),
-        ),
-      ),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                "https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0011_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024",
-                height: 60,
-                width: 60,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                AppLocalizations.of(context).waitingDiagnotics,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-            ),
-            Text(
-              statVD['total'].toString(),
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-*/
 
   Widget _buildStatusGrid(BuildContext context, List<Visite> visites) {
     final proformaClient = Visite.getVehicleStatsByStatus(

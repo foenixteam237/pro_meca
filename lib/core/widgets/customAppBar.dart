@@ -44,10 +44,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     // Tailles responsive
     final horizontalPadding = screenWidth * 0.03; // 3% de la largeur d'écran
     final fontSizeRole = screenWidth * 0.03; // 3% de la largeur
-    final avatarRadius = max(
-      20,
-      min(30, screenWidth * 0.045),
-    ); // Entre 20 et 30
+    final avatarRadius = max(20, min(30, screenWidth * 0.25)); // Entre 20 et 30
     final fontSizeName = max(14, min(16, screenWidth * 0.04)); // Entre 14 et 18
 
     return AppBar(

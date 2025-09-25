@@ -92,6 +92,11 @@ class Visite {
     );
   }
 
+  static List<Visite> filterVisitesByStatus(List<Visite> visites, String targetStatus) {
+    return visites.where((visite) => visite.status == targetStatus).toList();
+  }
+
+
   Map<String, dynamic> toJson() {
     DateTime nowUtc = dateEntree;
     DateTime camerounDate = nowUtc.add(const Duration(hours: 1)); // GMT+1
@@ -136,6 +141,7 @@ class Visite {
 
     return {'today': todayCount, 'month': monthCount, 'total': totalCount};
   }
+
 }
 
 /// Classe représentant les éléments à bord d'une voiture lors d'une visite.

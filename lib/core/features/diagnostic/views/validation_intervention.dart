@@ -141,6 +141,7 @@ class _ValidationInterventionScreenState
           duration: Duration(seconds: 2),
         ),
       );
+      Navigator.pop(context);
     }
   }
 

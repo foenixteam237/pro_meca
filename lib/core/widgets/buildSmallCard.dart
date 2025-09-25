@@ -6,13 +6,13 @@ import '../constants/app_styles.dart';
 import '../utils/responsive.dart';
 
 Widget buildSmallCard(
-    BuildContext context, {
-      required IconData icon,
-      required String title,
-      required int today,
-      required int month,
-      required int total,
-    }) {
+  BuildContext context, {
+  required IconData icon,
+  required String title,
+  required int today,
+  required int month,
+  required int total,
+}) {
   final appColors = Provider.of<AppAdaptiveColors>(context);
   final height = MediaQuery.of(context).size.height;
   return Container(
@@ -75,14 +75,21 @@ Widget buildSmallCard(
           ),
             */
         // Compteur "Total" avec animation plus visible
-
-         SizedBox(height: height <= 600 ? height * 0.01 : 10),
+        SizedBox(height: height <= 600 ? height * 0.01 : height * 0.03),
         Expanded(
           child: _buildAnimatedCounterRow(
             label: "Total",
             value: total,
-            textStyle: height<= 600 ? AppStyles.titleMedium(context).copyWith(fontSize: height * 0.02) : AppStyles.titleMedium(context).copyWith(fontSize: height * 0.03),
-            valueStyle: height <= 600 ? AppStyles.titleMedium(context) : AppStyles.titleMedium(context).copyWith(fontSize: 14),
+            textStyle: height <= 600
+                ? AppStyles.titleMedium(
+                    context,
+                  ).copyWith(fontSize: height * 0.02)
+                : AppStyles.titleMedium(
+                    context,
+                  ).copyWith(fontSize: height * 0.03),
+            valueStyle: height <= 600
+                ? AppStyles.titleMedium(context)
+                : AppStyles.titleMedium(context).copyWith(fontSize: 24),
             duration: const Duration(milliseconds: 1500),
           ),
         ),

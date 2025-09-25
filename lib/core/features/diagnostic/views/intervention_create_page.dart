@@ -251,9 +251,9 @@ class _InterventionFormState extends State<InterventionForm> {
     return {
       "title": _titleController.text,
       "typeName": selectedInterventionTypeName,
-      "subType": showOtherTypeField
+      "subTypeId": showOtherTypeField
           ? _otherTypeController.text
-          : selectedSubTypeName,
+          : selectedSubTypeId,
       "dateDebut": DateTime.parse(
         formatedDate(DateTime.now()),
       ).toIso8601String(),

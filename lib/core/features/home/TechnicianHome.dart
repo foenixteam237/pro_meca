@@ -61,7 +61,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       HomeContent(
         historyList: HistoryList(
           title: AppLocalizations.of(context).ongoingVehicles,
-          visites: _visites,
+          visites: Visite.filterVisitesByStatus(_visites, "ENCOURS"),
           contextParent: context,
           isLoading: _isLoading,
           accessToken: accessToken,
@@ -69,7 +69,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         onRefresh: () => _loadData(),
         context: context,
       ),
-      CategoriesPage(parentContext: context),
+      //CategoriesPage(parentContext: context),
       VehicleDashboardPage(context: context),
       ProfileScreen(con: context),
     ];
@@ -85,12 +85,12 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
         activeColorPrimary: AppColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
-      PersistentBottomNavBarItem(
+      /* PersistentBottomNavBarItem(
         icon: const Icon(Icons.build),
         title: l10n.parts,
         activeColorPrimary: AppColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
-      ),
+      ),*/
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.dashboard),
         title: l10n.dashboard,

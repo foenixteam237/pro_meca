@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
-import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -226,6 +225,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     );
   }
 
+  /*
   Widget _buildProblemReportedSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +243,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       ],
     );
   }
-
+*/
   Widget _buildDiagnosticsSection(BuildContext context) {
     final appColor = Provider.of<AppAdaptiveColors>(context);
     return Column(
@@ -405,7 +405,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
     );
   }
 
-  Widget _buildMultilineInput({
+  /* Widget _buildMultilineInput({
     required String hint,
     required TextEditingController controller,
     bool readOnly = false,
@@ -438,6 +438,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
       ),
     );
   }
+*/
 }
 
 // Nouvelle classe pour représenter une entrée de diagnostic
