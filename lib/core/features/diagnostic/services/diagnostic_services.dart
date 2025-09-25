@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/diagnostic_update.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/models/type_intervention.dart';
@@ -180,6 +182,57 @@ class DiagnosticServices {
     } catch (e) {
       print('Erreur lors de la mise à jour: $e');
 
+      return false;
+    }
+  }
+
+  Future<bool> createReport({
+    required Map<String, dynamic> report,
+    required BuildContext context,
+  }) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.post(
+          '/reports/create',
+          data: jsonEncode(report),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (kDebugMode) {
+          print(
+            'Rapport créé avec succès pour l\'intervention $report[\'interventionId\']',
+          );
+        }
+        return true;
+      } else {
+        if (kDebugMode) {
+          print(
+            'Échec de la création du rapport: ${response.statusCode} - ${response.data}',
+          );
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Erreur lors de la création du rapport: ${response.statusCode}",
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erreur lors de la création du rapport: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Erreur lors de la création du rapport: ${e.toString()}",
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
       return false;
     }
   }

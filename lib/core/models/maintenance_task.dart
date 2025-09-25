@@ -50,12 +50,11 @@ class MaintenanceTask {
   });
 
   factory MaintenanceTask.fromJson(Map<String, dynamic> json) {
-    print(json['mainOeuvre']);
     return MaintenanceTask(
       id: json['id'] ?? "",
       title: json['title'],
       typeName: json['typeName'],
-      subType: json['subType'],
+      subType: json['subTypeId'],
       hasBeenOrdered: json['hasBeenOrdered'] ?? false,
       reference: json['reference'].toString(),
       status: json['status'].toString(),
@@ -92,7 +91,7 @@ class MaintenanceTask {
       id: json['id'] ?? "",
       title: json['title'],
       typeName: json['typeName'].toString(),
-      subType: json['subType'].toString(),
+      subType: json['subTypeId'].toString(),
       hasBeenOrdered: json['hasBeenOrdered'] ?? false,
       reference: json['reference'].toString(),
       status: json['status'].toString(),

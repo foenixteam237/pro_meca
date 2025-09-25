@@ -110,13 +110,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void _navigateToTechHome() {
-    if(_isAdmin){
+    if (_isAdmin) {
       Navigator.pushReplacementNamed(context, '/admin_home');
       return;
-    }else{
+    } else {
       Navigator.pushReplacementNamed(context, '/technician_home');
     }
-
   }
 
   @override
@@ -138,7 +137,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       width: Responsive.responsiveValue(
                         context,
                         mobile: MediaQuery.of(context).size.width * 0.3,
-                        tablet: MediaQuery.of(context).size.width * 0.04,
+                        tablet: MediaQuery.of(context).size.width * 0.2,
+                      ),
+                      height: Responsive.responsiveValue(
+                        context,
+                        mobile: MediaQuery.of(context).size.width * 0.4,
+                        tablet: MediaQuery.of(context).size.width * 0.1,
                       ),
                       fit: BoxFit.contain,
                     ),
@@ -150,7 +154,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       width: Responsive.responsiveValue(
                         context,
                         mobile: MediaQuery.of(context).size.width * 0.6,
-                        tablet: MediaQuery.of(context).size.width * 0.8,
+                        tablet: MediaQuery.of(context).size.width * 0.4,
+                      ),
+                      height: Responsive.responsiveValue(
+                        context,
+                        mobile: MediaQuery.of(context).size.width * 0.6,
+                        tablet: MediaQuery.of(context).size.width * 0.4,
                       ),
                       fit: BoxFit.contain,
                     ),

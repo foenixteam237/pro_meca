@@ -5,6 +5,8 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/build_piece_item.dart';
+
 class InterventionDetailPage extends StatelessWidget {
   final MaintenanceTask main;
   const InterventionDetailPage({super.key, required this.main});
@@ -12,7 +14,6 @@ class InterventionDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
-    print(main.pieces);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: appColors.primary,
@@ -47,7 +48,7 @@ class InterventionDetailPage extends StatelessWidget {
             _showTerminerDialog(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
+            backgroundColor: appColors.primary,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
@@ -128,7 +129,10 @@ class InterventionDetailPage extends StatelessWidget {
         Text(label, style: AppStyles.titleMedium(context)),
         Text(
           value,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          style: AppStyles.titleMedium(context).copyWith(
+            fontSize: 14,
+            overflow: TextOverflow.ellipsis
+          ),
         ),
       ],
     );
@@ -157,41 +161,23 @@ class InterventionDetailPage extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          ...main.pieces!.map((piece) => _buildPieceItem(piece)),
+          if (main.pieces!.isEmpty)
+            const SizedBox(
+              height: 200, // Hauteur fixe au lieu d'Expanded
+              child: Center(
+                child: Text(
+                  "Aucune pièce trouvée",
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            )
+          else
+            ...main.pieces!.map((piece) => buildPieceItems(piece, context)),
         ],
       ),
     );
   }
 
-  Widget _buildPieceItem(Piece piece) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  piece.name ?? 'Nom de la pièce',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  // ignore: unnecessary_null_comparison
-                  'Quantité: ${piece.quantity != null ? piece.quantity.toStringAsFixed(2) : 'N/A'}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Color _getPriorityColor(int priorite) {
     switch (priorite) {
@@ -271,29 +257,27 @@ class InterventionDetailPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Terminer l\'intervention'),
+          title: const Text('Terminer l\'intervention', textAlign: TextAlign.center,),
           content: const Text(
             'Êtes-vous sûr de vouloir marquer cette intervention comme terminée ?',
+            textAlign: TextAlign.center,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Annuler'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Logique pour terminer l'intervention
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Intervention marquée comme terminée'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text('Confirmer'),
-            ),
+            TextButton(onPressed: (){
+              Navigator.of(context).pop();
+              // Logique pour terminer l'intervention
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Intervention marquée comme terminée'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }, child: const Text("Confirmer"))
+
           ],
         );
       },

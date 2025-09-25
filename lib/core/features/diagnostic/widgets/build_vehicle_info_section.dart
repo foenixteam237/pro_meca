@@ -30,11 +30,11 @@ Widget buildVehicleInfoSection(
             children: [
               Text(
                 "${l10n.immatVehicule}: ${visite.vehicle!.licensePlate}",
-                style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
+                style: AppStyles.titleMedium(context).copyWith(fontSize: 14),
               ),
               Text(
                 "Entrée: ${DateFormat.yMMMd().format(visite.dateEntree)}",
-                style: AppStyles.titleMedium(context).copyWith(fontSize: 10),
+                style: AppStyles.titleMedium(context).copyWith(fontSize: 12),
               ),
             ],
           ),
@@ -42,7 +42,7 @@ Widget buildVehicleInfoSection(
       ),
       Text(
         "${visite.vehicle!.client!.firstName} ${visite.vehicle!.client!.lastName}",
-        style: AppStyles.bodyMedium(context).copyWith(fontSize: 12),
+        style: AppStyles.bodyMedium(context).copyWith(fontSize: 14),
       ),
     ],
   );

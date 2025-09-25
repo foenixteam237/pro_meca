@@ -38,9 +38,39 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
     try {
       final pref = await SharedPreferences.getInstance();
       accessToken = pref.getString("accessToken") ?? "";
-      final visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
-        widget.status,
-      );
+      final isAdmin = pref.getBool("isAdmin") ?? false;
+      late final List<Visite> visites;
+
+      if (isAdmin) {
+        visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
+          widget.status,
+        );
+      } else {
+        switch (widget.status) {
+          case "aint":
+            visites = await ReceptionServices()
+                .fetchVisitesWithVehicleStatusAndUser("aint");
+            break;
+          case "avdia":
+            visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
+              widget.status,
+            );
+            break;
+          case "avin":
+            visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
+              widget.status,
+            );
+            break;
+          case "term":
+            visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
+              widget.status,
+            );
+            break;
+          default:
+            visites = await ReceptionServices()
+                .fetchVisitesWithVehicleStatusAndUser(widget.status);
+        }
+      }
       setState(() {
         _visites = visites;
         _isLoading = false;

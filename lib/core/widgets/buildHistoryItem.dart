@@ -20,7 +20,7 @@ Widget buildHistoryItem(
   final screenWidth = MediaQuery.of(context).size.width;
   return GestureDetector(
     onTap: () {
-      _showNextPage(visite, context, accessToken);
+      _showNextPageOther(visite, context, accessToken);
     },
     child: Container(
       width: double.infinity,
@@ -157,23 +157,30 @@ void _showNextPage(
       ),
     );
   } else if (visite.intervention!.isNotEmpty && isAdmin) {
+    /*Condition à poser sur les intervention à valider
+    visite.intervention?.map((e){
+      switch(e.status)
+    });*/
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ValidationInterventionScreen(
+          visiteId: visite.id,
+          isAdmin: isAdmin,
+          accessToken: accessToken,
+          visite: visite,
+        ),
+      ),
+    );
+  } else if (visite.intervention!.isNotEmpty && isAdmin == false) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
-            ValidationInterventionScreen(visiteId: visite.id, isAdmin: isAdmin, accessToken: accessToken, visite: visite,),
+            InterventionPage(visite: visite, accessToken: accessToken),
       ),
     );
-  } else if(visite.intervention!.isNotEmpty && isAdmin == false){
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            InterventionPage(),
-      ),
-    );
-  }
-  else {
+  } else {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Aucune action disponible pour cette visite.")),
     );
@@ -197,4 +204,199 @@ Color _visitColor(String status) {
     default:
       return Colors.blueAccent;
   }
+}
+
+// Enum for intervention statuses
+enum InterventionStatus {
+  attenteCommandeClient("ATTENTE_COMMANDE_CLIENT"),
+  attenteIntervention("ATTENTE_INTERVENTION"),
+  ongoing("ONGOING"),
+  attentePiece("ATTENTE_PIECE"),
+  attenteMateriel("ATTENTE_MATERIEL"),
+  attenteMaterielExterne("ATTENTE_MATERIEL_EXTERNE"),
+  attenteValidationIntervention("ATTENTE_VALIDATION_INTERVENTION"),
+  validated("VALIDATED"),
+  cancelled("CANCELLED");
+
+  final String value;
+  const InterventionStatus(this.value);
+}
+
+void _showNextPageOther(
+  Visite visite,
+  BuildContext context,
+  String accessToken,
+) async {
+  // Fetch isAdmin from SharedPreferences
+  bool isAdmin = await SharedPreferences.getInstance().then(
+    (prefs) => prefs.getBool('isAdmin') ?? false,
+  );
+
+  // Safely check diagnostics and interventions
+  final hasDiagnostics = visite.diagnostics?.isNotEmpty ?? false;
+  final interventions = visite.intervention ?? [];
+  final hasInterventions = interventions.isNotEmpty;
+
+  // Helper to map string status to InterventionStatus
+  InterventionStatus getInterventionStatus(String status) {
+    return InterventionStatus.values.firstWhere(
+      (e) => e.value == status,
+      orElse: () => InterventionStatus
+          .cancelled, // Default to CANCELLED for unknown statuses
+    );
+  }
+
+  // Helper to assign priority to statuses (lower number = higher priority)
+  int statusPriority(InterventionStatus status) {
+    switch (status) {
+      case InterventionStatus.attenteCommandeClient:
+        return 1;
+      case InterventionStatus.attenteIntervention:
+        return 2;
+      case InterventionStatus.ongoing:
+        return 3;
+      case InterventionStatus.attentePiece:
+        return 4;
+      case InterventionStatus.attenteMateriel:
+        return 5;
+      case InterventionStatus.attenteMaterielExterne:
+        return 6;
+      case InterventionStatus.attenteValidationIntervention:
+        return 7;
+      case InterventionStatus.validated:
+        return 8;
+      case InterventionStatus.cancelled:
+        return 9;
+    }
+  }
+
+  // Determine navigation based on state and status
+  void navigateBasedOnStatus() {
+    if (!hasInterventions && hasDiagnostics && isAdmin) {
+      // Case 1: Diagnostics exist, no interventions, admin -> ValidationDiagnosticScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ValidationDiagnosticScreen(
+            idVisite: visite.id,
+            visite: visite,
+            accessToken: accessToken,
+          ),
+        ),
+      );
+      return;
+    } else if (!hasDiagnostics) {
+      // Case 2: No diagnostics -> DiagnosticPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DiagnosticPage(
+            idVisite: visite.id,
+            visite: visite,
+            accessToken: accessToken,
+          ),
+        ),
+      );
+      return;
+    } else if (hasInterventions) {
+      // Case 3: Interventions exist, determine dominant status
+      InterventionStatus? dominantStatus;
+      for (var intervention in interventions) {
+        final status = getInterventionStatus(intervention.status ?? "");
+        if (dominantStatus == null ||
+            statusPriority(status) < statusPriority(dominantStatus)) {
+          dominantStatus = status;
+        }
+      }
+
+      if (isAdmin) {
+        // Admins: Navigate based on dominant status
+        switch (dominantStatus) {
+          case InterventionStatus.attenteValidationIntervention:
+            // Navigate to ValidationInterventionScreen for validation
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ValidationInterventionScreen(
+                  visiteId: visite.id,
+                  isAdmin: isAdmin,
+                  accessToken: accessToken,
+                  visite: visite,
+                ),
+              ),
+            );
+            break;
+          case InterventionStatus.validated:
+          case InterventionStatus.cancelled:
+            // No action needed for validated or cancelled interventions
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Pas de validation nécessaire pour cette intervention.",
+                ),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            break;
+          default:
+            // Other statuses (e.g., ATTENTE_COMMANDE_CLIENT, ATTENTE_INTERVENTION)
+            // may not require admin validation
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Pas d'action disponible pour cette intervention.",
+                ),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+        }
+      } else {
+        // Non-admins: Navigate to InterventionPage for actionable statuses
+        switch (dominantStatus) {
+          case InterventionStatus.attenteIntervention:
+          case InterventionStatus.ongoing:
+          case InterventionStatus.attentePiece:
+          case InterventionStatus.attenteMateriel:
+          case InterventionStatus.attenteMaterielExterne:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    InterventionPage(visite: visite, accessToken: accessToken),
+              ),
+            );
+            break;
+          case InterventionStatus.attenteCommandeClient:
+          case InterventionStatus.attenteValidationIntervention:
+          case InterventionStatus.validated:
+          case InterventionStatus.cancelled:
+            // Non-admins can't act on these statuses
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Pas d'action disponible pour cette intervention.",
+                ),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            break;
+          case null:
+            // TODO: Handle this case.
+            throw UnimplementedError();
+        }
+      }
+      return;
+    }
+
+    // Fallback: No actionable state
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Pas d'action disponible pour cette visite."),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // Execute navigation
+  navigateBasedOnStatus();
 }
