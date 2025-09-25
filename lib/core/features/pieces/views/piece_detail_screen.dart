@@ -63,7 +63,7 @@ class _PieceDetailScreenState extends State<PieceDetailScreen>
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Erreur: $e")));
+      ).showSnackBar(SnackBar(content: Text("Echec mise à jour quantité")));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -79,7 +79,7 @@ class _PieceDetailScreenState extends State<PieceDetailScreen>
         context,
       );
     } catch (e) {
-      print("Erreur mise à jour: $e");
+      debugPrint("Erreur mise à jour: $e");
       return false;
     }
   }
@@ -90,13 +90,13 @@ class _PieceDetailScreenState extends State<PieceDetailScreen>
       appBar: AppBar(
         title: Text('Détails de la pièce'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              _tabController.animateTo(1); // Basculer vers l'onglet d'édition
-            },
-            tooltip: 'Modifier tous les champs',
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.edit),
+          //   onPressed: () {
+          //     _tabController.animateTo(1); // Basculer vers l'onglet d'édition
+          //   },
+          //   tooltip: 'Modifier tous les champs',
+          // ),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -220,13 +220,13 @@ class _PieceDetailScreenState extends State<PieceDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Gestion du stock',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
+            // Text(
+            //   'Gestion du stock',
+            //   style: Theme.of(
+            //     context,
+            //   ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            // ),
+            // SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -374,7 +374,7 @@ class _PieceDetailScreenState extends State<PieceDetailScreen>
               '${widget.piece.sellingPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA',
             ),
             _buildInfoRow(
-              'Localisation',
+              'Emplacement',
               widget.piece.location ?? 'Non spécifiée',
             ),
             if (widget.piece.purchaseDate != null)
