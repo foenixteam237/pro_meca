@@ -7,81 +7,65 @@ class UserListShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final itemCount = 8;
 
     return Shimmer.fromColors(
       baseColor: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
       highlightColor: isDarkMode ? Colors.grey[700]! : Colors.grey[100]!,
-      period: const Duration(milliseconds: 1500),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(8),
-        itemCount: itemCount,
-        separatorBuilder: (_, __) => Divider(
-          color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-          height: 1,
-        ),
+      child: ListView.builder(
+        itemCount: 6,
         itemBuilder: (context, index) {
-          return ListTile(
-            leading: _ShimmerBox(
-              width: 48,
-              height: 48,
-              shape: BoxShape.circle,
-              isDarkMode: isDarkMode,
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[800] : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            title: Align(
-              alignment: Alignment.centerLeft,
-              child: _ShimmerBox(
-                width: 120,
-                height: 14,
-                isDarkMode: isDarkMode,
-              ),
-            ),
-            subtitle: Align(
-              alignment: Alignment.centerLeft,
-              child: _ShimmerBox(
-                width: 80,
-                height: 12,
-                isDarkMode: isDarkMode,
-              ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 16,
+                        color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 100,
+                        height: 12,
+                        color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 30,
+                  height: 30,
+                  color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                ),
+              ],
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _ShimmerBox extends StatelessWidget {
-  final double width;
-  final double height;
-  final BoxShape shape;
-  final bool isDarkMode;
-
-  const _ShimmerBox({
-    required this.width,
-    required this.height,
-    this.shape = BoxShape.rectangle,
-    required this.isDarkMode,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.grey[300],
-        shape: shape,
-        borderRadius: shape == BoxShape.rectangle
-            ? BorderRadius.circular(4)
-            : null,
-        boxShadow: [
-          if (isDarkMode)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 2,
-            ),
-        ],
       ),
     );
   }

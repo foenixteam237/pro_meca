@@ -292,7 +292,7 @@ class _InterventionFormState extends State<InterventionForm> {
         nameColor: appColors.primary,
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: appColors.primary,))
+          ? Center(child: CircularProgressIndicator(color: appColors.primary))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -582,7 +582,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildInterventionTypeDropdown() {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -630,7 +630,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildSubTypeDropdown() {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -697,7 +697,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildAssigneeDropdown() {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -734,9 +734,11 @@ class _InterventionFormState extends State<InterventionForm> {
                   email: '',
                   phone: '',
                   isCompanyAdmin: false,
+                  isVerified: false,
+                  isActive: false,
                   createdAt: '',
                   updatedAt: '',
-                  role: Role(id: 2, name: "name", companyId: "companyId"),
+                  role: Role(name: "technicien", companyId: "companyId"),
                 ),
               );
 
@@ -752,7 +754,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildPriorityDropdown() {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -792,7 +794,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildPartItem(String name, String price, int qte, int index) {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       padding: EdgeInsets.all(12),
@@ -858,7 +860,7 @@ class _InterventionFormState extends State<InterventionForm> {
   }
 
   Widget _buildPriceRow(String label, String amount, {bool isTotal = false}) {
-    final appColors =  Provider.of<AppAdaptiveColors>(context);
+    final appColors = Provider.of<AppAdaptiveColors>(context);
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../services/dio_api_services.dart';
@@ -21,7 +22,8 @@ class UserService {
 
   Future<User> updateUserProfile(
     String userId,
-    Map<String, dynamic> data,
+    // Map<String, dynamic> data,
+    FormData data,
     bool isAdmin,
   ) async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,7 +38,8 @@ class UserService {
         response = await ApiDioService().authenticatedRequest(
           () => _dio.put(
             '/auth/$userId',
-            data: json.encode(data),
+            // data: json.encode(data),
+            data: data,
             options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
           ),
         );
@@ -44,7 +47,8 @@ class UserService {
         response = await ApiDioService().authenticatedRequest(
           () => _dio.patch(
             '/auth/me',
-            data: json.encode(data),
+            // data: json.encode(data),
+            data: data,
             options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
           ),
         );
@@ -200,7 +204,7 @@ class UserService {
 
   Future<List<User>> getAllUsers() async {
     try {
-      print("On essaie de charger les users");
+      debugPrint("On essaie de charger les users");
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
           '/auth/users',
@@ -209,6 +213,7 @@ class UserService {
       );
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
+        debugPrint("userDown= $response");
         return data.map((json) => User.fromUserJson(json)).toList();
       } else {
         throw Exception('Erreur serveur : ${response.statusCode}');
@@ -339,6 +344,75 @@ class UserService {
     }
   }
 
+  Future<bool> checkEmailExists(String email) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/auth/check-email/$email',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      return response.statusCode == 200 ? response.data['exists'] : false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> checkPhoneExists(String phone) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/auth/check-phone/$phone',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      return response.statusCode == 200 ? response.data['exists'] : false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<User> updateUser(String userId, FormData formData) async {
+    try {
+      print('🔄 Mise à jour de l\'utilisateur $userId');
+
+      final response = await ApiDioService().authenticatedRequest(
+        () async => _dio.put(
+          '/auth/$userId',
+          data: formData,
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Utilisateur mis à jour avec succès');
+        return User.fromUserJson(response.data['data']);
+      } else {
+        throw Exception(
+          'Erreur lors de la mise à jour: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      print('❌ Erreur mise à jour utilisateur: $e');
+      throw Exception('Erreur mise à jour utilisateur');
+    }
+  }
+
+  Future<bool> toggleUserStatus(String userId, bool isActive) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => _dio.patch(
+          '/auth/$userId/status',
+          data: {'isActive': isActive},
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Erreur: ${e.toString()}');
+    }
+  }
+
   Exception _handleDioError(DioException e) {
     if (e.response != null) {
       final errorMsg = e.response?.data['message'] ?? 'Erreur inconnue';
@@ -349,6 +423,8 @@ class UserService {
 
   Future<bool> deleteUser(String id) async {
     try {
+      print('🗑️ Suppression de l\'utilisateur $id');
+
       final response = await ApiDioService().authenticatedRequest(
         () async => _dio.delete(
           '/auth/$id',
@@ -356,9 +432,10 @@ class UserService {
         ),
       );
 
-      return response.statusCode == 204;
+      return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      throw Exception('Erreur inattendue : $e');
+      print('❌ Erreur suppression utilisateur: $e');
+      throw Exception('Erreur inattendue : utilisateur NON supprimé');
     }
   }
 }

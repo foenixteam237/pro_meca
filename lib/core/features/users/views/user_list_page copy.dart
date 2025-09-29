@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
+import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/core/features/users/services/users_services.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:provider/provider.dart';
@@ -34,8 +35,8 @@ class _UserListScreenState extends State<UserListScreen> {
   }
 
   Future<void> _handleRefresh() async {
-    await _fetchUsers();
-    _filterUsers();
+    await _fetchUsers(); // Recharge les données
+    _filterUsers(); // Réapplique les filtres
   }
 
   Future<void> _initData() async {
@@ -61,17 +62,14 @@ class _UserListScreenState extends State<UserListScreen> {
   }
 
   Future<void> _fetchUsers() async {
-    if (mounted) setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
     try {
       users = await UserService().getAllUsers();
       filteredUsers = List.from(users);
     } catch (e) {
       debugPrint("Erreur: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur lors du chargement: $e')));
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
     }
   }
 
@@ -97,7 +95,7 @@ class _UserListScreenState extends State<UserListScreen> {
               ),
               ...roles.map(
                 (role) => ListTile(
-                  leading: const Icon(Icons.person),
+                  leading: Icon(Icons.person),
                   title: Text(role),
                   selected: role == _selectedRole,
                   onTap: () {
@@ -161,21 +159,13 @@ class _UserListScreenState extends State<UserListScreen> {
     );
   }
 
-  Future<void> _editUser(User user) async {
-    final result = await Navigator.push(
+  void _editUser(User user) {
+    Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddUserScreen(
-          user: user,
-          isEditing: true,
-          accessToken: _accessToken,
-        ),
+        builder: (context) => AddUserScreen(user: user, isEditing: true),
       ),
-    );
-
-    if (result == true && mounted) {
-      await _handleRefresh();
-    }
+    ).then((_) => _handleRefresh());
   }
 
   Future<void> _toggleUserStatus(User user) async {
@@ -196,9 +186,9 @@ class _UserListScreenState extends State<UserListScreen> {
       }
     } catch (e) {
       debugPrint('Erreur de changement de statut utilisateur: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de changement de statut utilisateur')),
+      );
     }
   }
 
@@ -216,29 +206,13 @@ class _UserListScreenState extends State<UserListScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              _deleteUser(user);
+              // _deleteUser(user);
             },
             child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _deleteUser(User user) async {
-    try {
-      final success = await UserService().deleteUser(user.id);
-      if (success) {
-        await _handleRefresh();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${user.name} supprimé avec succès')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur suppression: ${e.toString()}')),
-      );
-    }
   }
 
   @override
@@ -316,9 +290,13 @@ class _UserListScreenState extends State<UserListScreen> {
                       style: AppStyles.titleMedium(context),
                     ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         IconButton(
-                          onPressed: () => _showRoleFilter(context),
+                          onPressed: () {
+                            _showRoleFilter(context);
+                          },
                           icon: Icon(
                             Icons.filter_list,
                             color: appColors.primary,
@@ -330,14 +308,9 @@ class _UserListScreenState extends State<UserListScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    AddUserScreen(accessToken: _accessToken),
+                                builder: (context) => const AddUserScreen(),
                               ),
-                            ).then((value) {
-                              if (value == true) {
-                                _handleRefresh();
-                              }
-                            });
+                            );
                           },
                           icon: Icon(
                             Icons.add_circle,
@@ -357,7 +330,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     desktop: height * 0.03,
                   ),
                 ),
-                // 👤 Liste des utilisateurs
+                // 👤 Liste des utilisateurs ou shimmer
                 Expanded(
                   child: _isLoading
                       ? const UserListShimmer()
@@ -371,12 +344,9 @@ class _UserListScreenState extends State<UserListScreen> {
                           ),
                           itemBuilder: (context, index) {
                             final user = filteredUsers[index];
-                            final phoneNumber = user.phone.contains('_')
-                                ? user.phone.split('_').last
-                                : user.phone;
 
                             return Dismissible(
-                              key: ValueKey('${user.id}-$index'),
+                              key: ValueKey(user.id),
                               direction: DismissDirection.endToStart,
                               background: Container(
                                 color: Colors.red,
@@ -415,7 +385,40 @@ class _UserListScreenState extends State<UserListScreen> {
                                   ),
                                 );
                               },
-                              onDismissed: (direction) => _deleteUser(user),
+                              onDismissed: (direction) async {
+                                try {
+                                  bool delete = await UserService().deleteUser(
+                                    user.id,
+                                  );
+                                  if (delete) {
+                                    setState(() {
+                                      users.removeWhere((u) => u.id == user.id);
+                                      filteredUsers.removeAt(index);
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Erreur suppression: ${user.id}",
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Erreur de suppression ${user.name}",
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Erreur suppression: $e"),
+                                    ),
+                                  );
+                                }
+                              },
                               child: ListTile(
                                 leading: buildImage(
                                   user.logo,
@@ -429,29 +432,22 @@ class _UserListScreenState extends State<UserListScreen> {
                                     color: appColors.customText(context),
                                   ),
                                 ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user.role.name.toUpperCase(),
-                                      style: AppStyles.bodySmall(context)
-                                          .copyWith(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w100,
-                                          ),
-                                    ),
-                                    if (phoneNumber.isNotEmpty)
-                                      Text(
-                                        phoneNumber,
-                                        style: AppStyles.bodySmall(
-                                          context,
-                                        ).copyWith(fontSize: 10),
-                                      ),
-                                  ],
+                                subtitle: Text(
+                                  user.role.name.toUpperCase(),
+                                  style: AppStyles.bodySmall(context).copyWith(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w100,
+                                  ),
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 0,
                                 ),
+                                // onTap: () {
+                                //   Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(builder: (context) => ProfileScreen(con: context, member: user)),
+                                //   );
+                                // },
                                 onTap: () => _showUserActions(context, user),
                                 trailing: IconButton(
                                   icon: Icon(

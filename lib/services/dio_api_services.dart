@@ -48,7 +48,9 @@ class ApiDioService {
             refreshToken: responseData['refreshToken'],
             refreshExpiresAt: responseData['refreshExpiresAt'],
             expiresAt: responseData['expiresAt'],
-            user: User.fromJson(responseData['user']),
+            user: User.fromJson(
+              responseData['user'],
+            ), //TODO: A vérifier si nécessaire car la route /auth/refrash ne re,voie actuellement que accessToken et expiresAt
             rememberMe: prefs.getBool('remember_me') ?? false,
           );
           return true;

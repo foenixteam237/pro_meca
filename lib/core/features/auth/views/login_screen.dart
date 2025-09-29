@@ -44,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen>
     if (dotenv.env["FLUTTER_ENV"] == "dev") {
       _phoneController.text = dotenv.env["TECHNICIAN_NUMBER"] ?? "";
       _emailController.text = dotenv.env["TECHNICIAN_EMAIL"] ?? "";
+      _passwordController.text = dotenv.env["PASSWORD"] ?? "";
     }
 
     _loadCheckboxState();
@@ -184,7 +185,6 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
       return;
     }
-
     User user = User.fromJson(response['data']['user']);
     _redirectUserBasedOnRole(user);
     setState(() => _isLoading = false);
@@ -573,6 +573,16 @@ class _LoginScreenState extends State<LoginScreen>
                     }
                   });
                 },
+                dialogBackgroundColor: Colors.transparent,
+                boxDecoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      // color: Colors.black.withOpacity(0.1),
+                      blurRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
               ),
             ),
             SizedBox(width: 10),

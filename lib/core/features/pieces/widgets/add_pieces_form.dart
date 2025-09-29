@@ -148,7 +148,7 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
 
   void _parseAndSetPhoneNumber(String phone) {
     if (phone.startsWith('+')) {
-      final parts = phone.split(' ');
+      final parts = phone.split('_');
       if (parts.isNotEmpty) {
         _selectedCountryCode = parts[0];
         _phoneCtrl.text = parts.length > 1
@@ -158,7 +158,7 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
         _phoneCtrl.text = phone;
       }
     } else {
-      _phoneCtrl.text = phone;
+      _phoneCtrl.text = phone.contains("_") ? phone.split('_')[1] : phone;
     }
   }
 
@@ -338,22 +338,36 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
   Widget _buildPhoneInput() {
     return Row(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey),
-          ),
-          child: CountryCodePicker(
-            initialSelection: 'CM',
-            favorite: ['CM', 'TD', 'CE'],
-            onChanged: (country) {
-              setState(() {
-                _selectedCountryCode = country.dialCode!;
-                _selectedCountryIso = country.code!.toLowerCase();
-                if (_phoneError != null) _phoneError = null;
-              });
-            },
-          ),
+        Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey),
+              ),
+              child: CountryCodePicker(
+                initialSelection: 'CM',
+                favorite: ['CM', 'TD', 'CE'],
+                onChanged: (country) {
+                  setState(() {
+                    _selectedCountryCode = country.dialCode!;
+                    _selectedCountryIso = country.code!.toLowerCase();
+                    if (_phoneError != null) _phoneError = null;
+                  });
+                },
+                dialogBackgroundColor: Colors.transparent,
+                boxDecoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      // color: Colors.black.withOpacity(0.1),
+                      blurRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         SizedBox(width: 10),
         Expanded(
