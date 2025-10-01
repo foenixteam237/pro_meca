@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:pro_meca/core/models/company.dart';
 import 'package:pro_meca/core/models/role.dart';
@@ -187,10 +188,12 @@ class User {
         updatedAt: json['updatedAt']?.toString() ?? '',
         role: Role.fromJson(json['role']),
         lastLogin: json['lastLogin']?.toString(),
-        // formations: json['formations'] != null
-        //     ? List<String>.from(json['formations'])
-        //     : null,
-        // expertise: json['expertise']?.toString(),
+        clientProfile: json['clientProfile'] != null
+            ? ClientProfile.fromJson(json['clientProfile'])
+            : null,
+        technicianProfile: json['technicianProfile'] != null
+            ? TechnicianProfile.fromJson(json['technicianProfile'])
+            : null,
       );
     } catch (e) {
       throw FormatException('Invalid JSON format for User', json);
@@ -223,55 +226,85 @@ class User {
     };
   }
 
-  Future<Map<String, dynamic>> toUserJson(
+  Future<FormData> toUserJson(
     File? logo,
     String? password, {
     String? oldPassword,
   }) async {
-    Map<String, dynamic> data = {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'isCompanyAdmin': isCompanyAdmin,
-      'isVerified': isVerified,
-      'isActive': isActive,
-      'bio': bio,
-      'managerId': managerId,
-      'companyId': companyId,
-      'company': company?.toJson(),
-      'role': role.toRoleJson(companyId!),
-      'roleId': role.id,
-      'lastLogin': lastLogin,
-      //   'formations': formations,
-      //   'expertise': expertise,
-    };
+    final formData = FormData();
+
+    // Ajouter les champs de base
+    formData.fields.addAll([
+      MapEntry('id', id),
+      MapEntry('name', name),
+
+      MapEntry('phone', phone),
+      MapEntry('isCompanyAdmin', isCompanyAdmin.toString()),
+      MapEntry('isVerified', isVerified.toString()),
+      MapEntry('isActive', isActive.toString()),
+      MapEntry('bio', bio ?? ''),
+      MapEntry('managerId', managerId ?? ''),
+      MapEntry('companyId', companyId ?? ''),
+      // MapEntry('lastLogin', lastLogin ?? ''),
+    ]);
+
+    if (email != null && email!.isNotEmpty) {
+      formData.fields.add(MapEntry('email', email!));
+    }
+
+    if (roleId != null) {
+      formData.fields.add(MapEntry('roleId', roleId!.toString()));
+    }
+
+    // Ajouter le rôle (sans jsonEncode supplémentaire)
+    formData.fields.add(
+      MapEntry('role', jsonEncode(role.toRoleJson(companyId!))),
+    );
 
     // Gestion du mot de passe
     if (password != null && password.isNotEmpty) {
-      data['password'] = password;
+      formData.fields.add(MapEntry('password', password));
       if (oldPassword != null) {
-        data['oldPassword'] = oldPassword;
+        formData.fields.add(MapEntry('oldPassword', oldPassword));
       }
     }
 
     // Gestion de l'image
     if (logo != null) {
-      data['logo'] = await MultipartFile.fromFile(logo.path);
+      formData.files.add(
+        MapEntry(
+          'logo',
+          await MultipartFile.fromFile(
+            logo.path,
+            filename: logo.path.split('/').last,
+          ),
+        ),
+      );
     }
 
-    // Gestion du profil technicien si le rôle est technicien
+    // Gestion du profil technicien
     if (role.name.toLowerCase() == 'technicien') {
-      data['technicianProfile'] = {
-        'expertise': technicianProfile?.expertise,
-        'certifications': technicianProfile?.certifications,
-        'availability':
-            technicianProfile?.availability ??
-            'Disponible', // Valeur par défaut
-      };
+      formData.fields.addAll([
+        MapEntry(
+          'technicianProfile[expertise]',
+          technicianProfile?.expertise ?? '',
+        ),
+        MapEntry(
+          'technicianProfile[availability]',
+          technicianProfile?.availability ?? 'Disponible',
+        ),
+      ]);
+
+      if (technicianProfile?.certifications != null) {
+        for (var cert in technicianProfile!.certifications!) {
+          formData.fields.add(
+            MapEntry('technicianProfile[certifications][]', cert),
+          );
+        }
+      }
     }
 
-    return data;
+    return formData;
   }
 }
 

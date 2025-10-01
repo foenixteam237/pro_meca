@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -72,13 +73,12 @@ class UserService {
         Response rep = await ApiDioService().authenticatedRequest(
           () => _dio.get(
             '/auth/me',
-            data: json.encode(data),
+            // data: json.encode(data),
             options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
           ),
         );
 
         if (rep.statusCode == 200) {
-          print(rep.data['user']);
           final updatedUser = User.fromJsonUpdate(rep.data['user']);
 
           final currentUser = await ApiDioService().getSavedUser();
@@ -316,31 +316,36 @@ class UserService {
 
   Future<User> createUser(FormData formData) async {
     try {
-      // final accessToken = (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
-      print(formData.fields);
       final response = await ApiDioService().authenticatedRequest(
-        () async => _dio.post(
+        () async => await _dio.post(
           '/auth/create',
           data: formData,
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
+      debugPrint(response.data.toString());
 
-      if (response.statusCode == 201) {
+      if (ApiDioService.isSuccess(response)) {
         return User.fromUserJson(response.data['data']);
       } else {
         final errorMsg = response.data['message'] ?? 'Erreur inconnue';
         throw Exception('${response.statusCode} - $errorMsg');
       }
     } on DioException catch (e) {
+      debugPrint("Erreur détaillée Dio: ${e}");
+      debugPrint("Type d'erreur: ${e.type}");
+      debugPrint("Message: ${e.message}");
       if (e.response != null) {
+        debugPrint("Status: ${e.response!.statusCode}");
+        debugPrint("Data: ${e.response!.data}");
+        debugPrint("Headers: ${e.response!.headers}");
         final errorMsg = e.response!.data['message'] ?? e.message;
         throw Exception('${e.response!.statusCode} - $errorMsg');
       }
-      _handleDioError(e);
-      throw Exception('Erreur réseau: ${e.toString()}');
+      throw Exception('Erreur réseau: ${e.message}');
     } catch (e) {
-      throw Exception('Erreur: ${e.toString()}');
+      debugPrint("Erreur inconnue: $e");
+      throw Exception('Erreur inconnue: $e');
     }
   }
 
@@ -374,7 +379,9 @@ class UserService {
 
   Future<User> updateUser(String userId, FormData formData) async {
     try {
-      print('🔄 Mise à jour de l\'utilisateur $userId');
+      debugPrint(
+        '🔄 Mise à jour de l\'utilisateur $userId avec les données ${formData.toString()}',
+      );
 
       final response = await ApiDioService().authenticatedRequest(
         () async => _dio.put(
@@ -384,8 +391,8 @@ class UserService {
         ),
       );
 
-      if (response.statusCode == 200) {
-        print('✅ Utilisateur mis à jour avec succès');
+      if (ApiDioService.isSuccess(response)) {
+        debugPrint('✅ Utilisateur mis à jour avec succès');
         return User.fromUserJson(response.data['data']);
       } else {
         throw Exception(
@@ -393,10 +400,110 @@ class UserService {
         );
       }
     } catch (e) {
-      print('❌ Erreur mise à jour utilisateur: $e');
+      debugPrint('❌ Erreur mise à jour utilisateur: $e');
       throw Exception('Erreur mise à jour utilisateur');
     }
   }
+
+  // Future<User> createUser(FormData formData) async {
+  //   try {
+  //     debugPrint('=== DÉBUT CRÉATION UTILISATEUR ===');
+  //     debugPrint('Champs FormData:');
+  //     for (var field in formData.fields) {
+  //       debugPrint('  ${field.key}: ${field.value}');
+  //     }
+  //     debugPrint('Fichiers: ${formData.files.length}');
+
+  //     final dio = Dio(); // Instance Dio directe pour tester
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final accessToken = prefs.getString('accessToken');
+
+  //     debugPrint('Token: ${accessToken != null ? "présent" : "absent"}');
+  //     debugPrint('URL: ${ApiDioService().baseUrl}/auth/create');
+
+  //     final response = await dio.post(
+  //       '${ApiDioService().baseUrl}/auth/create',
+  //       data: formData,
+  //       options: Options(
+  //         headers: {
+  //           'Authorization': 'Bearer $accessToken',
+  //           'Accept': 'application/json',
+  //         },
+  //         contentType: 'multipart/form-data',
+  //         responseType: ResponseType.plain, // Important: voir la réponse brute
+  //         sendTimeout: const Duration(seconds: 30),
+  //         receiveTimeout: const Duration(seconds: 30),
+  //       ),
+  //     );
+
+  //     debugPrint('=== RÉPONSE SERVEUR ===');
+  //     debugPrint('Status: ${response.statusCode}');
+  //     debugPrint('Headers: ${response.headers}');
+  //     debugPrint('Body: ${response.data}');
+  //     debugPrint('Type: ${response.data.runtimeType}');
+
+  //     if (response.statusCode == 201) {
+  //       // Essayer de parser manuellement
+  //       final responseString = response.data.toString();
+  //       if (responseString.isEmpty) {
+  //         throw Exception('Réponse vide du serveur');
+  //       }
+
+  //       try {
+  //         final jsonResponse = json.decode(responseString);
+  //         return User.fromUserJson(jsonResponse['data']);
+  //       } catch (e) {
+  //         debugPrint('Erreur parsing JSON: $e');
+  //         debugPrint('Réponse brute: $responseString');
+  //         throw Exception('Format de réponse invalide: $e');
+  //       }
+  //     } else {
+  //       final errorMsg = response.data?.toString() ?? 'Erreur inconnue';
+  //       throw Exception('${response.statusCode} - $errorMsg');
+  //     }
+  //   } on DioException catch (e) {
+  //     debugPrint("=== ERREUR DIO DÉTAILLÉE ===");
+  //     debugPrint("Type: ${e.type}");
+  //     debugPrint("Message: ${e.message}");
+  //     debugPrint("Error: ${e.error}");
+
+  //     if (e.response != null) {
+  //       debugPrint("Status: ${e.response!.statusCode}");
+  //       debugPrint("Headers: ${e.response!.headers}");
+  //       debugPrint("Data: ${e.response!.data}");
+  //       debugPrint("Data type: ${e.response!.data.runtimeType}");
+
+  //       // Analyser la réponse d'erreur
+  //       if (e.response!.data is String) {
+  //         final errorString = e.response!.data as String;
+  //         debugPrint("Response string: $errorString");
+
+  //         // Vérifier si c'est du HTML ou autre
+  //         if (errorString.contains('<!DOCTYPE') ||
+  //             errorString.contains('<html')) {
+  //           throw Exception(
+  //             'Le serveur a retourné une page HTML au lieu de JSON. Vérifiez l\'URL.',
+  //           );
+  //         }
+  //       }
+
+  //       final errorMsg =
+  //           e.response!.data?['message'] ??
+  //           e.response!.data?.toString() ??
+  //           e.message;
+  //       throw Exception('${e.response!.statusCode} - $errorMsg');
+  //     } else {
+  //       debugPrint("Stacktrace: ${e.stackTrace}");
+  //     }
+
+  //     throw Exception('Erreur réseau: ${e.message}');
+  //   } catch (e) {
+  //     debugPrint("=== ERREUR GÉNÉRIQUE ===");
+  //     debugPrint("Erreur: $e");
+  //     debugPrint("Stacktrace: ${StackTrace.current}");
+  //     throw Exception('Erreur inconnue: $e');
+  //   }
+  // }
 
   Future<bool> toggleUserStatus(String userId, bool isActive) async {
     try {

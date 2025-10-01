@@ -21,7 +21,7 @@ import '../../../widgets/imagePicker.dart';
 import 'password_validator.dart';
 
 class AddUserScreen extends StatefulWidget {
-  final User? user; // Pour la modification
+  final User? user;
   final bool isEditing;
   final String _accessToken;
 
@@ -51,7 +51,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
   File? _selectedImage;
   Role? _roleSelected;
   List<Role> _rolesList = [];
-  List<TextEditingController> _formationControllers = [];
+  final List<TextEditingController> _formationControllers = [];
 
   final _emailFocus = FocusNode();
   final _phoneFocus = FocusNode();
@@ -69,6 +69,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
   bool _obscureConfirmPassword = true;
   bool _isVerified = true;
   bool _isActive = true;
+  bool _deleteLogo = false;
   Map<String, bool> _passwordCriteria = {};
 
   User? _currentUser;
@@ -125,7 +126,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
     _confirmPasswordController = TextEditingController();
 
     // Téléphone
-    if (widget.user?.phone != null && widget.user!.phone!.isNotEmpty) {
+    if (widget.user?.phone != null && widget.user!.phone.isNotEmpty) {
       _parseAndSetPhoneNumber(widget.user!.phone);
     }
 
@@ -184,7 +185,14 @@ class _AddUserScreenState extends State<AddUserScreen> {
       var roles = await UserService().fetchRoles();
 
       var filteredRoles = roles
-          .where((role) => role.name.toLowerCase() != 'admin')
+          .where(
+            (role) =>
+                (_isAdmin &&
+                    widget.user != null &&
+                    _currentUser!.id == widget.user!.id)
+                ? true
+                : role.name.toLowerCase() != 'admin',
+          )
           .toList();
 
       if (mounted) {
@@ -207,16 +215,14 @@ class _AddUserScreenState extends State<AddUserScreen> {
         });
       }
     } catch (e) {
+      debugPrint("echec chargement des roles $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur lors du chargement des rôles')),
         );
         _rolesList = [
-          new Role(
-            name: 'technicien',
-            companyId: _currentUser?.companyId ?? "",
-          ),
-          new Role(
+          Role(name: 'technicien', companyId: _currentUser?.companyId ?? ""),
+          Role(
             name: 'receptionniste',
             companyId: _currentUser?.companyId ?? "",
           ),
@@ -320,8 +326,149 @@ class _AddUserScreenState extends State<AddUserScreen> {
     });
   }
 
+  Map<String, dynamic> _buildCreateData() {
+    final fullPhone = "${_selectedCountryCode}_${_phoneController.text}";
+    final Map<String, dynamic> data = {
+      ...(_emailController.text.isNotEmpty
+          ? {"email": _emailController.text.trim()}
+          : {}),
+      "name": _nameController.text.trim(),
+      "phone": fullPhone,
+      "password": _passwordController.text,
+      ...(_bioController.text.isNotEmpty
+          ? {"bio": _bioController.text.trim()}
+          : {}),
+      "isCompanyAdmin":
+          _roleSelected != null && _roleSelected!.name.toLowerCase() == "admin"
+          ? true
+          : false,
+      "roleId": _roleSelected!.id,
+      "isActive": _isActive,
+      "isVerified": _isVerified,
+      "isTechnician":
+          _roleSelected != null &&
+              _roleSelected!.name.toLowerCase() == "technicien"
+          ? true
+          : false,
+      "expertise": _expertiseController.text.trim(),
+      "availability": _availabilityController.text.trim(),
+    };
+
+    bool isTechnician =
+        _roleSelected != null &&
+        _roleSelected!.name.toLowerCase() == "technicien";
+
+    // Si c'est un technicien, ajouter les certifications
+    if (isTechnician) {
+      List<String> certifications = _formationControllers
+          .map((c) => c.text.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
+
+      data["certifications"] = certifications;
+    }
+
+    return data;
+  }
+
+  Map<String, dynamic> _buildUpdateData() {
+    if (widget.user == null) throw ("Utilisateur a modifié non fourni");
+
+    final fullPhone = "${_selectedCountryCode}_${_phoneController.text}";
+
+    final Map<String, dynamic> data = {
+      if ((widget.user!.email == null && _emailController.text.isNotEmpty) ||
+          (widget.user!.email != null &&
+              _emailController.text != widget.user!.email!)) ...{
+        "email": _emailController.text,
+      },
+      ...(_nameController.text != widget.user!.name
+          ? {"name": _nameController.text}
+          : {}),
+      ...(fullPhone != widget.user!.phone ? {"phone": fullPhone} : {}),
+      ...(_passwordController.text.isNotEmpty
+          ? {
+              "password": _passwordController.text,
+              // "oldPassword": _oldPasswordController.text,
+            }
+          : {}),
+      if ((widget.user!.bio == null && _bioController.text.isNotEmpty) ||
+          (widget.user!.bio != null &&
+              _bioController.text != widget.user!.bio!)) ...{
+        "bio": _bioController.text,
+      },
+      ...(_isActive != widget.user!.isActive ? {"isActive": _isActive} : {}),
+      ...(_isVerified != widget.user!.isVerified
+          ? {"isVerified": _isVerified}
+          : {}),
+      ...(_roleSelected != null && _roleSelected!.id != widget.user!.roleId
+          ? {"roleId": _roleSelected!.id}
+          : {}),
+      "isCompanyAdmin":
+          _roleSelected != null && _roleSelected!.name.toLowerCase() == "admin"
+          ? true
+          : false,
+      "isTechnician":
+          _roleSelected != null &&
+              _roleSelected!.name.toLowerCase() == "technicien"
+          ? true
+          : false,
+
+      ...(_deleteLogo == true &&
+              widget.user!.logo != null &&
+              widget.user!.logo!.isNotEmpty
+          ? {"deleteLogo": true}
+          : {}),
+
+      ...((widget.user!.technicianProfile == null ||
+              _expertiseController.text !=
+                  widget.user!.technicianProfile!.expertise)
+          ? {"expertise": _expertiseController.text}
+          : {}),
+      ...((widget.user!.technicianProfile == null ||
+              _availabilityController.text !=
+                  widget.user!.technicianProfile!.availability)
+          ? {"availability": _availabilityController.text}
+          : {}),
+    };
+
+    bool isTechnician =
+        _roleSelected != null &&
+        _roleSelected!.name.toLowerCase() == "technicien";
+
+    // Si c'est un technicien, ajouter les certifications
+    if (isTechnician) {
+      List<String> certifications = _formationControllers
+          .map((c) => c.text.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
+
+      data["certifications"] = certifications;
+    }
+
+    data["id"] = widget.user!.id;
+
+    return data;
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_roleSelected != null && _roleSelected!.name == 'technicien') {
+      if (_formationControllers.isEmpty ||
+          _formationControllers.every((ct) => ct.text.trim().isEmpty)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Pour un technicien au moins une formation est requise',
+              ),
+            ),
+          );
+        }
+
+        return;
+      }
+    }
     if (!_emailValid || !_phoneValid) return;
 
     if (await _checkEmail() == false) return;
@@ -331,125 +478,112 @@ class _AddUserScreenState extends State<AddUserScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final companyId = prefs.getString('companyId');
-      final currentUserData = prefs.getString('user_data');
-      final userId = currentUserData != null
-          ? User.fromJson(jsonDecode(currentUserData)).id
-          : '';
+      final data = !widget.isEditing
+          ? _buildCreateData()
+          : widget.user != null
+          ? _buildUpdateData()
+          : {"no": null};
 
-      // Modifier le format du téléphone avant envoi
-      final fullPhone = "${_selectedCountryCode}_${_phoneController.text}";
+      FormData formData = FormData();
+      formData.fields.add(MapEntry("data", jsonEncode(data)));
 
-      final user = User(
-        id: widget.user?.id ?? '',
-        email: _emailController.text.trim(),
-        name: _nameController.text.trim(),
-        phone: fullPhone,
-        bio: _bioController.text.trim(),
-        role: _roleSelected!,
-        managerId: userId,
-        companyId: companyId,
-        isCompanyAdmin: false,
-        isVerified: _isVerified,
-        isActive: _isActive,
-        technicianProfile: _roleSelected?.name.toLowerCase() == 'technicien'
-            ? TechnicianProfile(
-                userId: widget.user?.id ?? '',
-                expertise: _expertiseController.text.trim(),
-                availability: _availabilityController.text.trim(),
-                certifications: _formationControllers
-                    .map((c) => c.text.trim())
-                    .where((t) => t.isNotEmpty)
-                    .toList(),
-              )
-            : null,
-      );
-
-      FormData formData = FormData.fromMap(
-        await user.toUserJson(
-          _selectedImage,
-          widget.isEditing ? null : _passwordController.text,
-          oldPassword: widget.isEditing && _passwordController.text.isNotEmpty
-              ? _oldPasswordController.text
-              : null,
-        ),
-      );
+      if (_selectedImage != null) {
+        formData.files.add(
+          MapEntry(
+            "logo",
+            await MultipartFile.fromFile(
+              _selectedImage!.path,
+              filename: _selectedImage!.path.split('/').last,
+            ),
+          ),
+        );
+      }
 
       User newUser;
 
-      if (!widget.isEditing) {
-        // création d'un utilisateur
-        newUser = await UserService().createUser(formData);
-      } else if (!_isAdmin || widget.user!.id == user.id) {
-        // update profile
-        // un user peut également changer son mot de passe, son email,
-        // sa biographie (bio) et sa photo de profil
+      // if (!widget.isEditing) {
+      // création d'un utilisateur
+      newUser = !widget.isEditing
+          ? await UserService().createUser(formData)
+          : await UserService().updateUser(widget.user!.id, formData);
+      // }
+      // else if (!_isAdmin || widget.user!.id == user.id) {
+      //   // update profile - construction spécifique pour PATCH
+      //   FormData formDataProfil = FormData();
 
-        FormData formDataProfil = FormData();
-        if (_emailController.text.trim().isNotEmpty &&
-            _emailController.text != widget.user?.email) {
-          formDataProfil.fields.add(
-            MapEntry("email", jsonEncode(_emailController.text.trim())),
-          );
-        }
-        if (_bioController.text.trim().isNotEmpty &&
-            _bioController.text != widget.user?.bio) {
-          formDataProfil.fields.add(
-            MapEntry("bio", jsonEncode(_bioController.text.trim())),
-          );
-        }
-        if (_passwordController.text.isNotEmpty &&
-            _oldPasswordController.text.isNotEmpty) {
-          formDataProfil.fields.add(
-            MapEntry(
-              "currentPassword",
-              jsonEncode(_oldPasswordController.text),
-            ),
-          );
-          formDataProfil.fields.add(
-            MapEntry("newPassword", jsonEncode(_passwordController.text)),
-          );
-        }
+      //   if (_emailController.text.trim().isNotEmpty &&
+      //       _emailController.text != widget.user?.email) {
+      //     formDataProfil.fields.add(
+      //       MapEntry(
+      //         "email",
+      //         _emailController.text.trim(),
+      //       ), // SUPPRIMEZ jsonEncode
+      //     );
+      //   }
+      //   if (_bioController.text.trim().isNotEmpty &&
+      //       _bioController.text != widget.user?.bio) {
+      //     formDataProfil.fields.add(
+      //       MapEntry("bio", _bioController.text.trim()), // SUPPRIMEZ jsonEncode
+      //     );
+      //   }
+      //   if (_passwordController.text.isNotEmpty &&
+      //       _oldPasswordController.text.isNotEmpty) {
+      //     formDataProfil.fields.add(
+      //       MapEntry(
+      //         "currentPassword",
+      //         _oldPasswordController.text,
+      //       ), // SUPPRIMEZ jsonEncode
+      //     );
+      //     formDataProfil.fields.add(
+      //       MapEntry(
+      //         "newPassword",
+      //         _passwordController.text,
+      //       ), // SUPPRIMEZ jsonEncode
+      //     );
+      //   }
 
-        if (_selectedImage != null) {
-          formDataProfil.files.add(
-            MapEntry(
-              "logo",
-              await MultipartFile.fromFile(
-                _selectedImage!.path,
-                filename: _selectedImage!.path.split('/').last,
-              ),
-            ),
-          );
-        }
+      //   if (_selectedImage != null) {
+      //     formDataProfil.files.add(
+      //       MapEntry(
+      //         "logo",
+      //         await MultipartFile.fromFile(
+      //           _selectedImage!.path,
+      //           filename: _selectedImage!.path.split('/').last,
+      //         ),
+      //       ),
+      //     );
+      //   }
 
-        newUser = await UserService().updateUserProfile(
-          userId,
-          formData,
-          false,
-        );
-      } else {
-        // modification complète d'un utilisateur
-        if (_isAdmin) {
-          newUser = await UserService().updateUser(user.id, formData);
-        }
-      }
+      //   // Ajoutez un debug print pour vérifier les données
+      //   debugPrint(
+      //     'Données envoyées pour update profile: ${formDataProfil.fields}',
+      //   );
+
+      //   newUser = await UserService().updateUserProfile(
+      //     userId,
+      //     formDataProfil, // Utilisez formDataProfil au lieu de formData
+      //     false,
+      //   );
+      // } else {
+      //   // modification complète d'un utilisateur
+      //   newUser = await UserService().updateUser(user.id, formData);
+      // }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Utilisateur ${ /* newUser.name */ ''} ${widget.isEditing ? 'modifié' : 'créé'} avec succès',
+              'Utilisateur ${newUser.name} ${widget.isEditing ? 'modifié' : 'créé'} avec succès',
             ),
           ),
         );
-        Navigator.pop(context, true); // Retourner true pour indiquer le succès
+        Navigator.pop(context, true);
       }
     } catch (e) {
+      debugPrint('Erreur détaillée: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Echec de l\'opération: ${e.toString()}')),
+          SnackBar(content: Text('Échec de l\'opération: ${e.toString()}')),
         );
       }
     } finally {
@@ -483,7 +617,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 boxDecoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                      // color: Colors.black.withOpacity(0.1),
+                      // color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 0,
                       offset: const Offset(0, 2),
                     ),
@@ -526,7 +660,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
             ),
             validator: (value) {
               if (value!.isEmpty) return 'Champ requis';
-              if (!validatePhone(_phoneController.text, _selectedCountryCode)) {
+              if (!validatePhone(_phoneController.text, _selectedCountryIso)) {
                 return 'Téléphone invalide';
               }
               return null;
@@ -625,68 +759,136 @@ class _AddUserScreenState extends State<AddUserScreen> {
     String accessToken,
   ) {
     debugPrint("logo=${widget.user?.logo}");
-    return GestureDetector(
-      onTap: _selectImageSource,
-      child: Stack(
-        alignment: Alignment.bottomRight,
-        children: [
-          Container(
+    final bool hasExistingImage = widget.user?.logo != null;
+    final bool hasSelectedImage = _selectedImage != null;
+
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        GestureDetector(
+          onTap: _showImageOptions,
+          child: Container(
             width: 120,
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: appColors.primary.withOpacity(0.3),
-                width: 3,
+                color: _deleteLogo
+                    ? Colors.red
+                    : appColors.primary.withValues(alpha: 0.3),
+                width: _deleteLogo ? 4 : 3,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: ClipOval(
-              child: _selectedImage != null
-                  ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                  : (widget.user?.logo != null
-                        ? CachedNetworkImage(
-                            imageUrl: widget.user!.logo!,
-                            fit: BoxFit.cover,
-                            httpHeaders: {
-                              'Authorization': 'Bearer $accessToken',
-                            },
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) =>
-                                Icon(Icons.person),
-                          )
-                        : Icon(
-                            Icons.person,
-                            size: 60,
-                            color: appColors.primary,
-                          )),
+              child: Container(
+                color: Colors.grey[100], // Fond de secours
+                child: Stack(
+                  alignment: Alignment.center, // ← CORRECTION IMPORTANTE
+                  children: [
+                    // Image sélectionnée
+                    if (hasSelectedImage)
+                      Image.file(
+                        _selectedImage!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      )
+                    // Image existante du serveur
+                    else if (hasExistingImage && !_deleteLogo)
+                      CachedNetworkImage(
+                        imageUrl: widget.user!.logo!,
+                        fit: BoxFit.cover,
+                        width: double.infinity, // ← CORRECTION
+                        height: double.infinity, // ← CORRECTION
+                        httpHeaders: {'Authorization': 'Bearer $accessToken'},
+                        placeholder: (context, url) =>
+                            Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            _buildPlaceholderIcon(appColors),
+                      )
+                    // Placeholder par défaut
+                    else
+                      _buildPlaceholderIcon(appColors),
+
+                    if (_deleteLogo) ...[
+                      Icon(Icons.warning_amber, color: Colors.amber, size: 50),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: appColors.primary,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+        ),
+
+        // Icônes d'action en bas
+        if (!_deleteLogo) ...[
+          // Icône de suppression (visible seulement s'il y a une image)
+          if (hasExistingImage || hasSelectedImage)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: GestureDetector(
+                onTap: () => _showImageOptions(deleteMode: true),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.delete_forever,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                 ),
-              ],
+              ),
             ),
-            child: const Icon(Icons.edit, size: 20, color: Colors.white),
+
+          // Icône d'édition
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: () => _showImageOptions(deleteMode: false),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: appColors.primary,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.edit, size: 18, color: Colors.white),
+              ),
+            ),
           ),
         ],
-      ),
+      ],
     );
+  }
+
+  // Méthode helper pour l'icône placeholder
+  Widget _buildPlaceholderIcon(AppAdaptiveColors appColors) {
+    return Icon(Icons.person, size: 60, color: appColors.primary);
   }
 
   Widget _buildPersonalInfoSection(BuildContext context) {
@@ -871,7 +1073,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
 
             if (_formationControllers.isEmpty)
               const Text(
@@ -947,6 +1149,10 @@ class _AddUserScreenState extends State<AddUserScreen> {
               : (value) {
                   if (value!.isEmpty) return 'Champ requis';
                   if (value.length < 6) return '6 caractères minimum';
+                  if (_passwordCriteria.isEmpty ||
+                      _passwordCriteria.values.contains(false)) {
+                    return "Mot de passe non conforme.";
+                  }
                   return null;
                 },
         ),
@@ -963,21 +1169,30 @@ class _AddUserScreenState extends State<AddUserScreen> {
         Text("Modifier le mot de passe", style: AppStyles.titleMedium(context)),
         const SizedBox(height: 12),
 
-        TextFormField(
-          controller: _oldPasswordController,
-          obscureText: _obscureOldPassword,
-          decoration: InputDecoration(
-            labelText: "Ancien mot de passe",
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureOldPassword ? Icons.visibility : Icons.visibility_off,
+        if (!_isAdmin || _currentUser!.id == widget.user!.id)
+          TextFormField(
+            controller: _oldPasswordController,
+            obscureText: _obscureOldPassword,
+            decoration: InputDecoration(
+              labelText: "Ancien mot de passe",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              onPressed: () =>
-                  setState(() => _obscureOldPassword = !_obscureOldPassword),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureOldPassword ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () =>
+                    setState(() => _obscureOldPassword = !_obscureOldPassword),
+              ),
             ),
+            validator: (value) {
+              if (_passwordController.text.isNotEmpty && value!.isEmpty) {
+                return 'Champ requis';
+              }
+              return null;
+            },
           ),
-        ),
         const SizedBox(height: 12),
 
         TextFormField(
@@ -995,6 +1210,16 @@ class _AddUserScreenState extends State<AddUserScreen> {
                   setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
+          validator: (value) {
+            if (value!.isEmpty) return null;
+            if (value.isNotEmpty && value.length < 6)
+              return '6 caractères minimum';
+            if (_passwordCriteria.isEmpty ||
+                _passwordCriteria.values.contains(false)) {
+              return "Mot de passe non conforme.";
+            }
+            return null;
+          },
         ),
         const SizedBox(height: 8),
         PasswordCriteriaWidget(criteria: _passwordCriteria),
@@ -1089,7 +1314,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 4,
-          shadowColor: Colors.black.withOpacity(0.3),
+          shadowColor: Colors.black.withValues(alpha: 0.3),
         ),
         onPressed: _isLoading ? null : _submitForm,
         child: _isLoading
@@ -1151,22 +1376,65 @@ class _AddUserScreenState extends State<AddUserScreen> {
     );
   }
 
-  Future<void> _selectImageSource() async {
-    final source = await showImageSourceDialog(context);
-    if (source == null) return;
+  void _showImageOptions({bool? deleteMode}) async {
+    if (deleteMode == null || deleteMode == false) {
+      final source = await showImageSourceDialog(context);
+      if (source == null) return;
 
-    try {
-      final pickedFile = await ImagePicker().pickImage(
-        source: source,
-        imageQuality: 85,
-      );
-      if (pickedFile != null) {
-        setState(() => _selectedImage = File(pickedFile.path));
+      try {
+        final pickedFile = await ImagePicker().pickImage(
+          source: source,
+          imageQuality: 85,
+        );
+        if (pickedFile != null) {
+          setState(() {
+            _selectedImage = File(pickedFile.path);
+            _deleteLogo = false;
+          });
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
       }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur: ${e.toString()}')));
+    } else if (deleteMode == true) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          actionsAlignment: MainAxisAlignment.center,
+          title: Center(
+            child: Text(
+              'Marquer la photo de profil pour suppression?',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          actions: [
+            OutlinedButton(
+              // style: ButtonStyle(foregroundColor: Color('gre')),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _deleteLogo = true;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Je confirme',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.redAccent,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ).catchError((error) {
+        // Gérer l'erreur ici si nécessaire
+        print('Erreur lors de l\'affichage du dialogue : $error');
+      });
     }
   }
 }

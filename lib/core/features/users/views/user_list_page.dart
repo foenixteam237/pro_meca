@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -26,11 +28,23 @@ class _UserListScreenState extends State<UserListScreen> {
   bool _isLoading = false;
   String _accessToken = '';
   String? _selectedRole;
+  User? _currentUser;
 
   @override
   void initState() {
     super.initState();
     _initData();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString('user_data');
+    if (userData != null) {
+      setState(() {
+        _currentUser = User.fromJson(jsonDecode(userData));
+      });
+    }
   }
 
   Future<void> _handleRefresh() async {
@@ -67,9 +81,9 @@ class _UserListScreenState extends State<UserListScreen> {
       filteredUsers = List.from(users);
     } catch (e) {
       debugPrint("Erreur: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erreur lors du chargement: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors du chargement des utilisateurs')),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -146,14 +160,15 @@ class _UserListScreenState extends State<UserListScreen> {
                   _toggleUserStatus(user);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Supprimer'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _confirmDelete(user);
-                },
-              ),
+              if (_currentUser != null && user.id != _currentUser!.id)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Supprimer'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _confirmDelete(user);
+                  },
+                ),
             ],
           ),
         );

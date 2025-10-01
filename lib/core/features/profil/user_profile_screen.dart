@@ -46,12 +46,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _initProfile();
   }
-// Ajoutez ces variables à votre état
+
+  // Ajoutez ces variables à votre état
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
   bool _isUploadingImage = false;
 
-// Ajoutez ces méthodes
+  // Ajoutez ces méthodes
   Future<void> _pickImage() async {
     final status = await Permission.photos.request();
     if (status.isGranted) {
@@ -91,11 +92,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isUploadingImage = true);
     try {
       final userId = widget.member?.id ?? _user!.id;
-      final bool? isAdmin = (await SharedPreferences.getInstance()).getBool("isAdmin");
+      final bool? isAdmin = (await SharedPreferences.getInstance()).getBool(
+        "isAdmin",
+      );
       final updatedUser = await UserService().uploadUserProfileImage(
         userId: userId,
         imageFile: _selectedImage!,
-        isAdmin: isAdmin ?? false
+        isAdmin: isAdmin ?? false,
       );
 
       if (updatedUser != null) {
@@ -109,7 +112,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             content: Center(
               child: Text(
                 'Photo de profil mise à jour',
-                style: AppStyles.titleMedium(context).copyWith(color: AppColors.primary),
+                style: AppStyles.titleMedium(
+                  context,
+                ).copyWith(color: AppColors.primary),
               ),
             ),
             backgroundColor: AppColors.customBackground(context),
@@ -125,8 +130,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _isUploadingImage = false);
     }
   }
+
   Future<void> _initProfile() async {
-    _accessToken = (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
+    _accessToken =
+        (await SharedPreferences.getInstance()).getString('accessToken') ?? '';
     if (widget.member != null) {
       // L'admin édite un membre
       _user = widget.member;
@@ -153,9 +160,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _onChanged() {
     // Active le bouton si un champ a changé par rapport à l'original
     setState(() {
-      _hasChanged = (_nameCtrl.text != (_originalUser?.name ?? "")) ||
+      _hasChanged =
+          (_nameCtrl.text != (_originalUser?.name ?? "")) ||
           (_bioCtrl.text != (_originalUser?.bio ?? "")) ||
-          (_phoneCtrl.text != (_originalUser?.phone ?? "") || (_emailCtrl.text != (_originalUser?.email ?? "")));
+          (_phoneCtrl.text != (_originalUser?.phone ?? "") ||
+              (_emailCtrl.text != (_originalUser?.email ?? "")));
     });
   }
 
@@ -184,51 +193,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _updateProfile() async {
-    setState(() => _isUpdating = true);
-    try {
-      // Prépare un map des champs modifiés
-      final updatedFields = <String, dynamic>{};
-      if (_nameCtrl.text != _originalUser?.name) updatedFields['name'] = _nameCtrl.text;
-      if (_bioCtrl.text != _originalUser?.bio) updatedFields['bio'] = _bioCtrl.text;
-      if (_phoneCtrl.text != _originalUser?.phone) updatedFields['phone'] = _phoneCtrl.text;
-      if (_emailCtrl.text != _originalUser?.email) updatedFields['email'] = _emailCtrl.text;
-
-      if (updatedFields.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Aucune modification détectée')),
-        );
-        setState(() => _isUpdating = false);
-        return;
-      }
-
-      // Détermine l'ID de l'utilisateur à mettre à jour
-      final userId = widget.member?.id ?? _user!.id;
-
-      // Appel API
-      final updatedUser = await UserService().updateUserProfile(userId, updatedFields, widget.member != null);
-      await _refreshUserData(updatedUser);
-      // Vérifie que la réponse est valide
-      setState(() {
-        _originalUser = updatedUser;
-        _hasChanged = false;
-        _isUpdating = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Center(child: Text('Profil mis à jour avec succès', style: AppStyles.titleMedium(context).copyWith(color: AppColors.primary,))),
-           backgroundColor: AppColors.customBackground(context),
-         ),
-      );
-        } catch (e) {
-      setState(() => _isUpdating = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur: ${e.toString()}'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      debugPrint('Erreur update profile: $e');
-    }
+    Future.delayed(Duration(seconds: 1));
   }
+  // Future<void> _updateProfile() async {
+  //   setState(() => _isUpdating = true);
+  //   try {
+  //     // Prépare un map des champs modifiés
+  //     final updatedFields = <String, dynamic>{};
+  //     if (_nameCtrl.text != _originalUser?.name) updatedFields['name'] = _nameCtrl.text;
+  //     if (_bioCtrl.text != _originalUser?.bio) updatedFields['bio'] = _bioCtrl.text;
+  //     if (_phoneCtrl.text != _originalUser?.phone) updatedFields['phone'] = _phoneCtrl.text;
+  //     if (_emailCtrl.text != _originalUser?.email) updatedFields['email'] = _emailCtrl.text;
+
+  //     if (updatedFields.isEmpty) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('Aucune modification détectée')),
+  //       );
+  //       setState(() => _isUpdating = false);
+  //       return;
+  //     }
+
+  //     // Détermine l'ID de l'utilisateur à mettre à jour
+  //     final userId = widget.member?.id ?? _user!.id;
+
+  //     // Appel API
+  //     final updatedUser = await UserService().updateUserProfile(userId, updatedFields, widget.member != null);
+  //     await _refreshUserData(updatedUser);
+  //     // Vérifie que la réponse est valide
+  //     setState(() {
+  //       _originalUser = updatedUser;
+  //       _hasChanged = false;
+  //       _isUpdating = false;
+  //     });
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //        SnackBar(content: Center(child: Text('Profil mis à jour avec succès', style: AppStyles.titleMedium(context).copyWith(color: AppColors.primary,))),
+  //          backgroundColor: AppColors.customBackground(context),
+  //        ),
+  //     );
+  //       } catch (e) {
+  //     setState(() => _isUpdating = false);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Erreur: ${e.toString()}'),
+  //         duration: const Duration(seconds: 2),
+  //       ),
+  //     );
+  //     debugPrint('Erreur update profile: $e');
+  //   }
+  // }
   Future<void> _refreshUserData([User? updatedUser]) async {
     try {
       if (widget.member == null) {
@@ -256,6 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       debugPrint('Erreur rafraîchissement: $e');
     }
   }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -264,17 +277,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _emailCtrl.dispose();
     super.dispose();
   }
-  Widget _buildBackButton(bool isAdmin){
 
+  Widget _buildBackButton(bool isAdmin) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
-    if(isAdmin){
+    if (isAdmin) {
       return IconButton(
         icon: Icon(Icons.arrow_back, color: appColors.primary),
         onPressed: () => Navigator.pop(context),
       );
     }
-    return SizedBox(height: 0,);
+    return SizedBox(height: 0);
   }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -291,68 +305,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
             : _errorMessage != null
             ? Center(child: Text(_errorMessage!))
             : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildBackButton(widget.member !=null),
-            // Section profil
-            _buildProfileHeader(context, l10n, _user),
-            const SizedBox(height: 10),
-            // Informations utilisateur
-            _buildUserInfoSection(context, l10n, textColor, _user, isCompanyAdmin),
-            const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: appColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBackButton(widget.member != null),
+                  // Section profil
+                  _buildProfileHeader(context, l10n, _user),
+                  const SizedBox(height: 10),
+                  // Informations utilisateur
+                  _buildUserInfoSection(
+                    context,
+                    l10n,
+                    textColor,
+                    _user,
+                    isCompanyAdmin,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: _hasChanged && !_isUpdating
+                          ? _updateProfile
+                          : null,
+                      child: _isUpdating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              l10n.updateProfile,
+                              style: AppStyles.buttonText(context),
+                            ),
                     ),
                   ),
-                  onPressed: _hasChanged && !_isUpdating ? _updateProfile : null,
-                  child: _isUpdating
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text(
-                    l10n.updateProfile,
-                    style: AppStyles.buttonText(context),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 10),
-            // Bouton de déconnexion (seulement pour "moi")
-            if (widget.member == null)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.alert,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 10),
+                  // Bouton de déconnexion (seulement pour "moi")
+                  if (widget.member == null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.alert,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () async {
+                          await ApiDioService().logoutUser();
+                          _navigateToHome();
+                        },
+                        child: Text(
+                          l10n.logout,
+                          style: AppStyles.buttonText(context),
+                        ),
+                      ),
                     ),
-                  ),
-                  onPressed: () async {
-                    await ApiDioService().logoutUser();
-                    _navigateToHome();
-                  },
-                  child: Text(
-                    l10n.logout,
-                    style: AppStyles.buttonText(context),
-                  ),
-                ),
+                ],
               ),
-          ],
-        ),
       ),
     );
   }
 
   Widget _buildProfileHeader(
-      BuildContext context,
-      AppLocalizations l10n,
-      User? user,
-      ) {
+    BuildContext context,
+    AppLocalizations l10n,
+    User? user,
+  ) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
     return Center(
       child: Column(
@@ -361,22 +390,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 8),
           Text(
             user?.name ?? "",
-            style: AppStyles.titleLarge(context).copyWith(fontWeight: FontWeight.bold),
+            style: AppStyles.titleLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
             user?.role.name ?? l10n.technicianRole,
-            style: AppStyles.bodyMedium(context).copyWith(color: appColors.primary),
+            style: AppStyles.bodyMedium(
+              context,
+            ).copyWith(color: appColors.primary),
           ),
         ],
       ),
     );
   }
+
   Widget _buildProfileImage() {
     final appColor = Provider.of<AppAdaptiveColors>(context);
     return GestureDetector(
       onTap: () {
-          _selectImageSource();
+        _selectImageSource();
       },
       child: Stack(
         alignment: Alignment.bottomRight,
@@ -388,18 +422,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 3),
             ),
-            child: ClipOval(
-              child: _buildImageContent(_user!.logo ?? ""),
-            ),
+            child: ClipOval(child: _buildImageContent(_user!.logo ?? "")),
           ),
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: appColor.primary,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.edit, size: 20, color: Colors.white),
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: appColor.primary,
+              shape: BoxShape.circle,
             ),
+            child: Icon(Icons.edit, size: 20, color: Colors.white),
+          ),
         ],
       ),
     );
@@ -435,40 +467,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
       action == ImageSource.camera ? await _takePhoto() : await _pickImage();
     }
   }
+
   Widget _buildImageContent(String img) {
     if (_isUploadingImage) {
       return Center(child: CircularProgressIndicator());
     } else if (_selectedImage != null) {
       return Image.file(_selectedImage!, fit: BoxFit.cover);
-    } else if (_user?.logo != null && _user!.logo!.isNotEmpty && widget.member != null) {
+    } else if (_user?.logo != null &&
+        _user!.logo!.isNotEmpty &&
+        widget.member != null) {
       return CachedNetworkImage(
         imageUrl: img,
         fit: BoxFit.cover,
-        httpHeaders:{'Authorization': 'Bearer $_accessToken'},
+        httpHeaders: {'Authorization': 'Bearer $_accessToken'},
         placeholder: (context, url) => CircularProgressIndicator(),
         errorWidget: (context, url, error) => Icon(Icons.person),
       );
     } else {
-      if (_user?.logo != null ) {
+      if (_user?.logo != null) {
         return CachedNetworkImage(
-          imageUrl: img.contains(ApiDioService().apiUrl) ? img : ApiDioService().apiUrl+img,
+          imageUrl: img.contains(ApiDioService().apiUrl)
+              ? img
+              : ApiDioService().apiUrl + img,
           fit: BoxFit.cover,
-          httpHeaders:{'Authorization': 'Bearer $_accessToken'},
+          httpHeaders: {'Authorization': 'Bearer $_accessToken'},
           placeholder: (context, url) => CircularProgressIndicator(),
           errorWidget: (context, url, error) => Icon(Icons.person),
         );
-      }else{
+      } else {
         return Icon(Icons.person, size: 100);
       }
     }
   }
+
   Widget _buildUserInfoSection(
-      BuildContext context,
-      AppLocalizations l10n,
-      Color textColor,
-      User? user,
-      bool isCompanyAdmin,
-      ) {
+    BuildContext context,
+    AppLocalizations l10n,
+    Color textColor,
+    User? user,
+    bool isCompanyAdmin,
+  ) {
     final isEditable = true;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -488,17 +526,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           _buildInfoRow(l10n.nameLabel, _nameCtrl, isEditable),
           const Divider(height: 24, color: Colors.black12),
-          _buildInfoRow(l10n.biographyLabel, _bioCtrl, isEditable, hint: "Pas de bio disponible"),
+          _buildInfoRow(
+            l10n.biographyLabel,
+            _bioCtrl,
+            isEditable,
+            hint: "Pas de bio disponible",
+          ),
           const Divider(height: 24, color: Colors.black12),
           _buildInfoRow(l10n.phoneNumberLabel, _phoneCtrl, isEditable),
           const Divider(height: 24, color: Colors.black12),
           _buildInfoRow(l10n.authEmail, _emailCtrl, isEditable),
-          if (user?.isCompanyAdmin ?? false || isCompanyAdmin ) ...[
+          if (user?.isCompanyAdmin ?? false || isCompanyAdmin) ...[
             const Divider(height: 24, color: Colors.black12),
-            _buildStaticInfoRow(l10n.lastLogin, user?.lastLogin ?? "Aucune certification"),
+            _buildStaticInfoRow(
+              l10n.lastLogin,
+              user?.lastLogin ?? "Aucune certification",
+            ),
           ],
           const Divider(height: 24, color: Colors.black12),
-          _buildStaticInfoRow(l10n.roleLabel, user?.role.name ?? l10n.technicianRole),
+          _buildStaticInfoRow(
+            l10n.roleLabel,
+            user?.role.name ?? l10n.technicianRole,
+          ),
           if (user?.isCompanyAdmin ?? false) ...[
             const Divider(height: 24, color: Colors.black12),
             _buildStaticInfoRow(l10n.permissionsLabel, l10n.permissionsDetails),
@@ -508,13 +557,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, TextEditingController controller, bool editable, {String? hint}) {
+  Widget _buildInfoRow(
+    String label,
+    TextEditingController controller,
+    bool editable, {
+    String? hint,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: AppStyles.bodySmall(context).copyWith(color: Theme.of(context).hintColor),
+          style: AppStyles.bodySmall(
+            context,
+          ).copyWith(color: Theme.of(context).hintColor),
         ),
         const SizedBox(height: 4),
         EditableTextField(
@@ -532,7 +588,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(
           label,
-          style: AppStyles.bodySmall(context).copyWith(color: Theme.of(context).hintColor),
+          style: AppStyles.bodySmall(
+            context,
+          ).copyWith(color: Theme.of(context).hintColor),
         ),
         const SizedBox(height: 4),
         Text(value, style: AppStyles.bodyMedium(context)),

@@ -171,4 +171,9 @@ class ApiDioService {
       throw Exception('Failed to create vehicle: ${errorData['message']}');
     }
   }
+
+  static bool isSuccess(Response response) {
+    final code = response.statusCode;
+    return code != null && code >= 200 && code < 300;
+  }
 }

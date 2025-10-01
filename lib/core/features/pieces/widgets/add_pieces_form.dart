@@ -453,7 +453,7 @@ class _CreatePieceFormState extends State<CreatePieceForm> {
         "contactName": _sourceNameCtrl.text,
         "phone": _phoneCtrl.text.isEmpty
             ? ''
-            : '$_selectedCountryCode${_phoneCtrl.text}',
+            : '${_selectedCountryCode}_${_phoneCtrl.text}',
         "location": _sourceLocationCtrl.text.isEmpty
             ? ''
             : _sourceLocationCtrl.text,
