@@ -149,17 +149,18 @@ class _UserListScreenState extends State<UserListScreen> {
                   _editUser(user);
                 },
               ),
-              ListTile(
-                leading: Icon(
-                  user.isActive ? Icons.pause_circle : Icons.play_arrow,
-                  color: user.isActive ? Colors.orange : Colors.green,
+              if (!user.isCompanyAdmin)
+                ListTile(
+                  leading: Icon(
+                    user.isActive ? Icons.pause_circle : Icons.play_arrow,
+                    color: user.isActive ? Colors.orange : Colors.green,
+                  ),
+                  title: Text(user.isActive ? 'Désactiver' : 'Activer'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _toggleUserStatus(user);
+                  },
                 ),
-                title: Text(user.isActive ? 'Désactiver' : 'Activer'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _toggleUserStatus(user);
-                },
-              ),
               if (_currentUser != null && user.id != _currentUser!.id)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
@@ -381,7 +382,7 @@ class _UserListScreenState extends State<UserListScreen> {
                       : ListView.separated(
                           itemCount: filteredUsers.length,
                           separatorBuilder: (_, __) => Divider(
-                            color: Colors.grey.withOpacity(0.4),
+                            color: Colors.grey.withValues(alpha: 0.4),
                             height: 1,
                           ),
                           itemBuilder: (context, index) {
@@ -431,50 +432,125 @@ class _UserListScreenState extends State<UserListScreen> {
                                 );
                               },
                               onDismissed: (direction) => _deleteUser(user),
-                              child: ListTile(
-                                leading: buildImage(
-                                  user.logo,
-                                  context,
-                                  _accessToken,
-                                ),
-                                title: Text(
-                                  user.name,
-                                  style: AppStyles.bodyMedium(context).copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: appColors.customText(context),
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      user.role.name.toUpperCase(),
-                                      style: AppStyles.bodySmall(context)
-                                          .copyWith(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w100,
-                                          ),
-                                    ),
-                                    if (phoneNumber.isNotEmpty)
-                                      Text(
-                                        phoneNumber,
-                                        style: AppStyles.bodySmall(
-                                          context,
-                                        ).copyWith(fontSize: 10),
+                              child: Container(
+                                // Couleur de fond pour les utilisateurs inactifs
+                                color: user.isActive
+                                    ? null
+                                    : Colors.red.withOpacity(0.1),
+                                child: ListTile(
+                                  leading: Stack(
+                                    children: [
+                                      buildImage(
+                                        user.logo,
+                                        context,
+                                        _accessToken,
                                       ),
-                                  ],
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 0,
-                                ),
-                                onTap: () => _showUserActions(context, user),
-                                trailing: IconButton(
-                                  icon: Icon(
-                                    Icons.more_vert,
-                                    color: Theme.of(context).primaryColor,
+                                      // Badge rouge sur l'avatar pour les utilisateurs inactifs
+                                      if (!user.isActive)
+                                        Positioned(
+                                          right: 0,
+                                          bottom: 0,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: const Icon(
+                                              Icons.block,
+                                              color: Colors.white,
+                                              size: 12,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  onPressed: () =>
-                                      _showUserActions(context, user),
+                                  title: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          user.name,
+                                          style: AppStyles.bodyMedium(context)
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                                color: user.isActive
+                                                    ? appColors.customText(
+                                                        context,
+                                                      )
+                                                    : Colors
+                                                          .grey, // Texte grisé si inactif
+                                              ),
+                                        ),
+                                      ),
+                                      // Indicateur visuel "Inactif"
+                                      if (!user.isActive)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "INACTIF",
+                                            style: AppStyles.bodySmall(context)
+                                                .copyWith(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        user.role.name.toUpperCase(),
+                                        style: AppStyles.bodySmall(context)
+                                            .copyWith(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w100,
+                                              color: !user.isActive
+                                                  ? Colors.grey
+                                                  : null,
+                                            ),
+                                      ),
+                                      if (phoneNumber.isNotEmpty)
+                                        Text(
+                                          phoneNumber,
+                                          style: AppStyles.bodySmall(context)
+                                              .copyWith(
+                                                fontSize: 10,
+                                                color: !user.isActive
+                                                    ? Colors.grey
+                                                    : null,
+                                              ),
+                                        ),
+                                    ],
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 0,
+                                  ),
+                                  onTap: () => _showUserActions(context, user),
+                                  trailing: IconButton(
+                                    icon: Icon(
+                                      Icons.more_vert,
+                                      color: user.isActive
+                                          ? Theme.of(context).primaryColor
+                                          : Colors
+                                                .grey, // Icône grisée si inactif
+                                    ),
+                                    onPressed: () =>
+                                        _showUserActions(context, user),
+                                  ),
                                 ),
                               ),
                             );
