@@ -392,15 +392,15 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
                   softWrap: true,
                   overflow: TextOverflow.visible,
                 ),
-                if (part.reference != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    part.reference,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                    softWrap: true,
-                    overflow: TextOverflow.visible,
-                  ),
-                ],
+                ...[
+                const SizedBox(height: 2),
+                Text(
+                  part.reference,
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
+                ),
+              ],
                 const SizedBox(height: 2),
                 Text(
                   part.category,

@@ -4,19 +4,16 @@ import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
-import 'package:pro_meca/core/features/pieces/views/categoriePageScreen.dart';
 import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/visite.dart';
-import '../../widgets/buildHistoryList.dart';
 import '../dashboard/views/admin_dashboard.dart';
 import '../pieces/views/admin_pieces.dart';
 import '../visites/services/reception_services.dart';
 import '../users/views/user_list_page.dart';
-import 'widgets/buildHomeContent.dart';
 import '../dashboard/views/vehicle_dashboard_page.dart';
 
 class AdminHomeScreen extends StatefulWidget {

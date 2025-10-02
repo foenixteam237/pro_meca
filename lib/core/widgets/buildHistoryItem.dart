@@ -121,72 +121,6 @@ Widget _buildImage(String? imageUrl, String accessToken) {
   }
 }
 
-void _showNextPage(
-  Visite visite,
-  BuildContext context,
-  String accessToken,
-) async {
-  bool isAdmin = await SharedPreferences.getInstance().then(
-    (prefs) => prefs.getBool('isAdmin') ?? false,
-  );
-
-  if (visite.intervention!.isEmpty &&
-      visite.diagnostics!.isNotEmpty &&
-      isAdmin) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ValidationDiagnosticScreen(
-          idVisite: visite.id,
-          visite: visite,
-          accessToken: accessToken,
-        ),
-      ),
-    );
-    return;
-  } else if (visite.diagnostics!.isEmpty) {
-    print(visite.diagnostics);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DiagnosticPage(
-          idVisite: visite.id,
-          visite: visite,
-          accessToken: accessToken,
-        ),
-      ),
-    );
-  } else if (visite.intervention!.isNotEmpty && isAdmin) {
-    /*Condition à poser sur les intervention à valider
-    visite.intervention?.map((e){
-      switch(e.status)
-    });*/
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ValidationInterventionScreen(
-          visiteId: visite.id,
-          isAdmin: isAdmin,
-          accessToken: accessToken,
-          visite: visite,
-        ),
-      ),
-    );
-  } else if (visite.intervention!.isNotEmpty && isAdmin == false) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            InterventionPage(visite: visite, accessToken: accessToken),
-      ),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Aucune action disponible pour cette visite.")),
-    );
-  }
-}
-
 Color _visitColor(String status) {
   switch (status) {
     case "ATTENTE_DIAGNOSTIC":
@@ -308,7 +242,7 @@ void _showNextPageOther(
           dominantStatus = status;
         }
       }
-
+      print("Dominant priority ${dominantStatus}");
       if (isAdmin) {
         // Admins: Navigate based on dominant status
         switch (dominantStatus) {
@@ -326,7 +260,6 @@ void _showNextPageOther(
               ),
             );
             break;
-          case InterventionStatus.validated:
           case InterventionStatus.cancelled:
             // No action needed for validated or cancelled interventions
             ScaffoldMessenger.of(context).showSnackBar(
@@ -338,6 +271,19 @@ void _showNextPageOther(
               ),
             );
             break;
+            case InterventionStatus.attenteCommandeClient:
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ValidationInterventionScreen(
+                    visiteId: visite.id,
+                    isAdmin: isAdmin,
+                    accessToken: accessToken,
+                    visite: visite,
+                  ),
+                ),
+              );
+              break;
           default:
             // Other statuses (e.g., ATTENTE_COMMANDE_CLIENT, ATTENTE_INTERVENTION)
             // may not require admin validation
@@ -368,6 +314,15 @@ void _showNextPageOther(
             break;
           case InterventionStatus.attenteCommandeClient:
           case InterventionStatus.attenteValidationIntervention:
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Pas d'action disponible pour cette intervention.",
+                ),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            break;
           case InterventionStatus.validated:
           case InterventionStatus.cancelled:
             // Non-admins can't act on these statuses

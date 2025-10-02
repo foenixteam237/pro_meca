@@ -495,7 +495,7 @@ class _VisiteReportScreenState extends State<VisiteReportScreen> {
                         child: Text('• $travail'),
                       ),
                     )
-                    .toList(),
+                    ,
                 const SizedBox(height: 12),
                 const Text(
                   'Pièces utilisées:',

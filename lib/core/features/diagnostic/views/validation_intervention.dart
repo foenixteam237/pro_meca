@@ -61,24 +61,17 @@ class _ValidationInterventionScreenState
       print(
         'Données récupérées: $fetchedTasks',
       ); // Log pour vérifier les données
-      if (fetchedTasks != null) {
-        setState(() {
-          tasks = fetchedTasks;
-          interventionStatuses
-              .clear(); // Réinitialiser pour éviter les doublons
+      setState(() {
+        tasks = fetchedTasks;
+        interventionStatuses
+            .clear(); // Réinitialiser pour éviter les doublons
 
-          for (var task in tasks) {
-            interventionStatuses[task.id] = false;
-          }
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-          hasError = true; // Si null, considérer comme erreur
-        });
-      }
-    } catch (e) {
+        for (var task in tasks) {
+          interventionStatuses[task.id] = false;
+        }
+        isLoading = false;
+      });
+        } catch (e) {
       setState(() {
         isLoading = false;
         hasError = true;
@@ -244,6 +237,7 @@ class _ValidationInterventionScreenState
                       } else if (task.hasBeenOrdered == true) {
                         return interventionItem(task, context);
                       }
+                      return null;
                     },
                   ),
           ),
@@ -307,7 +301,7 @@ class InterventionCard extends StatelessWidget {
   final bool isValidated;
   final Function(String, bool) onStatusChanged;
 
-  InterventionCard({
+  const InterventionCard({super.key, 
     required this.title,
     required this.technician,
     required this.status,

@@ -10,12 +10,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
-import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/models/pieces.dart';
 import 'package:pro_meca/core/widgets/imagePicker.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
-import 'package:provider/provider.dart';
 
 class CreatePieceForm extends StatefulWidget {
   final BuildContext pContext;

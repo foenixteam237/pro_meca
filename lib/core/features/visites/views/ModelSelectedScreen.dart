@@ -1,12 +1,10 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/visites/services/reception_services.dart';
 import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
-import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

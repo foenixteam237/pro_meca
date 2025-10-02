@@ -1,13 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../l10n/arb/app_localizations.dart';
 import '../../../constants/app_adaptive_colors.dart';
-import '../../../constants/app_styles.dart';
 import '../../../models/visite.dart';
 import '../../../widgets/buildSmallCard.dart';
 import '../../../widgets/buildSmallCardShimmer.dart';
@@ -86,12 +84,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
           visites,
           VisitStatus.attenteDiagnostic.value,
         );
-        statVI = isAdmin
-            ? Visite.getVehicleStatsByStatus(
-                visites,
-                VisitStatus.attenteValidationIntervention.value,
-              )
-            : {"total": statvi.length};
+        statVI = {"total": statvi.length};
         statT = Visite.getVehicleStatsByStatus(
           visites,
           VisitStatus.termine.value,
@@ -119,47 +112,6 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
         _isLoading = false;
       });
     }
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    final appColors = Provider.of<AppAdaptiveColors>(context);
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Immatriculation du véhicule',
-          prefixIcon: Icon(Icons.search, color: appColors.primary),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: const BorderSide(color: Colors.grey),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEntryBanner(BuildContext context) {
-    final appColors = Provider.of<AppAdaptiveColors>(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Text(
-            "Véhicules entrés depuis le",
-            style: AppStyles.titleLarge(context),
-          ),
-          const Spacer(),
-          Text(
-            "01/01/2025",
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: appColors.primary,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildStatusGrid(BuildContext context, List<Visite> visites) {

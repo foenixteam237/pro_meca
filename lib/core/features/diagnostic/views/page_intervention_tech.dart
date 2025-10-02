@@ -5,6 +5,7 @@ import 'package:pro_meca/core/features/diagnostic/views/intervention_detail.dart
 import 'package:pro_meca/core/features/diagnostic/views/technician_report.dart';
 import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_info_section.dart';
 import 'package:pro_meca/core/models/diagnostic_update.dart';
+import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
@@ -37,7 +38,14 @@ class _InterventionPageState extends State<InterventionPage> {
   Widget build(BuildContext context) {
     appColors ??= Provider.of<AppAdaptiveColors>(context);
     final Diagnostic diagnostic = widget.visite.diagnostics!.first;
-
+    final List<MaintenanceTask> main= [];
+    widget.visite.intervention!.map(
+        (e) {
+          if(e.status != "ATTENTE_VALIDATION_INTERVENTION"){
+            main.add(e);
+          }
+        }
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text('Interventions'),
@@ -70,7 +78,7 @@ class _InterventionPageState extends State<InterventionPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...widget.visite.intervention!.map(
+                        ...main.map(
                           (intervention) =>  buildInterventionCard(
                               nom: intervention.title,
                               priorite: intervention.priority,

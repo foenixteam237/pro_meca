@@ -191,6 +191,8 @@ class DiagnosticServices {
     required BuildContext context,
   }) async {
     try {
+
+      print(jsonEncode(report));
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
           '/reports/create',

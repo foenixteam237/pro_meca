@@ -3,7 +3,6 @@ import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:provider/provider.dart';
 import '../../../constants/app_styles.dart';
-import '../../../models/pieces.dart';
 
 Widget buildPieceItems(Map<String, dynamic> piece, BuildContext context) {
   final appColor = Provider.of<AppAdaptiveColors>(context);

@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -38,11 +39,11 @@ class _TechnicianReportState extends State<TechnicianReport> {
   final TextEditingController _travauxController = TextEditingController();
   AppAdaptiveColors? appColors;
 
-  List<Map<String, String>> _travaux = [];
+  final List<Map<String, String>> _travaux = [];
 
-  List<Map<String, dynamic>> _pieces = [];
+  final List<Map<String, dynamic>> _pieces = [];
 
-  List<Map<String, String>> _dysfonctionnements = [];
+  final List<Map<String, String>> _dysfonctionnements = [];
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +312,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
       padding: EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: 80,
             child: TextField(
               readOnly: true,
@@ -629,7 +630,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
   }
 
   Widget _buildFooterButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () async {
@@ -643,15 +644,15 @@ class _TechnicianReportState extends State<TechnicianReport> {
                   .map(
                     (piece) => {
                       "id": piece['id'],
-                      "quantity": piece['quantite'],
+                      "quantity": int.parse(piece['quantite']),
                     },
                   )
                   .toList(),
               "travaux_realises": _travaux
                   .map((travail) => travail['nom'])
                   .toList(),
-              "workedHours": _dureeController.text,
-              "completed": _completionController.text,
+              "workedHours": int.parse(_dureeController.text),
+              "completed": int.parse(_completionController.text),
             },
             "interventionId": widget.maintenanceTask.id,
           };
@@ -664,7 +665,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Rapport créé avec succès !'),
-                backgroundColor: Colors.green,
+                backgroundColor: appColors?.primary,
               ),
             );
             Navigator.pop(
@@ -764,13 +765,12 @@ class _TechnicianReportState extends State<TechnicianReport> {
                       final selectedPieceData = pieces?.firstWhere(
                         (pieces) => pieces['name'] == selectedPiece,
                       );
-                      print(selectedPieceData);
                       setState(() {
                         final piece = _pieces.where(
                           (piece) => piece['id'] == selectedPieceData['id'],
                         );
 
-                        if (piece.first['id'] == selectedPieceData['id']) {
+                        if (piece.isNotEmpty && piece.first['id'] == selectedPieceData['id']) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

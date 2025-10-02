@@ -5,7 +5,6 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
-import 'package:pro_meca/core/features/pieces/views/categoriePageScreen.dart';
 import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
