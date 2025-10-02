@@ -555,7 +555,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
           : await UserService().updateUserProfile(
               widget.user!.id,
               formData,
-              _isAdmin,
             ); // modification du profil
 
       if (mounted) {

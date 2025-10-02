@@ -75,11 +75,9 @@ class User {
         'createdAt': String? createdAt,
         'updatedAt': String? updatedAt,
         'companyId': String companyId,
-        'company': Map<String, dynamic> company,
+        'company': Map<String, dynamic>? company,
         'role': Map<String, dynamic> role,
         'lastLogin': String? lastLogin,
-        // 'formations': List<String>? formations,
-        // 'expertise': String? expertise,
       } =>
         User(
           id: id,
@@ -101,12 +99,10 @@ class User {
           createdAt: createdAt,
           updatedAt: updatedAt,
           companyId: companyId,
-          company: Company.fromJson(company),
+          company: company != null ? Company.fromJson(company) : null,
           role: Role.fromJson(role),
           roleId: Role.fromJson(role).id,
           lastLogin: lastLogin,
-          // formations: formations != null ? List<String>.from(formations) : null,
-          // expertise: expertise,
         ),
       _ => throw const FormatException('Invalid JSON format for User'),
     };

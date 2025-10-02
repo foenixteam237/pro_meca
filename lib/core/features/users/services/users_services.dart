@@ -21,12 +21,7 @@ class UserService {
         ),
       );
 
-  Future<User> updateUserProfile(
-    String userId,
-    // Map<String, dynamic> data,
-    FormData data,
-    bool isAdmin,
-  ) async {
+  Future<User> updateUserProfile(String userId, FormData data) async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
     if (accessToken == null) {
@@ -34,64 +29,27 @@ class UserService {
     }
 
     try {
-      Response response;
-      if (isAdmin) {
-        response = await ApiDioService().authenticatedRequest(
-          () => _dio.put(
-            '/auth/$userId',
-            // data: json.encode(data),
-            data: data,
-            options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-          ),
-        );
-      } else {
-        response = await ApiDioService().authenticatedRequest(
-          () => _dio.patch(
-            '/auth/me',
-            // data: json.encode(data),
-            data: data,
-            options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-          ),
-        );
-      }
+      Response response = await ApiDioService().authenticatedRequest(
+        () => _dio.patch(
+          '/auth/me',
+          // data: json.encode(data),
+          data: data,
+          options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+        ),
+      );
 
-      if (response.statusCode == 200 && isAdmin) {
+      if (ApiDioService.isSuccess(response)) {
         final updatedUser = User.fromUserJson(response.data['data']);
-        final currentUser = await ApiDioService().getSavedUser();
-        if (currentUser != null && currentUser.id == updatedUser.id) {
-          await ApiDioService().saveAuthData(
-            accessToken: accessToken,
-            refreshToken: prefs.getString('refreshToken') ?? '',
-            refreshExpiresAt: prefs.getInt('refreshExpiresAt') ?? 0,
-            expiresAt: prefs.getInt('expiresAt') ?? 0,
-            user: updatedUser,
-            rememberMe: prefs.getBool('remember_me') ?? false,
-          );
-        }
-        return updatedUser;
-      } else if (response.statusCode == 200 && isAdmin == false) {
-        Response rep = await ApiDioService().authenticatedRequest(
-          () => _dio.get(
-            '/auth/me',
-            // data: json.encode(data),
-            options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-          ),
+
+        await ApiDioService().saveAuthData(
+          accessToken: accessToken,
+          refreshToken: prefs.getString('refreshToken') ?? '',
+          refreshExpiresAt: prefs.getInt('refreshExpiresAt') ?? 0,
+          expiresAt: prefs.getInt('expiresAt') ?? 0,
+          user: updatedUser,
+          rememberMe: prefs.getBool('remember_me') ?? false,
         );
-
-        if (rep.statusCode == 200) {
-          final updatedUser = User.fromJsonUpdate(rep.data['user']);
-
-          final currentUser = await ApiDioService().getSavedUser();
-          if (currentUser != null && currentUser.id == updatedUser.id) {
-            final pref = await SharedPreferences.getInstance();
-            await pref.setString('user_data', json.encode(currentUser));
-          }
-          return updatedUser;
-        } else {
-          throw Exception(
-            'Échec de la mise à jour du profil (code ${response.statusCode})',
-          );
-        }
+        return updatedUser;
       } else {
         throw Exception(
           'Échec de la mise à jour du profil (code ${response.statusCode})',
