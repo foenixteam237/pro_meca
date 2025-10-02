@@ -248,7 +248,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
       final exists = await UserService().checkEmailExists(
         _emailController.text,
       );
-      if (widget.isEditing && widget.user?.email == _emailController.text) {
+      if (widget.user != null && widget.user!.email == _emailController.text) {
         setState(() {
           _emailValid = true;
           _emailCheckResult = true;
@@ -284,8 +284,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
       final exists = await UserService().checkPhoneExists(
         "${_selectedCountryCode}_${_phoneController.text}",
       );
-      if (widget.isEditing &&
-          widget.user?.phone ==
+      if (widget.user != null &&
+          widget.user!.phone ==
               "${_selectedCountryCode}_${_phoneController.text}") {
         setState(() {
           _phoneValid = true;
@@ -451,9 +451,51 @@ class _AddUserScreenState extends State<AddUserScreen> {
     return data;
   }
 
+  Map<String, dynamic> _buildProfileData() {
+    if (widget.user == null) throw ("Utilisateur a modifié non fourni");
+    if (_passwordController.text.isNotEmpty &&
+        _oldPasswordController.text.isEmpty)
+      throw ("Ancien mot de passe non fourni");
+
+    final Map<String, dynamic> data = {
+      if ((widget.user!.email == null && _emailController.text.isNotEmpty) ||
+          (widget.user!.email != null &&
+              _emailController.text != widget.user!.email!)) ...{
+        "email": _emailController.text,
+      },
+
+      // ...(_nameController.text != widget.user!.name
+      //     ? {"name": _nameController.text}
+      //     : {}),
+      ...(_passwordController.text.isNotEmpty
+          ? {
+              "password": _passwordController.text,
+              "oldPassword": _oldPasswordController.text,
+            }
+          : {}),
+      if ((widget.user!.bio == null && _bioController.text.isNotEmpty) ||
+          (widget.user!.bio != null &&
+              _bioController.text != widget.user!.bio!)) ...{
+        "bio": _bioController.text,
+      },
+
+      ...(_deleteLogo == true &&
+              widget.user!.logo != null &&
+              widget.user!.logo!.isNotEmpty
+          ? {"deleteLogo": true}
+          : {}),
+    };
+
+    data["id"] = widget.user!.id;
+
+    return data;
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_roleSelected != null && _roleSelected!.name == 'technicien') {
+    if ((widget.user == null || widget.isEditing) &&
+        _roleSelected != null &&
+        _roleSelected!.name == 'technicien') {
       if (_formationControllers.isEmpty ||
           _formationControllers.every((ct) => ct.text.trim().isEmpty)) {
         if (mounted) {
@@ -478,11 +520,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = !widget.isEditing
+      final data = widget.user == null
           ? _buildCreateData()
-          : widget.user != null
+          : widget.isEditing
           ? _buildUpdateData()
-          : {"no": null};
+          : _buildProfileData();
 
       FormData formData = FormData();
       formData.fields.add(MapEntry("data", jsonEncode(data)));
@@ -501,79 +543,28 @@ class _AddUserScreenState extends State<AddUserScreen> {
 
       User newUser;
 
-      // if (!widget.isEditing) {
-      // création d'un utilisateur
-      newUser = !widget.isEditing
-          ? await UserService().createUser(formData)
-          : await UserService().updateUser(widget.user!.id, formData);
-      // }
-      // else if (!_isAdmin || widget.user!.id == user.id) {
-      //   // update profile - construction spécifique pour PATCH
-      //   FormData formDataProfil = FormData();
-
-      //   if (_emailController.text.trim().isNotEmpty &&
-      //       _emailController.text != widget.user?.email) {
-      //     formDataProfil.fields.add(
-      //       MapEntry(
-      //         "email",
-      //         _emailController.text.trim(),
-      //       ), // SUPPRIMEZ jsonEncode
-      //     );
-      //   }
-      //   if (_bioController.text.trim().isNotEmpty &&
-      //       _bioController.text != widget.user?.bio) {
-      //     formDataProfil.fields.add(
-      //       MapEntry("bio", _bioController.text.trim()), // SUPPRIMEZ jsonEncode
-      //     );
-      //   }
-      //   if (_passwordController.text.isNotEmpty &&
-      //       _oldPasswordController.text.isNotEmpty) {
-      //     formDataProfil.fields.add(
-      //       MapEntry(
-      //         "currentPassword",
-      //         _oldPasswordController.text,
-      //       ), // SUPPRIMEZ jsonEncode
-      //     );
-      //     formDataProfil.fields.add(
-      //       MapEntry(
-      //         "newPassword",
-      //         _passwordController.text,
-      //       ), // SUPPRIMEZ jsonEncode
-      //     );
-      //   }
-
-      //   if (_selectedImage != null) {
-      //     formDataProfil.files.add(
-      //       MapEntry(
-      //         "logo",
-      //         await MultipartFile.fromFile(
-      //           _selectedImage!.path,
-      //           filename: _selectedImage!.path.split('/').last,
-      //         ),
-      //       ),
-      //     );
-      //   }
-
-      //   // Ajoutez un debug print pour vérifier les données
-      //   debugPrint(
-      //     'Données envoyées pour update profile: ${formDataProfil.fields}',
-      //   );
-
-      //   newUser = await UserService().updateUserProfile(
-      //     userId,
-      //     formDataProfil, // Utilisez formDataProfil au lieu de formData
-      //     false,
-      //   );
-      // } else {
-      //   // modification complète d'un utilisateur
-      //   newUser = await UserService().updateUser(user.id, formData);
-      // }
+      newUser = widget.user == null
+          ? await UserService().createUser(
+              formData,
+            ) // création d'un utilisateur
+          : widget.isEditing
+          ? await UserService().updateUser(
+              widget.user!.id,
+              formData,
+            ) // modification complète
+          : await UserService().updateUserProfile(
+              widget.user!.id,
+              formData,
+              _isAdmin,
+            ); // modification du profil
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Utilisateur ${newUser.name} ${widget.isEditing ? 'modifié' : 'créé'} avec succès',
+              widget.user == null
+                  ? 'Utilisateur ${newUser.name} créé avec succès'
+                  : '${widget.isEditing ? "Utilisateur" : "Profil"} ${newUser.name} modifié avec succès',
             ),
           ),
         );
@@ -604,6 +595,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 border: Border.all(color: Colors.grey),
               ),
               child: CountryCodePicker(
+                enabled: widget.user == null || widget.isEditing,
                 initialSelection: 'CM',
                 favorite: ['CM', 'TD', 'CE'],
                 onChanged: (country) {
@@ -632,6 +624,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
         Expanded(
           child: TextFormField(
             controller: _phoneController,
+            enabled: widget.user == null || widget.isEditing,
             keyboardType: TextInputType.phone,
             onChanged: (phone) => setState(() {
               _phoneValid = validatePhone(phone, _selectedCountryIso);
@@ -744,9 +737,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
         ),
         const SizedBox(width: 16),
         Text(
-          widget.isEditing
+          widget.user == null
+              ? 'Ajouter un utilisateur'
+              : widget.isEditing
               ? 'Modifier l\'utilisateur'
-              : 'Ajouter un utilisateur',
+              : 'Modifier votre profil',
           style: AppStyles.titleLarge(context),
         ),
       ],
@@ -913,12 +908,18 @@ class _AddUserScreenState extends State<AddUserScreen> {
             ),
             const SizedBox(height: 20),
 
-            _buildTextFieldWithValidation(
+            TextFormField(
               controller: _nameController,
-              label: "Nom complet",
+              enabled: widget.user == null || widget.isEditing,
               validator: (value) => value!.isEmpty ? 'Champ requis' : null,
-              context: context,
+              decoration: InputDecoration(
+                labelText: "Nom complet",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
+
             const SizedBox(height: 16),
 
             _buildEmailField(context),
@@ -966,30 +967,33 @@ class _AddUserScreenState extends State<AddUserScreen> {
             _buildSectionTitle("Paramètres du compte", Icons.settings, context),
             const SizedBox(height: 20),
 
-            if (!widget.isEditing) _buildPasswordField(context),
-            if (widget.isEditing) _buildPasswordUpdateSection(context),
+            if (widget.user == null)
+              _buildPasswordField(context)
+            else
+              _buildPasswordUpdateSection(context),
 
             const SizedBox(height: 16),
             _buildRoleDropdown(context),
             const SizedBox(height: 20),
 
-            Row(
-              children: [
-                _buildToggleSwitch(
-                  value: _isVerified,
-                  onChanged: (value) => setState(() => _isVerified = value),
-                  label: "Vérifié",
-                  icon: Icons.verified,
-                ),
-                const SizedBox(width: 20),
-                _buildToggleSwitch(
-                  value: _isActive,
-                  onChanged: (value) => setState(() => _isActive = value),
-                  label: "Actif",
-                  icon: Icons.power_settings_new,
-                ),
-              ],
-            ),
+            if (widget.user == null || widget.isEditing)
+              Row(
+                children: [
+                  // _buildToggleSwitch(
+                  //   value: _isVerified,
+                  //   onChanged: (value) => setState(() => _isVerified = value),
+                  //   label: "Vérifié",
+                  //   icon: Icons.verified,
+                  // ),
+                  const SizedBox(width: 60),
+                  _buildToggleSwitch(
+                    value: _isActive,
+                    onChanged: (value) => setState(() => _isActive = value),
+                    label: "Actif",
+                    icon: Icons.power_settings_new,
+                  ),
+                ],
+              ),
           ],
         ),
       ),
@@ -1013,6 +1017,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
           children: [
             TextFormField(
               controller: _availabilityController,
+              enabled: widget.user == null || widget.isEditing,
               decoration: InputDecoration(
                 label: Text("Disponibilité"),
                 helperText: "Ex: Lundi-Vendredi 8h-17h, Week-end sur demande",
@@ -1024,6 +1029,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
             SizedBox(height: 10),
             TextFormField(
               controller: _expertiseController,
+              enabled: widget.user == null || widget.isEditing,
               decoration: InputDecoration(
                 label: Text("Expertise"),
                 helperText: "Domaines d'expertise",
@@ -1041,7 +1047,9 @@ class _AddUserScreenState extends State<AddUserScreen> {
                     Icons.add_circle,
                     color: Theme.of(context).primaryColor,
                   ),
-                  onPressed: _addFormationField,
+                  onPressed: !(widget.user == null || widget.isEditing)
+                      ? null
+                      : _addFormationField,
                 ),
               ],
             ),
@@ -1066,16 +1074,21 @@ class _AddUserScreenState extends State<AddUserScreen> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle, color: Colors.red),
-                      onPressed: () => _removeFormationField(index),
-                    ),
+                    if (widget.user == null || widget.isEditing)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.remove_circle,
+                          color: Colors.red,
+                        ),
+                        onPressed: () => _removeFormationField(index),
+                      ),
                   ],
                 ),
               );
             }),
 
-            if (_formationControllers.isEmpty)
+            if (_formationControllers.isEmpty &&
+                (widget.user == null || widget.isEditing))
               const Text(
                 "Aucune formation ajoutée. Cliquez sur + pour ajouter.",
                 style: TextStyle(
@@ -1293,7 +1306,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 child: Text(role.name.toUpperCase()),
               );
             }).toList(),
-            onChanged: (widget.isEditing && _currentUser?.id == widget.user?.id)
+            onChanged:
+                (widget.user != null && _currentUser?.id == widget.user!.id)
                 ? null // L'admin ne peut pas modifier son propre rôle
                 : (Role? newValue) {
                     setState(() {
@@ -1327,12 +1341,12 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    widget.isEditing ? Icons.save : Icons.person_add,
+                    widget.user != null ? Icons.save : Icons.person_add,
                     color: Colors.white,
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    widget.isEditing
+                    widget.user != null
                         ? "Modifier l'utilisateur"
                         : "Ajouter l'utilisateur",
                     style: AppStyles.buttonText(
@@ -1357,22 +1371,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
           ).copyWith(fontWeight: FontWeight.w600),
         ),
       ],
-    );
-  }
-
-  Widget _buildTextFieldWithValidation({
-    required TextEditingController controller,
-    required String label,
-    required String? Function(String?) validator,
-    required BuildContext context,
-  }) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
     );
   }
 

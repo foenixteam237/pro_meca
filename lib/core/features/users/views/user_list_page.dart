@@ -183,7 +183,7 @@ class _UserListScreenState extends State<UserListScreen> {
       MaterialPageRoute(
         builder: (context) => AddUserScreen(
           user: user,
-          isEditing: true,
+          isEditing: !user.isCompanyAdmin,
           accessToken: _accessToken,
         ),
       ),
