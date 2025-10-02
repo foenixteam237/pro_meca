@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,12 +22,14 @@ import '../../../widgets/imagePicker.dart';
 import 'password_validator.dart';
 
 class AddUserScreen extends StatefulWidget {
+  final BuildContext? context;
   final User? user;
   final bool isEditing;
   final String _accessToken;
 
   const AddUserScreen({
     super.key,
+    this.context,
     this.user,
     this.isEditing = false,
     required String accessToken,
@@ -454,8 +457,9 @@ class _AddUserScreenState extends State<AddUserScreen> {
   Map<String, dynamic> _buildProfileData() {
     if (widget.user == null) throw ("Utilisateur a modifié non fourni");
     if (_passwordController.text.isNotEmpty &&
-        _oldPasswordController.text.isEmpty)
+        _oldPasswordController.text.isEmpty) {
       throw ("Ancien mot de passe non fourni");
+    }
 
     final Map<String, dynamic> data = {
       if ((widget.user!.email == null && _emailController.text.isNotEmpty) ||
@@ -567,7 +571,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
             ),
           ),
         );
-        Navigator.pop(context, true);
+        if (_isAdmin && (widget.user == null || widget.isEditing)) {
+          Navigator.pop(context, true);
+        } else {
+          Navigator.pushReplacementNamed(widget.context!, '/technician_home');
+        }
       }
     } catch (e) {
       debugPrint('Erreur détaillée: $e');
@@ -752,7 +760,6 @@ class _AddUserScreenState extends State<AddUserScreen> {
     BuildContext context,
     String accessToken,
   ) {
-    debugPrint("logo=${widget.user?.logo}");
     final bool hasExistingImage = widget.user?.logo != null;
     final bool hasSelectedImage = _selectedImage != null;
 
@@ -1065,6 +1072,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: controller,
+                        enabled: widget.user == null || widget.isEditing,
                         decoration: InputDecoration(
                           labelText: "Formation ${index + 1}",
                           border: OutlineInputBorder(

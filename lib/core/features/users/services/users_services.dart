@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -255,7 +256,9 @@ class UserService {
         final data = response.data;
 
         if (data is List) {
-          print(data);
+          if (kDebugMode) {
+            print(data);
+          }
           return data.map((json) => Role.fromRoleJson(json)).toList();
         } else {
           throw Exception('Format de données inattendu.');

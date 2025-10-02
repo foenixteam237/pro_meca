@@ -1,11 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/core/features/users/views/add_user_screen.dart';
+import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/buildHistoryList.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
-import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
 import 'package:pro_meca/l10n/arb/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +29,7 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
   List<Visite> _visites = [];
   bool _isLoading = true;
   String accessToken = "";
+  User? _currentUser;
 
   @override
   void initState() {
@@ -41,13 +45,18 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
     try {
       final pref = await SharedPreferences.getInstance();
       accessToken = pref.getString("accessToken") ?? "";
+      final userData = pref.getString('user_data');
+      if (userData != null) {
+        _currentUser = User.fromJson(jsonDecode(userData));
+      }
+
       final visites = await ReceptionServices().fetchVisitesWithVehicle();
       setState(() {
         _visites = visites;
         _isLoading = false;
       });
     } catch (e, stack) {
-      print(stack);
+      debugPrint(stack.toString());
       setState(() {
         _visites = [];
         _isLoading = false;
@@ -70,7 +79,13 @@ class _TechnicianHomeScreenState extends State<TechnicianHomeScreen> {
       ),
       //CategoriesPage(parentContext: context),
       VehicleDashboardPage(context: context),
-      ProfileScreen(con: context),
+      // ProfileScreen(con: context),
+      AddUserScreen(
+        context: context,
+        accessToken: accessToken,
+        user: _currentUser,
+        isEditing: false,
+      ),
     ];
   }
 

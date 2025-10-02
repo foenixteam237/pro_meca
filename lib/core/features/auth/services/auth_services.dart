@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pro_meca/core/models/dataLogin.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
@@ -39,6 +40,9 @@ class AuthServices {
       if (response.statusCode == 200) {
         final responseData = response.data;
         final data = Data.fromJson(responseData['data']);
+        if (kDebugMode) {
+          print("user data = ${data.user}");
+        }
         await _saveAuthData(
           accessToken: data.accessToken,
           refreshToken: data.refreshToken,
