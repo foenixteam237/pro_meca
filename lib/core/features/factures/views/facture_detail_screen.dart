@@ -400,11 +400,6 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
               border: TableBorder.all(color: Colors.grey.shade300),
               children: [
                 TableRow(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[800] // Couleur pour dark mode
-                        : Colors.grey[100], // Couleur pour light mode
-                  ),
                   children: const [
                     Padding(
                       padding: EdgeInsets.all(8),
