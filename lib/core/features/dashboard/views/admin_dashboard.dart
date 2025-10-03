@@ -98,7 +98,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "accli",
+                        status: "accli", name: 'Véhicules en attente commande client',
                       ),
                     ),
                   ),
@@ -117,7 +117,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "aint",
+                        status: "aint", name: 'Véhicule en attente intervention',
                       ),
                     ),
                   ),
@@ -136,7 +136,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "avin",
+                        status: "avin", name: 'Véhicules en attente validation intervention',
                       ),
                     ),
                   ),
@@ -155,7 +155,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "term",
+                        status: "term", name: 'Véhicules terminés',
                       ),
                     ),
                   ),

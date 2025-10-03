@@ -10,10 +10,12 @@ import '../../visites/services/reception_services.dart';
 
 class VisiteListByStatus extends StatefulWidget {
   final BuildContext contextParent;
+  final String name;
   final String status;
   const VisiteListByStatus({
     super.key,
     required this.contextParent,
+    required this.name,
     required this.status,
   });
 
@@ -110,7 +112,7 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Text("Liste des visites", style: AppStyles.titleMedium(context)),
+          Text(widget.name, style: AppStyles.titleMedium(context)),
           const Spacer(),
           Text(
             "01/01/2025",

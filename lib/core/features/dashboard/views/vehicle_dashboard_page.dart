@@ -141,7 +141,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "avdia",
+                        status: "avdia", name: 'Véhicules en attente validation diagnostic',
                       ),
                     ),
                   ),
@@ -162,7 +162,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "aint",
+                        status: "aint", name: 'Véhicules en attente intervention',
                       ),
                     ),
                   ),
@@ -181,7 +181,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "avin",
+                        status: "avin", name: 'Véhicules en attente validation intervention',
                       ),
                     ),
                   ),
@@ -200,7 +200,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "term",
+                        status: "term", name: 'Véhicules terinés',
                       ),
                     ),
                   ),
@@ -245,7 +245,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                               MaterialPageRoute(
                                 builder: (context) => VisiteListByStatus(
                                   contextParent: widget.context,
-                                  status: "adia",
+                                  status: "adia", name: 'En attente diagnostic',
                                 ),
                               ),
                             );
