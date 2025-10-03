@@ -42,7 +42,6 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
       late final List<Visite> visites;
 
       if (isAdmin) {
-
         visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
           widget.status,
         );
@@ -56,6 +55,7 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
             visites = await ReceptionServices().fetchVisitesWithVehicleStatus(
               widget.status,
             );
+            print(visites);
             break;
           case "avin":
             visites = await ReceptionServices().fetchVisitesWithVehicleStatus(

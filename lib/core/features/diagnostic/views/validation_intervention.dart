@@ -29,6 +29,7 @@ class ValidationInterventionScreen extends StatefulWidget {
   });
 
   @override
+  // ignore: library_private_types_in_public_api
   _ValidationInterventionScreenState createState() =>
       _ValidationInterventionScreenState();
 }
@@ -63,15 +64,14 @@ class _ValidationInterventionScreenState
       ); // Log pour vérifier les données
       setState(() {
         tasks = fetchedTasks;
-        interventionStatuses
-            .clear(); // Réinitialiser pour éviter les doublons
+        interventionStatuses.clear(); // Réinitialiser pour éviter les doublons
 
         for (var task in tasks) {
           interventionStatuses[task.id] = false;
         }
         isLoading = false;
       });
-        } catch (e) {
+    } catch (e) {
       setState(() {
         isLoading = false;
         hasError = true;
@@ -161,7 +161,14 @@ class _ValidationInterventionScreenState
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child:buildVehicleInfoSection(context, Responsive.isMobile(context), appColors, AppLocalizations.of(context), widget.visite, widget.accessToken),
+            child: buildVehicleInfoSection(
+              context,
+              Responsive.isMobile(context),
+              appColors,
+              AppLocalizations.of(context),
+              widget.visite,
+              widget.accessToken,
+            ),
           ),
           Expanded(
             child: isLoading
@@ -301,7 +308,8 @@ class InterventionCard extends StatelessWidget {
   final bool isValidated;
   final Function(String, bool) onStatusChanged;
 
-  const InterventionCard({super.key, 
+  const InterventionCard({
+    super.key,
     required this.title,
     required this.technician,
     required this.status,

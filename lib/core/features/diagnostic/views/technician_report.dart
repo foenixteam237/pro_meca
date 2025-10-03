@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -105,14 +104,20 @@ class _TechnicianReportState extends State<TechnicianReport> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          //Ajouter titre intervention et reference
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.maintenanceTask.title,
-                style: AppStyles.titleMedium(
-                  context,
-                ).copyWith(fontSize: 14, fontWeight: FontWeight.w600),
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * 0.5,
+                child: Text(
+                  widget.maintenanceTask.title,
+                  style: AppStyles.titleMedium(context).copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    overflow: TextOverflow.clip,
+                  ),
+                ),
               ),
               SizedBox(height: 4),
               RichText(
@@ -274,7 +279,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Mes dysfonctionnements",
+                "Mes dysfonctionnements résolus",
                 style: AppStyles.titleMedium(
                   context,
                 ).copyWith(fontSize: 18, fontWeight: FontWeight.w600),
@@ -411,6 +416,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
                   color: appColors?.primary,
                   shape: BoxShape.circle,
                 ),
+                //Changer le bouton
                 child: IconButton(
                   icon: Icon(
                     Icons.add,
@@ -427,6 +433,16 @@ class _TechnicianReportState extends State<TechnicianReport> {
                         });
                         _travauxController.clear();
                       });
+                    } else {
+                      //AJouter un message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Veuillez remplir le champs travaux effectués avant de pouvoir l\'ajouter',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
                     }
                   },
                 ),
@@ -501,7 +517,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Liste des pièces',
+                'Liste des pièces utilisées',
                 style: AppStyles.titleMedium(
                   context,
                 ).copyWith(fontSize: 18, fontWeight: FontWeight.w600),
@@ -634,6 +650,19 @@ class _TechnicianReportState extends State<TechnicianReport> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () async {
+          if (_travaux.isEmpty &&
+              _dysfonctionnements.isEmpty &&
+              _dureeController.text.isEmpty &&
+              _completionController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Veuilllez remplir tous les champs!!!!!'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+
           // Action pour terminer l'intervention
           Map<String, dynamic> rapport = {
             "content": {
@@ -681,7 +710,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
           }
         },
         style: AppStyles.primaryButton(context),
-        child: Text('Terminée', style: AppStyles.buttonText(context)),
+        child: Text('Terminer', style: AppStyles.buttonText(context)),
       ),
     );
   }
@@ -707,9 +736,7 @@ class _TechnicianReportState extends State<TechnicianReport> {
                 items: pieces?.map((piece) {
                   return DropdownMenuItem<String>(
                     value: piece['name'],
-                    child: Text(
-                      '${piece['name']} (Stock: ${piece['quantity']})',
-                    ),
+                    child: Text('${piece['name']} (Max: ${piece['quantity']})'),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -770,7 +797,8 @@ class _TechnicianReportState extends State<TechnicianReport> {
                           (piece) => piece['id'] == selectedPieceData['id'],
                         );
 
-                        if (piece.isNotEmpty && piece.first['id'] == selectedPieceData['id']) {
+                        if (piece.isNotEmpty &&
+                            piece.first['id'] == selectedPieceData['id']) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(

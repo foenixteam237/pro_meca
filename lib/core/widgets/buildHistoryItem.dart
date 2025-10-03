@@ -242,7 +242,6 @@ void _showNextPageOther(
           dominantStatus = status;
         }
       }
-      print("Dominant priority ${dominantStatus}");
       if (isAdmin) {
         // Admins: Navigate based on dominant status
         switch (dominantStatus) {
@@ -271,19 +270,19 @@ void _showNextPageOther(
               ),
             );
             break;
-            case InterventionStatus.attenteCommandeClient:
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ValidationInterventionScreen(
-                    visiteId: visite.id,
-                    isAdmin: isAdmin,
-                    accessToken: accessToken,
-                    visite: visite,
-                  ),
+          case InterventionStatus.attenteCommandeClient:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ValidationInterventionScreen(
+                  visiteId: visite.id,
+                  isAdmin: isAdmin,
+                  accessToken: accessToken,
+                  visite: visite,
                 ),
-              );
-              break;
+              ),
+            );
+            break;
           default:
             // Other statuses (e.g., ATTENTE_COMMANDE_CLIENT, ATTENTE_INTERVENTION)
             // may not require admin validation
@@ -300,6 +299,14 @@ void _showNextPageOther(
         // Non-admins: Navigate to InterventionPage for actionable statuses
         switch (dominantStatus) {
           case InterventionStatus.attenteIntervention:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    InterventionPage(visite: visite, accessToken: accessToken),
+              ),
+            );
+            break;
           case InterventionStatus.ongoing:
           case InterventionStatus.attentePiece:
           case InterventionStatus.attenteMateriel:

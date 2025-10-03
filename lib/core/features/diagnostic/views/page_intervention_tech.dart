@@ -38,14 +38,12 @@ class _InterventionPageState extends State<InterventionPage> {
   Widget build(BuildContext context) {
     appColors ??= Provider.of<AppAdaptiveColors>(context);
     final Diagnostic diagnostic = widget.visite.diagnostics!.first;
-    final List<MaintenanceTask> main= [];
-    widget.visite.intervention!.map(
-        (e) {
-          if(e.status != "ATTENTE_VALIDATION_INTERVENTION"){
-            main.add(e);
-          }
-        }
-    );
+    final List<MaintenanceTask> main = [];
+    widget.visite.intervention!.map((e) {
+      if (e.status != "ATTENTE_INTERVENTION") {
+        main.add(e);
+      }
+    });
     return Scaffold(
       appBar: AppBar(
         title: Text('Interventions'),
@@ -78,11 +76,11 @@ class _InterventionPageState extends State<InterventionPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...main.map(
-                          (intervention) =>  buildInterventionCard(
-                              nom: intervention.title,
-                              priorite: intervention.priority,
-                            onVoirPlusPressed: (){
+                        ...widget.visite.intervention!.map(
+                          (intervention) => buildInterventionCard(
+                            nom: intervention.title,
+                            priorite: intervention.priority,
+                            onVoirPlusPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -92,7 +90,7 @@ class _InterventionPageState extends State<InterventionPage> {
                                 ),
                               );
                             },
-                            onRapportPressed: (){
+                            onRapportPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -103,7 +101,7 @@ class _InterventionPageState extends State<InterventionPage> {
                                   ),
                                 ),
                               );
-                            }
+                            },
                           ),
                         ),
                       ],
@@ -231,7 +229,7 @@ class _InterventionPageState extends State<InterventionPage> {
                     children: [
                       buildActionButton(
                         background: appColors!.primary,
-                        onPressed: ()=>onRapportPressed!(),
+                        onPressed: () => onRapportPressed!(),
                         text: 'Rapport',
                       ),
                       /*
