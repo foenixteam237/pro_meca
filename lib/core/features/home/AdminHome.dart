@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
+import 'package:pro_meca/core/features/factures/views/facture_list_screen.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
 import 'package:pro_meca/core/widgets/customAppBar.dart';
 import 'package:pro_meca/core/features/profil/user_profile_screen.dart';
@@ -39,8 +40,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       VehicleDashboardPage(context: context),
       PartsInventoryScreen(),
       UserListScreen(),
-      AdminDashboard(context: context,),
-      ProfileScreen(con: context),
+      AdminDashboard(context: context),
+      FactureListScreen(),
     ];
   }
 
@@ -96,9 +97,15 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         activeColorPrimary: appColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
+      // PersistentBottomNavBarItem(
+      //   icon: const Icon(Icons.person), //facture
+      //   title: l10n.profile,
+      //   activeColorPrimary: appColors.primary,
+      //   inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
+      // ),
       PersistentBottomNavBarItem(
-        icon: const Icon(Icons.person),
-        title: l10n.profile,
+        icon: const Icon(Icons.receipt),
+        title: 'Factures', // Ou l10n.invoices si traduit
         activeColorPrimary: appColors.primary,
         inactiveColorPrimary: isDarkMode ? Colors.white : Colors.grey,
       ),
