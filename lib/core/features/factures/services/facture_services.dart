@@ -107,24 +107,31 @@ class FactureService {
     }
   }
 
-  Future<Response> generateWordFacture(String visiteId) async {
+  Future<Uint8List> generateWordFactureBytes(String visiteId) async {
     try {
-      return await ApiDioService().authenticatedRequest(
+      final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
           '/factures/word/visite/$visiteId',
           options: Options(
             headers: await ApiDioService().getAuthHeaders(),
-            responseType: ResponseType.bytes, // Pour les fichiers binaires
+            responseType:
+                ResponseType.bytes, // Important pour les fichiers binaires
           ),
         ),
       );
+
+      if (ApiDioService.isSuccess(response)) {
+        return response.data as Uint8List;
+      } else {
+        throw Exception('Erreur lors du téléchargement du fichier Word');
+      }
     } on DioException catch (dioError) {
       throw _handleDioError(
         dioError,
-        'Erreur lors de la génération du fichier Word',
+        'Erreur lors du téléchargement du fichier Word',
       );
     } catch (e) {
-      throw Exception('Erreur inattendue lors de la génération du Word: $e');
+      throw Exception('Erreur inattendue lors du téléchargement: $e');
     }
   }
 
@@ -268,27 +275,6 @@ class FactureService {
 
       case DioExceptionType.badCertificate:
         return Exception('Certificat de sécurité invalide.');
-    }
-  }
-
-  // Méthode utilitaire pour télécharger le fichier Word
-  Future<void> downloadWordFacture(String visiteId, String fileName) async {
-    try {
-      final response = await generateWordFacture(visiteId);
-
-      if (ApiDioService.isSuccess(response)) {
-        // Ici vous pouvez implémenter la logique de sauvegarde du fichier
-        // Par exemple, utiliser le package file_saver ou partager le fichier
-        final bytes = response.data as List<int>;
-        debugPrint('Fichier Word généré avec ${bytes.length} bytes');
-
-        // Exemple d'utilisation avec file_saver (à installer)
-        // await FileSaver.instance.saveFile(fileName, bytes, 'docx');
-      } else {
-        throw Exception('Erreur lors de la génération du fichier');
-      }
-    } catch (e) {
-      throw Exception('Erreur lors du téléchargement: $e');
     }
   }
 }

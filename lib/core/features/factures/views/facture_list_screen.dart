@@ -1,4 +1,7 @@
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/features/factures/views/facture_edit_screen.dart';
 import 'package:pro_meca/core/models/facture.dart';
 import 'package:provider/provider.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
@@ -7,6 +10,7 @@ import 'package:pro_meca/core/utils/responsive.dart';
 import '../services/facture_services.dart';
 import '../widgets/facture_list_shimmer.dart';
 import 'facture_detail_screen.dart';
+import 'package:open_file/open_file.dart';
 
 class FactureListScreen extends StatefulWidget {
   const FactureListScreen({super.key});
@@ -26,6 +30,8 @@ class _FactureListScreenState extends State<FactureListScreen> {
   int _skip = 0;
   final int _take = 10;
   bool _hasMore = false;
+
+  bool _isGeneratingWord = false;
 
   // Filtres
   String? _selectedStatus;
@@ -70,6 +76,10 @@ class _FactureListScreenState extends State<FactureListScreen> {
         take: _take,
         filters: filters,
       );
+
+      if (kDebugMode) {
+        print("1ere facture.lines= ${response.factures[0].lines.toString()}");
+      }
 
       setState(() {
         _factures = response.factures;
@@ -328,28 +338,83 @@ class _FactureListScreenState extends State<FactureListScreen> {
   }
 
   void _editFacture(Facture facture) {
-    // Navigation vers l'écran d'édition
-    // À implémenter
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FactureEditScreen(facture: facture),
+      ),
+    ).then((updatedFacture) {
+      if (updatedFacture != null) {
+        // Rafraîchir la liste si nécessaire
+        _loadFactures();
+      }
+    });
   }
 
   Future<void> _generateWordFacture(Facture facture) async {
+    if (_isGeneratingWord) return;
+
+    setState(() => _isGeneratingWord = true);
+
     try {
-      final response = await _factureService.generateWordFacture(
-        facture.visite.id,
+      // Télécharger les bytes du fichier Word depuis le serveur
+      final Uint8List wordBytes = await _factureService
+          .generateWordFactureBytes(facture.visite.id);
+
+      // Utiliser FilePicker pour sauvegarder le fichier
+      final String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Enregistrer la facture Word',
+        fileName: 'facture_${facture.reference}.docx',
+        bytes: wordBytes,
+        lockParentWindow: true,
       );
-      if (response.statusCode == 200) {
-        // Gérer le téléchargement du fichier Word
+
+      if (outputPath != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Facture Word générée avec succès')),
+          SnackBar(
+            content: Text(
+              'Facture Word enregistrée: ${outputPath.split('/').last}',
+            ),
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Ouvrir',
+              onPressed: () {
+                // ouvrir le fichier
+                _openFile(outputPath);
+              },
+            ),
+          ),
         );
-      } else {
-        throw Exception('Erreur de génération');
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Enregistrement annulé'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de la génération: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du téléchargement: $e'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingWord = false);
+      }
     }
+  }
+
+  Future<void> _openFile(String filePath) async {
+    await OpenFile.open(
+      filePath,
+      type:
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    );
   }
 
   Future<void> _validateCommande(Facture facture) async {
@@ -428,79 +493,105 @@ class _FactureListScreenState extends State<FactureListScreen> {
     final isMobile = screenSize.width < 600;
 
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadFactures,
-          color: appColors.primary,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: Responsive.responsiveValue(
-                context,
-                mobile: screenSize.height * 0.025,
-                tablet: screenSize.height * 0.02,
-                desktop: screenSize.height * 0.03,
-              ),
-              vertical: 12,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 🔍 Champ de recherche
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _loadFactures,
+              color: appColors.primary,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Responsive.responsiveValue(
+                    context,
+                    mobile: screenSize.height * 0.025,
+                    tablet: screenSize.height * 0.02,
+                    desktop: screenSize.height * 0.03,
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (_) => _filterFactures(),
-                          decoration: InputDecoration(
-                            hintText:
-                                'Rechercher par référence, client ou véhicule',
-                            border: InputBorder.none,
-                            suffixIcon: Icon(
-                              Icons.search,
-                              color: appColors.primary,
-                            ),
-                            hintStyle: TextStyle(
-                              color: Theme.of(context).hintColor,
+                  vertical: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 🔍 Champ de recherche
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (_) => _filterFactures(),
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Rechercher par référence, client ou véhicule',
+                                border: InputBorder.none,
+                                suffixIcon: Icon(
+                                  Icons.search,
+                                  color: appColors.primary,
+                                ),
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context).hintColor,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 📊 En-tête avec statistiques
+                    _buildHeader(appColors, context),
+                    const SizedBox(height: 16),
+
+                    // 🎛️ Barre d'outils
+                    _buildToolbar(context, appColors),
+                    const SizedBox(height: 16),
+
+                    // 📋 Liste des factures
+                    Expanded(
+                      child: _isLoading
+                          ? const FactureListShimmer()
+                          : _filteredFactures.isEmpty
+                          ? const Center(child: Text('Aucune facture trouvée.'))
+                          : isMobile
+                          ? _buildMobileList()
+                          : _buildDesktopTable(),
+                    ),
+
+                    // 📄 Pagination
+                    if (!isMobile && _factures.isNotEmpty) _buildPagination(),
+                  ],
                 ),
-                const SizedBox(height: 16),
-
-                // 📊 En-tête avec statistiques
-                _buildHeader(appColors, context),
-                const SizedBox(height: 16),
-
-                // 🎛️ Barre d'outils
-                _buildToolbar(context, appColors),
-                const SizedBox(height: 16),
-
-                // 📋 Liste des factures
-                Expanded(
-                  child: _isLoading
-                      ? const FactureListShimmer()
-                      : _filteredFactures.isEmpty
-                      ? const Center(child: Text('Aucune facture trouvée.'))
-                      : isMobile
-                      ? _buildMobileList()
-                      : _buildDesktopTable(),
-                ),
-
-                // 📄 Pagination
-                if (!isMobile && _factures.isNotEmpty) _buildPagination(),
-              ],
+              ),
             ),
           ),
-        ),
+          // Overlay de chargement pour Word
+          if (_isGeneratingWord)
+            Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Téléchargement du fichier Word...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

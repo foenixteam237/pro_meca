@@ -36,6 +36,8 @@ class Facture {
   final Visite visite;
   final List<InvoiceLine> lines;
   final String? notes;
+  final String? totalTTCWord;
+  final String? totalHTWord;
 
   Facture({
     required this.id,
@@ -49,6 +51,8 @@ class Facture {
     required this.visite,
     required this.lines,
     this.notes,
+    this.totalTTCWord,
+    this.totalHTWord,
   });
 
   factory Facture.fromJson(Map<String, dynamic> json) {
@@ -74,13 +78,15 @@ class Facture {
           .map((item) => InvoiceLine.fromJson(item))
           .toList(),
       notes: json['notes'],
+      totalHTWord: json['totalHTWord'],
+      totalTTCWord: json['totalTTCWord'],
     );
   }
 
   static String statusLabel(String status) {
     switch (status) {
       case 'DRAFT':
-        return 'Brouillon';
+        return 'Proforma';
       case 'OK':
         return 'Validée';
       case 'SENT':

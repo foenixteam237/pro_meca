@@ -1,52 +1,265 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:open_file/open_file.dart';
+import 'package:pro_meca/core/features/factures/services/pdf_facture_service.dart';
+import 'package:pro_meca/core/features/factures/views/facture_edit_screen.dart';
 import 'package:pro_meca/core/models/facture.dart';
+import 'package:pro_meca/core/utils/formatting.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 
-class FactureDetailScreen extends StatelessWidget {
+class FactureDetailScreen extends StatefulWidget {
   final Facture facture;
 
   const FactureDetailScreen({super.key, required this.facture});
 
   @override
+  State<FactureDetailScreen> createState() => _FactureDetailScreenState();
+}
+
+class _FactureDetailScreenState extends State<FactureDetailScreen> {
+  bool _isGeneratingPdf = false;
+  Future<void> _generateAndSavePdf() async {
+    if (_isGeneratingPdf) return;
+
+    setState(() => _isGeneratingPdf = true);
+
+    try {
+      // Générer le PDF
+      final File pdfFile = await PdfFactureService.generateFacturePdf(
+        widget.facture,
+      );
+
+      // Lire les bytes
+      final Uint8List pdfBytes = await pdfFile.readAsBytes();
+
+      // Sauvegarder avec FilePicker
+      final String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Enregistrer la facture PDF',
+        fileName: 'facture_${widget.facture.reference}.pdf',
+        bytes: pdfBytes,
+      );
+
+      if (outputPath != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF enregistré avec succès'),
+            action: SnackBarAction(
+              label: 'Ouvrir',
+              onPressed: () {
+                _openFile(outputPath);
+              },
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Enregistrement annulé'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } on FileSystemException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur d\'accès au fichier: ${e.message}'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } on PlatformException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur platforme: ${e.message}'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur inattendue: $e'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingPdf = false);
+      }
+    }
+  }
+
+  Future<void> _openFile(String filePath) async {
+    await OpenFile.open(filePath, type: 'application/pdf');
+  }
+
+  Future<void> _generateAndSharePdf() async {
+    if (_isGeneratingPdf) return;
+
+    setState(() => _isGeneratingPdf = true);
+
+    try {
+      final File pdfFile = await PdfFactureService.generateFacturePdf(
+        widget.facture,
+      );
+
+      // Partager le fichier
+      final params = ShareParams(
+        text:
+            'Facture ${widget.facture.reference} - ${widget.facture.client.fullName}',
+        files: [XFile(pdfFile.path /* , mimeType: "application/pdf" */)],
+        subject: 'Facture ${widget.facture.reference}',
+      );
+
+      final result = await SharePlus.instance.share(params);
+
+      if (result.status == ShareResultStatus.success) {
+        print('Facture partagée avec succès!');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du partage: $e'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingPdf = false);
+      }
+    }
+  }
+
+  void _editFacture() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FactureEditScreen(facture: widget.facture),
+      ),
+    ).then((updatedFacture) {
+      if (updatedFacture != null && mounted) {
+        // Rafraîchir l'affichage si nécessaire
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Facture mise à jour'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Facture ${facture.reference}'),
+        title: Text('Facture ${widget.facture.reference}'),
         actions: [
-          IconButton(icon: const Icon(Icons.print), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _editFacture,
+            tooltip: 'Modifier',
+          ),
+          IconButton(
+            icon: _isGeneratingPdf
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.print),
+            onPressed: _isGeneratingPdf ? null : _generateAndSavePdf,
+            tooltip: 'Générer PDF',
+          ),
+          IconButton(
+            icon: _isGeneratingPdf
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.share),
+            onPressed: _isGeneratingPdf ? null : _generateAndSharePdf,
+            tooltip: 'Partager',
+          ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // En-tête
-            _buildHeader(),
-            const SizedBox(height: 24),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // En-tête
+                _buildHeader(context),
+                const SizedBox(height: 24),
 
-            // Informations client et véhicule
-            _buildClientVehicleInfo(),
-            const SizedBox(height: 24),
+                // Informations client et véhicule
+                _buildClientVehicleInfo(),
+                const SizedBox(height: 24),
 
-            // Lignes de facture
-            _buildInvoiceLines(),
-            const SizedBox(height: 24),
+                // Lignes de facture
+                _buildInvoiceLines(context),
+                const SizedBox(height: 24),
 
-            // Totaux
-            _buildTotals(),
-            const SizedBox(height: 24),
+                // Totaux
+                _buildTotals(),
+                const SizedBox(height: 24),
 
-            // Notes
-            if (facture.notes != null) _buildNotes(),
-          ],
-        ),
+                // Notes
+                if (widget.facture.notes != null) _buildNotes(),
+              ],
+            ),
+          ),
+
+          // Overlay de chargement
+          if (_isGeneratingPdf)
+            Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text(
+                      'Génération du PDF en cours...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    Facture facture = widget.facture;
     return Card(
+      // shape: RoundedRectangleBorder(
+      //   borderRadius: BorderRadius.circular(16),
+      //   side: BorderSide(
+      //     color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+      //     width: 1,
+      //   ),
+      // ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -103,6 +316,7 @@ class FactureDetailScreen extends StatelessWidget {
   }
 
   Widget _buildClientVehicleInfo() {
+    Facture facture = widget.facture;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -163,7 +377,8 @@ class FactureDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInvoiceLines() {
+  Widget _buildInvoiceLines(BuildContext context) {
+    Facture facture = widget.facture;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -179,13 +394,17 @@ class FactureDetailScreen extends StatelessWidget {
               columnWidths: const {
                 0: FlexColumnWidth(3),
                 1: FlexColumnWidth(1),
-                2: FlexColumnWidth(1),
-                3: FlexColumnWidth(1),
+                2: FlexColumnWidth(1.2),
+                3: FlexColumnWidth(1.2),
               },
               border: TableBorder.all(color: Colors.grey.shade300),
               children: [
                 TableRow(
-                  decoration: BoxDecoration(color: Colors.grey.shade100),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[800] // Couleur pour dark mode
+                        : Colors.grey[100], // Couleur pour light mode
+                  ),
                   children: const [
                     Padding(
                       padding: EdgeInsets.all(8),
@@ -203,7 +422,7 @@ class FactureDetailScreen extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
                       child: Text(
                         'Prix U.',
                         textAlign: TextAlign.right,
@@ -211,7 +430,7 @@ class FactureDetailScreen extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
                       child: Text(
                         'Total',
                         textAlign: TextAlign.right,
@@ -236,16 +455,22 @@ class FactureDetailScreen extends StatelessWidget {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 5,
+                            ),
                             child: Text(
-                              '${line.unitPrice.toStringAsFixed(0)} FCFA',
+                              line.unitPrice.toStringAsFixed(0),
                               textAlign: TextAlign.right,
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 5,
+                            ),
                             child: Text(
-                              '${line.totalHT.toStringAsFixed(0)} FCFA',
+                              line.totalHT.toStringAsFixed(0),
                               textAlign: TextAlign.right,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -265,6 +490,7 @@ class FactureDetailScreen extends StatelessWidget {
   }
 
   Widget _buildTotals() {
+    Facture facture = widget.facture;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -276,16 +502,16 @@ class FactureDetailScreen extends StatelessWidget {
               children: [
                 _buildTotalLine(
                   'Total HT:',
-                  '${facture.totalHT.toStringAsFixed(0)} FCFA',
+                  '${formatAmount(facture.totalHT.toStringAsFixed(0))} FCFA',
                 ),
                 _buildTotalLine(
                   'TVA:',
-                  '${((facture.totalTTC - facture.totalHT)).toStringAsFixed(0)} FCFA',
+                  '${formatAmount(((facture.totalTTC - facture.totalHT)).toStringAsFixed(0))} FCFA',
                 ),
                 const Divider(),
                 _buildTotalLine(
                   'Total TTC:',
-                  '${facture.totalTTC.toStringAsFixed(0)} FCFA',
+                  '${formatAmount(facture.totalTTC.toStringAsFixed(0))} FCFA',
                   isBold: true,
                   color: Colors.green,
                 ),
@@ -329,21 +555,34 @@ class FactureDetailScreen extends StatelessWidget {
   }
 
   Widget _buildNotes() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'NOTES',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    Facture facture = widget.facture;
+    return Column(
+      children: [
+        if (facture.totalTTCWord != null) ...[
+          SizedBox(height: 30),
+          Text(
+            "ARRÉTÉ DE LE PRÉSENTE À LA SOMME DE ${facture.totalTTCWord!.toUpperCase()} FCFA",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          SizedBox(height: 30),
+        ],
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'NOTES',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Text(facture.notes!),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(facture.notes!),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
