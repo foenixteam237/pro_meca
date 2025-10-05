@@ -1,3 +1,9 @@
+int roundToNextMultipleOf5(double amount) {
+  final amountCeil = amount.ceil();
+  final remainder = amountCeil % 5;
+  return remainder == 0 ? amountCeil : amountCeil + (5 - remainder);
+}
+
 String formatAmount(dynamic amount) {
   // Convertir en nombre
   final amountNumber = _parseAmount(amount);

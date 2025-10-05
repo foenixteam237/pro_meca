@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:number_to_words_english/number_to_words_english.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:pro_meca/core/models/facture.dart';
+import 'package:pro_meca/core/utils/formatting.dart';
 
 class PdfFactureService {
   static late pw.Font _regularFont;
@@ -14,15 +16,21 @@ class PdfFactureService {
     if (_fontsLoaded) return;
 
     // Charger les polices depuis les assets
-    final regularData = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
-    final boldData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final regularData = await rootBundle.load(
+      'assets/fonts/Roboto-Regular.ttf',
+    );
+    final boldData = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
 
     _regularFont = pw.Font.ttf(regularData);
     _boldFont = pw.Font.ttf(boldData);
     _fontsLoaded = true;
   }
 
-  static Future<File> generateFacturePdf(Facture facture) async {
+  static Future<File> generateFacturePdf(
+    Facture facture, {
+    bool tva = true,
+    bool ir = false,
+  }) async {
     await _loadFonts();
 
     final pdf = pw.Document();
@@ -44,6 +52,18 @@ class PdfFactureService {
     final normalStyle = pw.TextStyle(font: _regularFont, fontSize: 12);
 
     final smallStyle = pw.TextStyle(font: _regularFont, fontSize: 10);
+
+    final totalToPay = !tva && !ir
+        ? facture.totalHT.toInt()
+        : !tva && ir
+        ? roundToNextMultipleOf5(
+            facture.totalHT * (1 - facture.irRate / 100),
+          ).toInt()
+        : tva && !ir
+        ? facture.totalTTC.toInt()
+        : roundToNextMultipleOf5(
+            facture.totalTTC * (1 - facture.irRate / 100),
+          ).toInt();
 
     // Construction du PDF
     pdf.addPage(
@@ -245,14 +265,20 @@ class PdfFactureService {
                       'Total HT:',
                       '${_formatAmount(facture.totalHT)} FCFA',
                     ),
-                    _buildTotalLine(
-                      'TVA:',
-                      '${_formatAmount(facture.totalTTC - facture.totalHT)} FCFA',
-                    ),
+                    if (tva)
+                      _buildTotalLine(
+                        'TVA (${facture.tvaRate}%):',
+                        '${_formatAmount(facture.totalTTC - facture.totalHT)} FCFA',
+                      ),
+                    if (ir)
+                      _buildTotalLine(
+                        'IR (${facture.irRate}%):',
+                        '${_formatAmount(!tva ? facture.totalHT - roundToNextMultipleOf5(facture.totalHT * (1 - facture.irRate / 100)) : ((facture.totalTTC - roundToNextMultipleOf5(facture.totalTTC * (1 - facture.irRate / 100)))))} FCFA',
+                      ),
                     pw.SizedBox(height: 5),
                     _buildTotalLine(
-                      'Total TTC:',
-                      '${_formatAmount(facture.totalTTC)} FCFA',
+                      'Total à payer:',
+                      '${formatAmount(totalToPay)} FCFA',
                       isBold: true,
                       color: PdfColors.green,
                     ),
@@ -272,7 +298,7 @@ class PdfFactureService {
             ] else if (facture.totalTTCWord != null) ...[
               pw.SizedBox(height: 30),
               pw.Text(
-                "ARRÉTÉ DE LE PRÉSENTE À LA SOMME DE ${facture.totalTTCWord!.toUpperCase()} FCFA",
+                "TOTAL A PAYER: ${totalToPay.toFrench().toUpperCase()} FCFA",
                 style: titleStyle,
               ),
             ],

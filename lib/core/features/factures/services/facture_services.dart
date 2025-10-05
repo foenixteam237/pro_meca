@@ -107,11 +107,15 @@ class FactureService {
     }
   }
 
-  Future<Uint8List> generateWordFactureBytes(String visiteId) async {
+  Future<Uint8List> generateWordFactureBytes(
+    String visiteId, {
+    int tva = 1,
+    int ir = 0,
+  }) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
-          '/factures/word/visite/$visiteId',
+          '/factures/word/visite/$visiteId/$tva/$ir',
           options: Options(
             headers: await ApiDioService().getAuthHeaders(),
             responseType:

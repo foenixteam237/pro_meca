@@ -605,6 +605,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
+  number_to_words_english:
+    dependency: "direct main"
+    description:
+      name: number_to_words_english
+      sha256: "21cd549603a37165caa21c01ab41150421b6378fdb9a533f725055fd2de6ed52"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.4"
   octo_image:
     dependency: transitive
     description:

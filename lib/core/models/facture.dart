@@ -38,6 +38,10 @@ class Facture {
   final String? notes;
   final String? totalTTCWord;
   final String? totalHTWord;
+  final bool includeTVA;
+  final bool includeIR;
+  final double tvaRate; // Taux de TVA (19.25)
+  final double irRate; // Taux d'IR (5.5)
 
   Facture({
     required this.id,
@@ -53,24 +57,28 @@ class Facture {
     this.notes,
     this.totalTTCWord,
     this.totalHTWord,
+    this.includeTVA = true, // Par défaut avec TVA
+    this.includeIR = false, // Par défaut sans IR
+    this.tvaRate = 19.25,
+    this.irRate = 5.5,
   });
 
-  factory Facture.fromJson(Map<String, dynamic> json) {
-    // Gestion robuste des nombres (Decimal, num, String)
-    double parseDecimal(dynamic value) {
-      if (value == null) return 0.0;
-      if (value is num) return value.toDouble();
-      if (value is String) return double.tryParse(value) ?? 0.0;
-      return 0.0;
-    }
+  // Gestion robuste des nombres (Decimal, num, String)
+  static double _parseDecimal(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 
+  factory Facture.fromJson(Map<String, dynamic> json) {
     return Facture(
       id: json['id'] ?? '',
       reference: json['reference'] ?? '',
       date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
       dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
-      totalHT: parseDecimal(json['totalHT']),
-      totalTTC: parseDecimal(json['totalTTC']),
+      totalHT: _parseDecimal(json['totalHT']),
+      totalTTC: _parseDecimal(json['totalTTC']),
       status: json['status'] ?? 'DRAFT',
       client: Client.fromJson(json['client'] ?? {}),
       visite: Visite.fromJson(json['visite'] ?? {}),
@@ -80,6 +88,10 @@ class Facture {
       notes: json['notes'],
       totalHTWord: json['totalHTWord'],
       totalTTCWord: json['totalTTCWord'],
+      includeTVA: json['includeTVA'] ?? true,
+      includeIR: json['includeIR'] ?? false,
+      tvaRate: _parseDecimal(json['tvaRate'] ?? 19.25),
+      irRate: _parseDecimal(json['irRate'] ?? 5.5),
     );
   }
 

@@ -45,7 +45,7 @@ class _FactureListScreenState extends State<FactureListScreen> {
     {'label': 'Ce mois', 'days': 30},
     {'label': 'Ce trimestre', 'days': 90},
     {'label': 'Cette année', 'days': 365},
-    {'label': 'Personnalisée', 'days': null},
+    // {'label': 'Personnalisée', 'days': null},
   ];
 
   final List<String> _statusList = [
@@ -352,6 +352,63 @@ class _FactureListScreenState extends State<FactureListScreen> {
   }
 
   Future<void> _generateWordFacture(Facture facture) async {
+    final result = await showDialog<Map<String, bool>>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        bool tva = true;
+        bool ir = false;
+
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: Text("Options fiscales"),
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildToggleSwitch(
+                    value: tva,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        tva = value;
+                      });
+                    },
+                    label: "TVA (${facture.tvaRate}%)",
+                    icon: Icons.attach_money,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildToggleSwitch(
+                    value: ir,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        ir = value;
+                      });
+                    },
+                    label: "IR (${facture.irRate}%)",
+                    icon: Icons.percent_outlined,
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop({"tva": tva, "ir": ir});
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (kDebugMode) {
+      print("Résultat showDialog = $result");
+    }
+
+    if (result == null) return;
     if (_isGeneratingWord) return;
 
     setState(() => _isGeneratingWord = true);
@@ -359,7 +416,11 @@ class _FactureListScreenState extends State<FactureListScreen> {
     try {
       // Télécharger les bytes du fichier Word depuis le serveur
       final Uint8List wordBytes = await _factureService
-          .generateWordFactureBytes(facture.visite.id);
+          .generateWordFactureBytes(
+            facture.visite.id,
+            tva: result['tva']! ? 1 : 0,
+            ir: result['ir']! ? 1 : 0,
+          );
 
       // Utiliser FilePicker pour sauvegarder le fichier
       final String? outputPath = await FilePicker.platform.saveFile(
@@ -655,6 +716,28 @@ class _FactureListScreenState extends State<FactureListScreen> {
               tooltip: "Actualiser",
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleSwitch({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String label,
+    required IconData icon,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: value ? Colors.green : Colors.grey),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(width: 8),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Theme.of(context).primaryColor,
         ),
       ],
     );

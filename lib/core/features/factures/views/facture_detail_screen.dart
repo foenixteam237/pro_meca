@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:number_to_words_english/number_to_words_english.dart';
 import 'package:open_file/open_file.dart';
 import 'package:pro_meca/core/features/factures/services/pdf_facture_service.dart';
 import 'package:pro_meca/core/features/factures/views/facture_edit_screen.dart';
@@ -21,6 +22,17 @@ class FactureDetailScreen extends StatefulWidget {
 
 class _FactureDetailScreenState extends State<FactureDetailScreen> {
   bool _isGeneratingPdf = false;
+  bool _includeTVA = true;
+  bool _includeIR = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _includeTVA = widget.facture.includeTVA;
+    _includeIR = widget.facture.includeIR;
+  }
+
   Future<void> _generateAndSavePdf() async {
     if (_isGeneratingPdf) return;
 
@@ -30,6 +42,8 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
       // Générer le PDF
       final File pdfFile = await PdfFactureService.generateFacturePdf(
         widget.facture,
+        tva: _includeTVA,
+        ir: _includeIR,
       );
 
       // Lire les bytes
@@ -203,19 +217,19 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
               children: [
                 // En-tête
                 _buildHeader(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Informations client et véhicule
                 _buildClientVehicleInfo(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Lignes de facture
                 _buildInvoiceLines(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Totaux
                 _buildTotals(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Notes
                 if (widget.facture.notes != null) _buildNotes(),
@@ -499,14 +513,60 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
                   'Total HT:',
                   '${formatAmount(facture.totalHT.toStringAsFixed(0))} FCFA',
                 ),
-                _buildTotalLine(
-                  'TVA:',
-                  '${formatAmount(((facture.totalTTC - facture.totalHT)).toStringAsFixed(0))} FCFA',
+                Row(
+                  children: [
+                    Container(
+                      child: _buildToggleSwitch(
+                        value: _includeTVA,
+                        onChanged: (value) =>
+                            setState(() => _includeTVA = value),
+                        label: 'TVA',
+                        icon: Icons.attach_money,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 220,
+                      child: (_includeTVA)
+                          ? _buildTotalLine(
+                              'TVA (${widget.facture.tvaRate}%):',
+                              '${formatAmount(((facture.totalTTC - facture.totalHT)).toStringAsFixed(0))} FCFA',
+                            )
+                          : Text(''),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      child: _buildToggleSwitch(
+                        value: _includeIR,
+                        onChanged: (value) =>
+                            setState(() => _includeIR = value),
+                        label: 'IR',
+                        icon: Icons.percent_outlined,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 220,
+                      child: _includeIR
+                          ? _buildTotalLine(
+                              'IR (${widget.facture.irRate}%):',
+                              '${formatAmount(!_includeTVA ? facture.totalHT - roundToNextMultipleOf5(facture.totalHT * (1 - 5.5 / 100)) : ((facture.totalTTC - roundToNextMultipleOf5(facture.totalTTC * (1 - 5.5 / 100)))))} FCFA',
+                            )
+                          : Text(''),
+                    ),
+                  ],
                 ),
                 const Divider(),
                 _buildTotalLine(
-                  'Total TTC:',
-                  '${formatAmount(facture.totalTTC.toStringAsFixed(0))} FCFA',
+                  'Total à payer:',
+                  '${formatAmount(!_includeTVA && !_includeIR
+                      ? facture.totalHT
+                      : !_includeTVA && _includeIR
+                      ? roundToNextMultipleOf5(facture.totalHT * (1 - facture.irRate / 100))
+                      : _includeTVA && !_includeIR
+                      ? facture.totalTTC.toStringAsFixed(0)
+                      : roundToNextMultipleOf5(facture.totalTTC * (1 - facture.irRate / 100)))} FCFA',
                   isBold: true,
                   color: Colors.green,
                 ),
@@ -515,6 +575,26 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildToggleSwitch({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String label,
+    required IconData icon,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: value ? Colors.green : Colors.grey),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Theme.of(context).primaryColor,
+        ),
+      ],
     );
   }
 
@@ -527,6 +607,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -551,16 +632,25 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
 
   Widget _buildNotes() {
     Facture facture = widget.facture;
+    int totalToPay = !_includeTVA && !_includeIR
+        ? facture.totalHT.toInt()
+        : !_includeTVA && _includeIR
+        ? roundToNextMultipleOf5(
+            facture.totalHT * (1 - facture.irRate / 100),
+          ).toInt()
+        : _includeTVA && !_includeIR
+        ? facture.totalTTC.toInt()
+        : roundToNextMultipleOf5(
+            facture.totalTTC * (1 - facture.irRate / 100),
+          ).toInt();
     return Column(
       children: [
-        if (facture.totalTTCWord != null) ...[
-          SizedBox(height: 30),
-          Text(
-            "ARRÉTÉ DE LE PRÉSENTE À LA SOMME DE ${facture.totalTTCWord!.toUpperCase()} FCFA",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          SizedBox(height: 30),
-        ],
+        Text(
+          "${totalToPay.toFrench().toUpperCase()} FCFA",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        SizedBox(height: 30),
+
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
