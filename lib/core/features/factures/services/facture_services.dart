@@ -172,7 +172,6 @@ class FactureService {
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
-
       if (ApiDioService.isSuccess(response)) {
         return (response.data['data'] as List)
             .map((item) => Client.fromJson(item))

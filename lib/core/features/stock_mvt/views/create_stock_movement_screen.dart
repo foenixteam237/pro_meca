@@ -12,7 +12,6 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/views/add_pieces_form.dart';
 import 'package:pro_meca/core/features/factures/views/facture_detail_screen.dart';
 import 'package:pro_meca/core/features/stock_mvt/services/stock_movement_service.dart';
-import 'package:pro_meca/core/features/stock_mvt/widgets/pieces_dropdown.dart';
 import 'package:pro_meca/core/models/facture.dart';
 import 'package:pro_meca/core/features/factures/services/facture_services.dart';
 import 'package:pro_meca/core/models/stock_movement.dart';
@@ -746,13 +745,9 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                             )
                           else ...[
                             const SizedBox(height: 12),
-
-                            ListView.builder(
-                              itemCount: _mvtStocks.length,
-                              itemBuilder: (context, index) {
-                                final mvt = _mvtStocks[index];
-                                return _buildPieceItem(index, mvt);
-                              },
+                            ..._mvtStocks.map(
+                              (mvt) =>
+                                  _buildPieceItem(_mvtStocks.indexOf(mvt), mvt),
                             ),
                           ],
                           // Bouton d'ajout d'une pièce
