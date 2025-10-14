@@ -307,7 +307,7 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
         // ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -317,6 +317,8 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
             Center(
               child: Text(
                 value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

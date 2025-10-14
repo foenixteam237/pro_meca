@@ -75,7 +75,7 @@ Widget buildSmallCard(
           ),
             */
         // Compteur "Total" avec animation plus visible
-        SizedBox(height: height <= 600 ? height * 0.01 : height * 0.03),
+        SizedBox(height: height <= 600 ? height * 0.02 : height * 0.002),
         Expanded(
           child: _buildAnimatedCounterRow(
             label: "Total",

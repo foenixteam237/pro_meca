@@ -141,7 +141,8 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "avdia", name: 'Véhicules en attente validation diagnostic',
+                        status: "avdia",
+                        name: 'Véh en attente validation diagnostic',
                       ),
                     ),
                   ),
@@ -162,7 +163,8 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "aint", name: 'Véhicules en attente intervention',
+                        status: "aint",
+                        name: 'Véhicules en AINT',
                       ),
                     ),
                   ),
@@ -181,7 +183,8 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "avin", name: 'Véhicules en attente validation intervention',
+                        status: "avin",
+                        name: 'Véhicules en AVIN',
                       ),
                     ),
                   ),
@@ -200,7 +203,8 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "term", name: 'Véhicules terinés',
+                        status: "term",
+                        name: 'Véhicules terinés',
                       ),
                     ),
                   ),
@@ -245,7 +249,8 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                               MaterialPageRoute(
                                 builder: (context) => VisiteListByStatus(
                                   contextParent: widget.context,
-                                  status: "adia", name: 'En attente diagnostic',
+                                  status: "adia",
+                                  name: 'En attente diagnostic',
                                 ),
                               ),
                             );

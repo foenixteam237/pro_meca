@@ -112,10 +112,17 @@ class _VisiteListByStatusState extends State<VisiteListByStatus> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Text(widget.name, style: AppStyles.titleMedium(context)),
+          Expanded(
+            flex: 3,
+            child: Text(
+              widget.name,
+              style: AppStyles.titleMedium(context),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           const Spacer(),
           Text(
-            "01/01/2025",
+            "le 01/${DateTime.now().year.toString()}",
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: appColors.primary,
