@@ -162,6 +162,62 @@ class FactureService {
     }
   }
 
+  // Ajouter ces méthodes dans facture_services.dart
+  Future<List<Client>> searchClients(String query) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/clients/search',
+          queryParameters: {'q': query},
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (ApiDioService.isSuccess(response)) {
+        return (response.data['data'] as List)
+            .map((item) => Client.fromJson(item))
+            .toList();
+      } else {
+        throw Exception('Erreur lors de la recherche des clients');
+      }
+    } on DioException catch (dioError) {
+      throw _handleDioError(
+        dioError,
+        'Erreur lors de la recherche des clients',
+      );
+    } catch (e) {
+      throw Exception('Erreur inattendue lors de la recherche des clients: $e');
+    }
+  }
+
+  Future<Client> createClient(FormData clientData) async {
+    try {
+      if (kDebugMode) {
+        print('clientData= $clientData');
+      }
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.post(
+          '/clients/create',
+          data: clientData,
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (ApiDioService.isSuccess(response)) {
+        if (kDebugMode) {
+          print('Client créé: $response["data"]');
+        }
+        return Client.fromJson(response.data['data']);
+      } else {
+        throw Exception('Erreur lors de la création du client');
+      }
+    } on DioException catch (dioError) {
+      throw _handleDioError(dioError, 'Erreur lors de la création du client');
+    } catch (e) {
+      throw Exception('Erreur inattendue lors de la création du client: $e');
+    }
+  }
+
   Future<Facture> createFacture(Map<String, dynamic> factureData) async {
     try {
       final response = await ApiDioService().authenticatedRequest(

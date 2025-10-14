@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/commonUi/validationScreen.dart';
@@ -78,7 +81,7 @@ class ReceptionServices {
       switch (response.statusCode) {
         case 201:
           final responseData = response.data;
-          return Client.fromJson(responseData['data']).id;
+          return responseData['data']['id'];
         default:
           debugPrint("Erreur non reconnue");
           return "";
@@ -349,7 +352,7 @@ class ReceptionServices {
 
   //##################################################-RECUPERATION DES VISITES AVEC LA VEHICULE INCLU-###################################
   Future<List<Visite>> fetchVisitesWithVehicle() async {
-    print("Je suis dans fetchVisitesWithVehicle");
+    debugPrint("Je suis dans fetchVisitesWithVehicle");
     try {
       // 1. Récupère les visites avec timeout et gestion d'erreur
       final Response resVisite = await ApiDioService().authenticatedRequest(
@@ -362,15 +365,63 @@ class ReceptionServices {
           ),
         ),
       );
+
+      if (kDebugMode) {
+        print("visites listing =$resVisite");
+      }
+
+      // Vérification du statut HTTP ET du champ success dans la réponse
       if (resVisite.statusCode != 200) {
+        // Tentative de récupération du message d'erreur du serveur
+        final dynamic responseData = resVisite.data;
+        String errorMessage = 'Statut HTTP ${resVisite.statusCode}';
+
+        if (responseData is Map && responseData.containsKey('message')) {
+          errorMessage = responseData['message'] ?? errorMessage;
+        } else if (responseData is Map &&
+            responseData.containsKey('success') &&
+            responseData['success'] == false) {
+          errorMessage =
+              responseData['message'] ?? 'Erreur serveur sans message';
+        }
+
         throw DioException(
           requestOptions: resVisite.requestOptions,
           response: resVisite,
-          error: 'Statut HTTP ${resVisite.statusCode}',
+          error: errorMessage,
         );
       }
 
-      final List<dynamic> visites = resVisite.data as List;
+      // Vérification supplémentaire du champ success si la réponse est un Map
+      final dynamic responseData = resVisite.data;
+      if (responseData is Map &&
+          responseData.containsKey('success') &&
+          responseData['success'] == false) {
+        final String errorMessage =
+            responseData['message'] ?? 'Erreur serveur sans message détaillé';
+        throw DioException(
+          requestOptions: resVisite.requestOptions,
+          response: resVisite,
+          error: errorMessage,
+        );
+      }
+
+      // Conversion en List seulement si c'est bien une liste
+      final List<dynamic> visites;
+      if (responseData is List) {
+        visites = responseData;
+      } else if (responseData is Map &&
+          responseData.containsKey('data') &&
+          responseData['data'] is List) {
+        visites = responseData['data'] as List;
+      } else {
+        throw Exception('Format de réponse inattendu');
+      }
+
+      if (kDebugMode) {
+        print("visites listing =$visites");
+      }
+
       // 2. Récupération parallèle des véhicules
       final List<Visite> result = await Future.wait(
         visites.map((visiteJson) async {
@@ -383,22 +434,58 @@ class ReceptionServices {
                 headers: await ApiDioService().getAuthHeaders(),
               ),
             );
+
+            // Gestion des erreurs pour les véhicules
             if (resVehicle.statusCode != 200) {
+              final dynamic vehicleResponseData = resVehicle.data;
+              String vehicleErrorMessage =
+                  'Erreur véhicule ${resVehicle.statusCode}';
+
+              if (vehicleResponseData is Map &&
+                  vehicleResponseData.containsKey('message')) {
+                vehicleErrorMessage =
+                    vehicleResponseData['message'] ?? vehicleErrorMessage;
+              } else if (vehicleResponseData is Map &&
+                  vehicleResponseData.containsKey('success') &&
+                  vehicleResponseData['success'] == false) {
+                vehicleErrorMessage =
+                    vehicleResponseData['message'] ??
+                    'Erreur véhicule sans message';
+              }
+
               throw DioException(
                 requestOptions: resVehicle.requestOptions,
                 response: resVehicle,
-                error: 'Erreur véhicule ${resVehicle.statusCode}',
+                error: vehicleErrorMessage,
               );
             }
+
+            // Vérification du champ success pour les véhicules
+            final dynamic vehicleData = resVehicle.data;
+            if (vehicleData is Map &&
+                vehicleData.containsKey('success') &&
+                vehicleData['success'] == false) {
+              final String errorMessage =
+                  vehicleData['message'] ??
+                  'Erreur véhicule sans message détaillé';
+              throw DioException(
+                requestOptions: resVehicle.requestOptions,
+                response: resVehicle,
+                error: errorMessage,
+              );
+            }
+
             final Vehicle vehicle = Vehicle.fromJson(
-              resVehicle.data as Map<String, dynamic>,
+              vehicleData as Map<String, dynamic>,
             );
 
-            //return Visite.fromJson(visiteJson);
             return Visite.fromVisiteJson(visiteJson, vehicle);
           } on DioException catch (e) {
-            // En cas d'erreur sur un véhicule, retourne une visite partielle
-            throw ('Erreur véhicule : ${e.message}');
+            // En cas d'erreur sur un véhicule, on log l'erreur et retourne une visite partielle
+            debugPrint(
+              'Erreur véhicule pour vehicleId ${visiteJson['vehicleId']}: ${e.message}',
+            );
+            // Retourne une visite avec les données de base sans le véhicule
             return Visite.fromJson(visiteJson);
           }
         }),
@@ -408,8 +495,20 @@ class ReceptionServices {
     } on DioException catch (e) {
       debugPrint('Erreur réseau: ${e.message}');
       if (e.response != null) {
+        final dynamic errorData = e.response?.data;
+        String serverMessage = 'Pas de message';
+
+        // Extraction du message d'erreur du serveur
+        if (errorData is Map && errorData.containsKey('message')) {
+          serverMessage = errorData['message'] ?? serverMessage;
+        } else if (errorData is Map &&
+            errorData.containsKey('success') &&
+            errorData['success'] == false) {
+          serverMessage = errorData['message'] ?? 'Erreur serveur sans message';
+        }
+
         throw Exception(
-          'Erreur serveur (${e.response?.statusCode}): ${e.response?.data['message'] ?? 'Pas de message'}',
+          'Erreur serveur (${e.response?.statusCode}): $serverMessage',
         );
       } else if (e.type == DioExceptionType.connectionTimeout) {
         throw Exception('Timeout de connexion au serveur');

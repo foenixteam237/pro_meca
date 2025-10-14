@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
@@ -169,7 +170,7 @@ class _InterventionFormState extends State<InterventionForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Quantité de "${pieceData['name'] ?? 'Inconnue'}" mise à jour: ${piecesList[existingIndex]['quantity']}',
+              'Quantité de "${pieceData['name'] ?? 'Pièce sans nom'}" mise à jour: ${piecesList[existingIndex]['quantity']}',
             ),
             backgroundColor: AppColors.primary,
             duration: Duration(seconds: 2),
@@ -182,7 +183,7 @@ class _InterventionFormState extends State<InterventionForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Pièce "${pieceData['name'] ?? 'Inconnue'}" ajoutée avec succès',
+              'Pièce "${pieceData['name'] ?? 'Sans nom'}" ajoutée avec succès',
             ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
@@ -190,7 +191,9 @@ class _InterventionFormState extends State<InterventionForm> {
         );
       }
 
-      print('Liste des pièces mise à jour: $piecesList');
+      if (kDebugMode) {
+        print('Liste des pièces mise à jour: $piecesList');
+      }
     });
   }
 
@@ -438,7 +441,7 @@ class _InterventionFormState extends State<InterventionForm> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Listes des pièces (${piecesList.length})',
+                            'Liste des pièces (${piecesList.length})',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,

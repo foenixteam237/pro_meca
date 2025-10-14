@@ -4,6 +4,7 @@ import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/features/pieces/views/categoriePageScreen.dart';
+import 'package:pro_meca/core/features/stock_mvt/views/list_movement_screen.dart';
 import 'package:pro_meca/core/utils/formatting.dart';
 import 'package:pro_meca/core/widgets/statutCardWithImage.dart';
 import 'package:provider/provider.dart';
@@ -149,7 +150,6 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
             padding: EdgeInsets.only(top: 20),
             child: Column(
               children: [
-                // Section Gestions de pièces avec bouton +
                 _buildSectionHeader(appColor),
 
                 buildStatusCardWithImage(
@@ -166,6 +166,11 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
                   "Toutes catégories de pièces",
                   catCount,
                 ),
+
+                // Mouvements de stock
+                const SizedBox(height: 10),
+                _buildStockMovementCard(context),
+
                 // Cards statistiques
                 _buildStatsGrid(),
 
@@ -181,9 +186,6 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
                     return _buildPartItem(part);
                   }),
                 ],
-
-                // Liste des pièces
-                //Expanded(child: _buildPartsList()),
               ],
             ),
           ),
@@ -334,6 +336,82 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
     );
   }
 
+  Widget _buildStockMovementCard(BuildContext condition) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => StockMovementScreen()),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Icon(Icons.inventory_2, size: 60, color: Colors.blue),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    'Mouvements de Stock',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Historique des entrées/sorties',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  // Widget _buildStockMovementCard(BuildContext context) {
+  //   return InkWell(
+  //     onTap: () {
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => StockMovementScreen()),
+  //       );
+  //     },
+  //     child: Container(
+  //       padding: const EdgeInsets.all(12),
+  //       decoration: BoxDecoration(
+  //         border: Border.all(color: Colors.grey),
+  //         borderRadius: BorderRadius.circular(12),
+  //       ),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Icon(Icons.inventory_2, size: 40, color: Colors.blue),
+  //           const SizedBox(height: 8),
+  //           Text(
+  //             'Mouvements Stock',
+  //             style: Theme.of(context).textTheme.titleMedium,
+  //           ),
+  //           const SizedBox(height: 4),
+  //           Text(
+  //             'Historique des entrées/sorties',
+  //             style: Theme.of(context).textTheme.bodySmall,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget _buildOutOfStockSection() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -393,14 +471,14 @@ class _PartsInventoryScreenState extends State<PartsInventoryScreen> {
                   overflow: TextOverflow.visible,
                 ),
                 ...[
-                const SizedBox(height: 2),
-                Text(
-                  part.reference,
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                  softWrap: true,
-                  overflow: TextOverflow.visible,
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    part.reference,
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                  ),
+                ],
                 const SizedBox(height: 2),
                 Text(
                   part.category,

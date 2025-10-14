@@ -281,7 +281,7 @@ class ApiService {
 
     if (response.statusCode == 201) {
       final responseData = json.decode(response.body);
-      return Client.fromJson(responseData['data']).id;
+      return responseData['data']['id'];
     } else {
       final errorData = json.decode(response.body);
       throw Exception(

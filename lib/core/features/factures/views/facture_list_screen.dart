@@ -77,10 +77,6 @@ class _FactureListScreenState extends State<FactureListScreen> {
         filters: filters,
       );
 
-      if (kDebugMode) {
-        print("1ere facture.lines= ${response.factures[0].lines.toString()}");
-      }
-
       setState(() {
         _factures = response.factures;
         _filteredFactures = _factures;
@@ -91,7 +87,7 @@ class _FactureListScreenState extends State<FactureListScreen> {
     } catch (e) {
       debugPrint("Erreur chargement factures: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors du chargement des factures: $e')),
+        SnackBar(content: Text('Erreur lors du chargement des factures')),
       );
       setState(() => _isLoading = false);
     }

@@ -1,10 +1,9 @@
-
 class Client {
-  final String id;
+  final String? id;
   final String firstName;
-  final String lastName;
+  final String? lastName;
   final String? email;
-  final String phone;
+  final String? phone;
   final String? address;
   final String? city;
   final String? logo;
@@ -15,11 +14,11 @@ class Client {
   final DateTime? updatedAt;
 
   Client({
-    required this.id,
+    this.id,
     required this.firstName,
-    required this.lastName,
+    this.lastName,
     this.email,
-    required this.phone,
+    this.phone,
     this.address,
     this.city,
     this.logo,
@@ -32,17 +31,17 @@ class Client {
 
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
-      id: json['id'] as String,
+      id: json['id'] as String?,
       firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
+      lastName: json['lastName'] as String?,
       email: json['email'] as String?,
-      phone: json['phone'].toString(),
+      phone: json['phone'] as String?,
       address: json['address'] as String?,
       city: json['city'] as String?,
       logo: json['logo'] as String?,
       userId: json['userId'] as String?,
       clientCompany: json['clientCompany'] as String?,
-      companyId: json['companyId'] as String
+      companyId: json['companyId'] as String,
     );
   }
   factory Client.fromJsn(Map<String, dynamic> json) {
@@ -57,8 +56,8 @@ class Client {
   Map<String, dynamic> toJson() {
     return {
       'firstName': firstName,
-      'lastName': lastName,
-      'email': email.toString(),
+      if (lastName != null) 'lastName': lastName,
+      if (email != null) 'email': email,
       if (address != null) 'address': address,
       if (city != null) 'city': city,
       if (logo != null) 'logo': logo,
@@ -71,12 +70,16 @@ class Client {
   }
 
   Map<String, dynamic> toMap() {
-    return{
+    return {
       'id': id,
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
       'phone': phone,
     };
+  }
+
+  String get fullName {
+    return "$firstName${lastName != null && lastName!.isNotEmpty ? ' $lastName' : ''}";
   }
 }

@@ -1,6 +1,6 @@
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
-import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/pieces/services/pieces_services.dart';
 import 'package:pro_meca/core/models/categories.dart';
 import 'package:pro_meca/core/models/pieces.dart';
@@ -9,8 +9,14 @@ import 'package:provider/provider.dart';
 class PieceSelectionModal extends StatefulWidget {
   final Function(Map<String, dynamic>)? onPieceAdded;
   final VoidCallback? onCancel;
+  final bool isMovement;
 
-  const PieceSelectionModal({super.key, this.onPieceAdded, this.onCancel});
+  const PieceSelectionModal({
+    super.key,
+    this.onPieceAdded,
+    this.onCancel,
+    this.isMovement = false,
+  });
 
   @override
   State<PieceSelectionModal> createState() => _PieceSelectionModalState();
@@ -20,41 +26,21 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
   final PiecesService _piecesServices = PiecesService();
 
   List<PieceCategorie> _categories = [];
-  List<Piece> _pieces = [];
   List<Piece> _filteredPieces = [];
 
   String? _selectedCategoryId;
-  String? _selectedPieceId;
+  Piece? _selectedPiece;
 
-  String _selectedCondition = 'N/A';
-  String _selectedName = "";
-  int _stockQuantity = 0;
-  double _unitPrice = 0;
   int _quantityToUse = 1;
 
   bool _isLoading = true;
 
-  final TextEditingController _categorySearchController =
-      TextEditingController();
-  final TextEditingController _pieceSearchController = TextEditingController();
-
-  double get _totalPrice => _unitPrice * _quantityToUse;
-
-  List<DropdownMenuItem<String>> _categoryDropdownItems = [];
-  List<DropdownMenuItem<String>> _pieceDropdownItems = [];
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    _pieceSearchController.addListener(_onPieceSearchChanged);
-  }
-
-  @override
-  void dispose() {
-    _categorySearchController.dispose();
-    _pieceSearchController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -66,12 +52,6 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
       if (categoriesData.isNotEmpty) {
         _selectedCategoryId = categoriesData.first.id;
         _categories = categoriesData;
-        _categoryDropdownItems = categoriesData.map((category) {
-          return DropdownMenuItem<String>(
-            value: category.id,
-            child: Text(category.name),
-          );
-        }).toList();
         _loadPiecesForCategory(_selectedCategoryId!);
       }
     } catch (error) {
@@ -84,25 +64,8 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
   void _loadPiecesForCategory(String categoryId) {
     final category = _categories.firstWhere((c) => c.id == categoryId);
     final newPieces = category.pieces ?? [];
-    _filteredPieces = List<Piece>.from(newPieces);
-    _pieceDropdownItems = newPieces.map((piece) {
-      return DropdownMenuItem<String>(
-        value: piece.id,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(piece.name),
-            Text(
-              'Ref: ${piece.reference}',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }).toList();
     setState(() {
-      _pieces = newPieces;
-      _filteredPieces = newPieces;
+      _filteredPieces = List<Piece>.from(newPieces);
       if (newPieces.isNotEmpty) {
         _updateSelectedPiece(newPieces.first);
       } else {
@@ -111,51 +74,31 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
     });
   }
 
-  void _onPieceSearchChanged() {
-    final query = _pieceSearchController.text.toLowerCase();
-    if (query.isEmpty) {
-      setState(() => _filteredPieces = _pieces);
-      return;
-    }
-    setState(() {
-      _filteredPieces = _pieces.where((piece) {
-        return piece.name.toLowerCase().contains(query) ||
-            piece.reference.toLowerCase().contains(query);
-      }).toList();
-    });
-  }
-
   void _updateSelectedPiece(Piece piece) {
     setState(() {
-      _selectedPieceId = piece.id;
-      _stockQuantity = piece.stock;
-      _unitPrice = piece.sellingPrice?.toDouble() ?? 0;
+      _selectedPiece = piece;
       _quantityToUse = 1;
-      _selectedName = piece.name;
-      _selectedCondition = piece.condition;
     });
   }
 
   void _resetSelectedPiece() {
     setState(() {
-      _selectedPieceId = null;
-      _stockQuantity = 0;
-      _unitPrice = 0;
+      _selectedPiece = null;
       _quantityToUse = 0;
-      _selectedName = "";
-      _selectedCondition = 'N/A';
     });
   }
 
-  void _onCategorySelected(String? categoryId) {
-    if (categoryId == null || categoryId == _selectedCategoryId) return;
-    _selectedCategoryId = categoryId;
-    _loadPiecesForCategory(categoryId);
+  void _onCategorySelected(PieceCategorie? category) {
+    if (category == null || category.id == _selectedCategoryId) return;
+    setState(() {
+      _selectedCategoryId = category.id;
+      _selectedPiece = null;
+    });
+    _loadPiecesForCategory(category.id);
   }
 
-  void _onPieceSelected(String? pieceId) {
-    if (pieceId == null || pieceId == _selectedPieceId) return;
-    final piece = _pieces.firstWhere((p) => p.id == pieceId);
+  void _onPieceSelected(Piece? piece) {
+    if (piece == null || piece.id == _selectedPiece?.id) return;
     if (piece.stock > 0) _updateSelectedPiece(piece);
   }
 
@@ -164,17 +107,29 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
   }
 
   void _incrementQuantity() {
-    if (_quantityToUse < _stockQuantity) setState(() => _quantityToUse++);
+    if (widget.isMovement) {
+      if (_selectedPiece != null) {
+        setState(() => _quantityToUse++);
+      }
+    } else {
+      if (_selectedPiece != null && _quantityToUse < _selectedPiece!.stock) {
+        setState(() => _quantityToUse++);
+      }
+    }
   }
 
   void _addPiece() {
-    if (_selectedPieceId == null) return;
+    if (_selectedPiece == null) return;
+    if (!_formKey.currentState!.validate()) return;
 
     final pieceData = {
-      'pieceId': _selectedPieceId,
-      'name': _selectedName,
-      'unitPrice': _unitPrice,
+      'id': _selectedPiece!.id,
+      'name': _selectedPiece!.name,
+      'unitPrice': _selectedPiece!.sellingPrice,
+      'reference': _selectedPiece!.reference,
       'quantity': _quantityToUse,
+      'stock': _selectedPiece!.stock,
+      'category': _selectedPiece!.category.name,
     };
 
     widget.onPieceAdded?.call(pieceData);
@@ -186,71 +141,84 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
     final appColor = Provider.of<AppAdaptiveColors>(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? appColor.customBackground(context) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: appColor.primary))
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _Header(isDarkMode: isDarkMode, appColor: appColor),
-                    const SizedBox(height: 20),
-                    _Title(isDarkMode: isDarkMode),
-                    const SizedBox(height: 30),
-                    _buildCategoryDropdown(isDarkMode, appColor),
-                    const SizedBox(height: 20),
-                    _buildPieceDropdown(isDarkMode, appColor),
-                    const SizedBox(height: 20),
-                    _InfoRow(
-                      "État de la pièce",
-                      _selectedCondition,
-                      isDarkMode,
-                    ),
-                    const SizedBox(height: 20),
-                    _InfoRow("En stock", "$_stockQuantity", isDarkMode),
-                    const SizedBox(height: 12),
-                    _InfoRow(
-                      "Prix unitaire",
-                      "${_unitPrice.toStringAsFixed(0)} Fcfa",
-                      isDarkMode,
-                    ),
-                    const SizedBox(height: 20),
-                    _QuantitySelector(
-                      quantity: _quantityToUse,
-                      onAdd: _incrementQuantity,
-                      onRemove: _decrementQuantity,
-                      isDarkMode: isDarkMode,
-                      appColor: appColor,
-                    ),
-                    const SizedBox(height: 24),
-                    _InfoRow(
-                      "Prix total",
-                      "${_totalPrice.toStringAsFixed(0)} Fcfa",
-                      isDarkMode,
-                      bold: true,
-                    ),
-                    const SizedBox(height: 30),
-                    _ActionButtons(
-                      onCancel: widget.onCancel,
-                      onAdd: _selectedPieceId == null ? null : _addPiece,
-                      appColor: appColor,
-                      isDarkMode: isDarkMode,
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).padding.bottom + 20,
-                    ),
-                  ],
+    return Form(
+      key: _formKey,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDarkMode ? appColor.customBackground(context) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(color: appColor.primary),
+                )
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Header(isDarkMode: isDarkMode, appColor: appColor),
+                      const SizedBox(height: 20),
+                      _Title(isDarkMode: isDarkMode),
+                      const SizedBox(height: 30),
+                      _buildCategoryDropdown(isDarkMode, appColor),
+                      const SizedBox(height: 20),
+                      _buildPieceDropdown(isDarkMode, appColor),
+                      if (_selectedPiece != null) ...[
+                        const SizedBox(height: 20),
+                        _InfoRow(
+                          "État de la pièce",
+                          Piece.shortConditionLabel(_selectedPiece!.condition),
+                          isDarkMode,
+                        ),
+                        const SizedBox(height: 20),
+                        _InfoRow(
+                          "En stock",
+                          _selectedPiece!.stock.toString(),
+                          isDarkMode,
+                        ),
+                        const SizedBox(height: 12),
+                        _InfoRow(
+                          "Prix unitaire",
+                          "${_selectedPiece!.sellingPrice.toString()} Fcfa",
+                          isDarkMode,
+                        ),
+                        const SizedBox(height: 20),
+                        _QuantitySelector(
+                          quantity: _quantityToUse,
+                          maxQuantity: _selectedPiece!.stock,
+                          onAdd: _incrementQuantity,
+                          onRemove: _decrementQuantity,
+                          isDarkMode: isDarkMode,
+                          isMvt: widget.isMovement,
+                          appColor: appColor,
+                        ),
+                        const SizedBox(height: 24),
+                        _InfoRow(
+                          "Prix total",
+                          "${(_selectedPiece!.sellingPrice! * _quantityToUse).toStringAsFixed(0)} Fcfa",
+                          isDarkMode,
+                          bold: true,
+                        ),
+                      ],
+                      const SizedBox(height: 30),
+                      _ActionButtons(
+                        onCancel: widget.onCancel,
+                        onAdd: _selectedPiece == null ? null : _addPiece,
+                        appColor: appColor,
+                        isDarkMode: isDarkMode,
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).padding.bottom + 20,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
@@ -261,14 +229,81 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
       children: [
         _Label("Catégorie", isDarkMode),
         const SizedBox(height: 8),
-        SearchableDropdown(
-          value: _selectedCategoryId,
-          hint: "Rechercher une catégorie",
-          items: _categoryDropdownItems,
-          onChanged: _onCategorySelected,
-          enabled: true,
-          isDarkMode: isDarkMode,
-          appColor: appColor,
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.4)
+                  : Colors.grey,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: DropdownSearch<PieceCategorie>(
+            items: (filter, t) => _categories,
+            compareFn: (item1, item2) => item1.id == item2.id,
+            itemAsString: (item) => item.name,
+            selectedItem: _categories.firstWhere(
+              (c) => c.id == _selectedCategoryId,
+              orElse: () => _categories.first,
+            ),
+            filterFn: (item, filter) {
+              return item.name.toLowerCase().contains(filter.toLowerCase());
+            },
+            popupProps: PopupProps.menu(
+              showSearchBox: true,
+              searchFieldProps: TextFieldProps(
+                decoration: InputDecoration(
+                  hintText: "Rechercher une catégorie...",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              menuProps: MenuProps(
+                backgroundColor: isDarkMode
+                    ? appColor.customBackground(context)
+                    : Colors.white,
+              ),
+              listViewProps: ListViewProps(padding: EdgeInsets.zero),
+              itemBuilder: (context, item, isDisabled, isSelected) {
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: appColor.primary,
+                    child: Text(
+                      item.name[0],
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  title: Text(
+                    item.name,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "${item.pieces?.length ?? 0} pièces disponibles",
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                );
+              },
+            ),
+            decoratorProps: DropDownDecoratorProps(
+              decoration: InputDecoration(
+                hintText: "Sélectionner une catégorie",
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                hintStyle: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.grey[600],
+                ),
+              ),
+              baseStyle: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            onChanged: _onCategorySelected,
+          ),
         ),
       ],
     );
@@ -280,14 +315,101 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
       children: [
         _Label("Nom de la pièce", isDarkMode),
         const SizedBox(height: 8),
-        SearchableDropdown(
-          value: _selectedPieceId,
-          hint: "Rechercher une pièce",
-          items: _pieceDropdownItems,
-          onChanged: _onPieceSelected,
-          enabled: _selectedCategoryId != null,
-          isDarkMode: isDarkMode,
-          appColor: appColor,
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.4)
+                  : Colors.grey,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: DropdownSearch<Piece>(
+            items: (filter, loadProps) => _filteredPieces,
+            compareFn: (item1, item2) => item1.id == item2.id,
+            itemAsString: (item) => item.name,
+            selectedItem: _selectedPiece,
+            filterFn: (item, filter) {
+              return item.name.toLowerCase().contains(filter.toLowerCase());
+            },
+            popupProps: PopupProps.menu(
+              showSearchBox: true,
+              searchFieldProps: TextFieldProps(
+                decoration: InputDecoration(
+                  hintText: "Rechercher une pièce...",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              menuProps: MenuProps(
+                backgroundColor: isDarkMode
+                    ? appColor.customBackground(context)
+                    : Colors.white,
+              ),
+              listViewProps: ListViewProps(padding: EdgeInsets.zero),
+              itemBuilder: (context, item, isDisabled, isSelected) {
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: appColor.primary,
+                    child: Text(
+                      item.name[0],
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  title: Text(
+                    item.name,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Stock: ${item.stock} | ${item.sellingPrice} Fcfa",
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                  trailing: item.stock == 0
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            "Rupture",
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        )
+                      : null,
+                );
+              },
+            ),
+
+            decoratorProps: DropDownDecoratorProps(
+              decoration: InputDecoration(
+                hintText: "Sélectionner une pièce",
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                hintStyle: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.grey[600],
+                ),
+              ),
+              baseStyle: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            onChanged: _onPieceSelected,
+            validator: (value) {
+              if (value == null) {
+                return "Pièce requise";
+              }
+              return null;
+            },
+          ),
         ),
       ],
     );
@@ -306,9 +428,7 @@ class _Header extends StatelessWidget {
         width: 40,
         height: 4,
         decoration: BoxDecoration(
-          color: isDarkMode
-              ? appColor.customBackground(context)
-              : Colors.grey[300],
+          color: isDarkMode ? Colors.white30 : Colors.grey[300],
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -373,7 +493,14 @@ class _InfoRow extends StatelessWidget {
             color: isDarkMode ? Colors.white70 : Colors.black87,
           ),
         ),
-        Text(value, style: AppStyles.titleMedium(context)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+        ),
       ],
     );
   }
@@ -381,16 +508,20 @@ class _InfoRow extends StatelessWidget {
 
 class _QuantitySelector extends StatelessWidget {
   final int quantity;
+  final int maxQuantity;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
   final bool isDarkMode;
+  final bool isMvt;
   final AppAdaptiveColors appColor;
 
   const _QuantitySelector({
     required this.quantity,
+    required this.maxQuantity,
     required this.onAdd,
     required this.onRemove,
     required this.isDarkMode,
+    required this.isMvt,
     required this.appColor,
   });
 
@@ -410,14 +541,14 @@ class _QuantitySelector extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: isDarkMode
-                ? Colors.white.withOpacity(0.2)
+                ? Colors.white.withValues(alpha: 0.2)
                 : Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _button(Icons.remove, onRemove, isDarkMode),
+              _button(Icons.remove, onRemove, isDarkMode, quantity > 1),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -425,12 +556,19 @@ class _QuantitySelector extends StatelessWidget {
                 ),
                 child: Text(
                   "$quantity",
-                  style: AppStyles.bodyMedium(
-                    context,
-                  ).copyWith(color: isDarkMode ? Colors.white : Colors.black),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
                 ),
               ),
-              _button(Icons.add, onAdd, isDarkMode),
+              _button(
+                Icons.add,
+                onAdd,
+                isDarkMode,
+                isMvt ? true : quantity < maxQuantity,
+              ),
             ],
           ),
         ),
@@ -438,16 +576,23 @@ class _QuantitySelector extends StatelessWidget {
     );
   }
 
-  Widget _button(IconData icon, VoidCallback onTap, bool isDarkMode) {
+  Widget _button(
+    IconData icon,
+    VoidCallback onTap,
+    bool isDarkMode,
+    bool enabled,
+  ) {
     return InkWell(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(6),
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Icon(
           icon,
           size: 20,
-          color: isDarkMode ? Colors.white70 : Colors.black54,
+          color: enabled
+              ? (isDarkMode ? Colors.white70 : Colors.black54)
+              : (isDarkMode ? Colors.white30 : Colors.grey),
         ),
       ),
     );
@@ -472,14 +617,17 @@ class _ActionButtons extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton(
+          child: OutlinedButton(
             onPressed: onCancel,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDarkMode ? Colors.red[700] : Colors.red[600],
-              foregroundColor: Colors.white,
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: isDarkMode ? Colors.white : Colors.black87,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
+              ),
+              side: BorderSide(
+                color: isDarkMode ? Colors.white30 : Colors.grey,
               ),
             ),
             child: const Text(
@@ -507,66 +655,6 @@ class _ActionButtons extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class SearchableDropdown extends StatelessWidget {
-  final String? value;
-  final String hint;
-  final List<DropdownMenuItem<String>> items;
-  final void Function(String?)? onChanged;
-  final bool enabled;
-  final bool isDarkMode;
-  final AppAdaptiveColors appColor;
-
-  const SearchableDropdown({
-    super.key,
-    required this.value,
-    required this.hint,
-    required this.items,
-    required this.onChanged,
-    required this.enabled,
-    required this.isDarkMode,
-    required this.appColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: enabled
-            ? (isDarkMode ? appColor.customBackground(context) : Colors.white)
-            : (isDarkMode
-                  ? appColor.customBackground(context)
-                  : Colors.grey[100]),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDarkMode ? Colors.white.withOpacity(0.4) : Colors.grey,
-        ),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: value,
-          items: items,
-          onChanged: enabled ? onChanged : null,
-          dropdownColor: isDarkMode
-              ? appColor.customBackground(context)
-              : Colors.white,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-          hint: Text(
-            hint,
-            style: TextStyle(
-              color: isDarkMode ? Colors.white70 : Colors.grey[600],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

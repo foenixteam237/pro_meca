@@ -119,6 +119,40 @@ class Piece {
       'source': source?.toJson(),
     };
   }
+
+  static String longConditionLabel(String condition) {
+    switch (condition) {
+      case 'NEW':
+        return 'Neuf - Jamais utilisé';
+      case 'USED_GOOD':
+        return 'Occasion - Excellent état';
+      case 'USED_WORN':
+        return 'Occasion - Usure normale';
+      case 'USED_DAMAGED':
+        return 'Occasion - À réparer';
+      case 'UNKNOWN':
+        return 'État non vérifié';
+      default:
+        return condition;
+    }
+  }
+
+  static String shortConditionLabel(String condition) {
+    switch (condition) {
+      case 'NEW':
+        return 'NEUF';
+      case 'USED_GOOD':
+        return 'EXCELLENT';
+      case 'USED_WORN':
+        return 'NORMAL';
+      case 'USED_DAMAGED':
+        return 'À RÉPARER';
+      case 'UNKNOWN':
+        return 'NON VÉRIFIÉ';
+      default:
+        return condition.toUpperCase();
+    }
+  }
 }
 
 class Category {
