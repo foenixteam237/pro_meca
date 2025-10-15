@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
+import 'package:intl/intl.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -34,8 +35,11 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   // Données du mouvement
   List<StockMovement> _mvtStocks = [];
   String _movementType = 'OUT';
+  DateTime _mvtDate = DateTime.now();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController(
+    text: DateFormat("y-M-d HH:mm:ss").format(DateTime.now()),
+  );
 
   // Facturation
   bool _createFacture = false;
@@ -63,13 +67,6 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
       TextEditingController();
   final TextEditingController _factureNotesController = TextEditingController();
 
-  // Nouveaux contrôleurs pour la sélection de pièce
-  final TextEditingController _pieceSearchController = TextEditingController();
-  Map<String, dynamic>? _selectedPieceForAddition;
-  final TextEditingController _quantityToAddController =
-      TextEditingController();
-  final TextEditingController _priceToAddController = TextEditingController();
-
   bool? _emailCheckResult;
   bool _emailChecking = false;
   bool _emailValid = true;
@@ -86,8 +83,10 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   @override
   void initState() {
     super.initState();
-    _dateController.text = _formatDateForInput(DateTime.now());
-    _factureDateController.text = _formatDateForInput(DateTime.now());
+    _dateController.text = DateFormat("y-M-d HH:mm:ss").format(DateTime.now());
+    _factureDateController.text = DateFormat(
+      "y-M-d HH:mm:ss",
+    ).format(DateTime.now());
     _generateFactureReference();
   }
 
@@ -234,7 +233,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
         // Nouvelle pièce, on l'ajoute à la liste
         _mvtStocks.add(
           StockMovement(
-            date: DateTime.now(),
+            date: _mvtDate,
             piece: PieceMvt(
               id: pieceData['id'],
               name: pieceData['name'] ?? '',
@@ -438,10 +437,9 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           'pieceId': mvt.piece.id,
           'type': _movementType,
           'quantity': mvt.quantity,
-          'date': DateTime.parse(_dateController.text).toIso8601String(),
-          'description': _descriptionController.text.isEmpty
-              ? null
-              : _descriptionController.text,
+          'date': '${_mvtDate.toUtc().toIso8601String().split('.')[0]}Z',
+          if (_descriptionController.text.isNotEmpty)
+            'description': _descriptionController.text,
           if (factureId != null) 'factureId': factureId,
           'sellingPriceAtMovement': mvt.sellingPriceAtMovement,
         };
@@ -512,7 +510,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   }
 
   String _formatDateForInput(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ';
   }
 
   Future<void> _selectDate(
@@ -524,10 +522,26 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
+      locale: Locale('fr', 'FR'),
     );
 
     if (picked != null) {
-      controller.text = _formatDateForInput(picked);
+      // Get the current time
+      final currentTime = DateTime.now();
+      // Combine the picked date with the current time
+      final combinedDateTime = DateTime(
+        picked.year,
+        picked.month,
+        picked.day,
+        currentTime.hour,
+        currentTime.minute,
+        currentTime.second,
+      );
+      // Format and set the controller text
+      controller.text = DateFormat("y-M-d HH:mm:ss").format(combinedDateTime);
+      setState(() {
+        _mvtDate = combinedDateTime;
+      });
     }
   }
 
@@ -894,13 +908,13 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                   ),
                   backgroundColor: chipBgBaseColor.withValues(alpha: 0.5),
                 ),
-                Chip(
-                  label: Text(
-                    'Prix: ${mvt.sellingPriceAtMovement.toStringAsFixed(0)} FCFA',
-                    style: TextStyle(color: textColor),
-                  ),
-                  backgroundColor: chipBgBaseColor.withValues(alpha: 0.3),
-                ),
+                // Chip(
+                //   label: Text(
+                //     'Prix: ${mvt.sellingPriceAtMovement.toStringAsFixed(0)} FCFA',
+                //     style: TextStyle(color: textColor),
+                //   ),
+                //   backgroundColor: chipBgBaseColor.withValues(alpha: 0.3),
+                // ),
                 Chip(
                   label: Text(
                     'Total: ${(mvt.quantity * mvt.sellingPriceAtMovement).toStringAsFixed(0)} FCFA',

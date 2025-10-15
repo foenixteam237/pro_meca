@@ -96,6 +96,7 @@ class StockMovementService {
   // }
 
   Future<StockMovement> createMovement(Map<String, dynamic> data) async {
+    debugPrint(data.toString());
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
