@@ -84,9 +84,10 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   void initState() {
     super.initState();
     _dateController.text = DateFormat("y-M-d HH:mm:ss").format(DateTime.now());
-    _factureDateController.text = DateFormat(
-      "y-M-d HH:mm:ss",
-    ).format(DateTime.now());
+    _factureDateController.text = DateFormat("y-M-d").format(DateTime.now());
+    _factureDueDateController.text = DateFormat(
+      "y-M-d",
+    ).format(DateTime.now().add(Duration(days: 30)));
     _generateFactureReference();
   }
 
@@ -509,19 +510,16 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     );
   }
 
-  String _formatDateForInput(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} ';
-  }
-
   Future<void> _selectDate(
     BuildContext context,
-    TextEditingController controller,
-  ) async {
+    TextEditingController controller, {
+    DateTime? lastDate,
+  }) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
+      lastDate: lastDate ?? DateTime.now(),
       locale: Locale('fr', 'FR'),
     );
 
@@ -1135,7 +1133,11 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                     suffixIcon: Icon(Icons.calendar_today),
                   ),
                   readOnly: true,
-                  onTap: () => _selectDate(context, _factureDueDateController),
+                  onTap: () => _selectDate(
+                    context,
+                    _factureDueDateController,
+                    lastDate: DateTime(3200),
+                  ),
                 ),
               ),
             ],

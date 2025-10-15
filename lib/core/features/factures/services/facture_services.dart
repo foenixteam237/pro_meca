@@ -167,13 +167,12 @@ class FactureService {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
-          '/clients/search',
-          queryParameters: {'q': query},
+          '/clients/search/$query',
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
       if (ApiDioService.isSuccess(response)) {
-        return (response.data['data'] as List)
+        return (response.data as List)
             .map((item) => Client.fromJson(item))
             .toList();
       } else {
