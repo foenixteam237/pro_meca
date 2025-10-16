@@ -10,8 +10,8 @@ class StockMovement {
   DateTime date;
   String? description;
   Facture? facture;
-  int sellingPriceAtMovement;
-  int stockAfterMovement;
+  int? sellingPriceAtMovement;
+  int? stockAfterMovement;
 
   StockMovement({
     this.id,
@@ -21,44 +21,25 @@ class StockMovement {
     required this.date,
     this.description,
     this.facture,
-    required this.sellingPriceAtMovement,
-    required this.stockAfterMovement,
+    this.sellingPriceAtMovement,
+    this.stockAfterMovement,
   });
 
   factory StockMovement.fromJson(Map<String, dynamic> json) {
     return StockMovement(
-      id: json['id']?.toString(),
+      id: json['id'] ?? '',
       piece: PieceMvt.fromJson(json['piece'] ?? {}),
       type: json['type'] ?? '',
       quantity: json['quantity'] ?? 0,
-      date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
-      description: json['description'],
+      date: DateTime.parse(json['date'] ?? DateTime.now()),
+      description: json['description'] as String?,
       facture: json['facture'] != null
           ? Facture.fromJson(json['facture'])
           : null,
-      sellingPriceAtMovement: int.tryParse(json['sellingPrice']) ?? 0,
-      stockAfterMovement: json['stockAfterMovement'] ?? 0,
+      sellingPriceAtMovement: json['sellingPriceAtMovement'],
+      stockAfterMovement: json['stockAfterMovement'],
     );
   }
-
-  // factory StockMovement.fromPiece(Map<String, dynamic> json) {
-  //   return StockMovement(
-  //     piece: PieceMvt(
-  //       id: json['id']!,
-  //       reference: json['reference'] ?? '',
-  //       name: json['name']!,
-  //       currentStock: json['stock'] as int,
-  //       category: json['category']['name'] ?? '',
-  //     ),
-  //     type: json['type'] ?? '',
-  //     quantity: 0,
-  //     date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
-  //     description: json['name'],
-  //     facture: null,
-  //     sellingPriceAtMovement: json['sellingPrice'] ?? 0,
-  //     stockAfterMovement: json['stockAfterMovement'] ?? 0,
-  //   );
-  // }
 
   String get typeLabel {
     switch (type) {
@@ -95,10 +76,11 @@ class StockMovementResponse {
   });
 
   factory StockMovementResponse.fromJson(Map<String, dynamic> json) {
+    // print(json.toString());
     return StockMovementResponse(
-      movements: (json['movements'] as List)
-          .map((item) => StockMovement.fromJson(item))
-          .toList(),
+      movements: (json['movements'] as List).map((item) {
+        return StockMovement.fromJson(item);
+      }).toList(),
       totalCount: json['totalCount'] ?? 0,
       hasMore: json['hasMore'] ?? false,
     );
@@ -126,7 +108,7 @@ class PieceMvt {
       name: json['name'] ?? '',
       reference: json['reference'] ?? '',
       category: json['category']['name'] ?? '',
-      currentStock: (json['stock'] ?? json['currentStock'] ?? 0) as int,
+      currentStock: (json['stock'] ?? 0) as int,
     );
   }
 }

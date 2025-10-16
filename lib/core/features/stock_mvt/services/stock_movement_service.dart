@@ -39,61 +39,14 @@ class StockMovementService {
     } on DioException catch (dioError) {
       throw _handleDioError(
         dioError,
-        'Erreur lors du chargement des mouvements de stock',
+        'Erreur réseau lors du chargement des mouvements de stock',
       );
     } catch (e) {
       throw Exception(
-        'Erreur inattendue lors du chargement des mouvements de stock: $e',
+        'Erreur inattendue lors du chargement des mouvements: $e',
       );
     }
   }
-
-  // Future<Map<String, dynamic>> getPieces({
-  //   int skip = 0,
-  //   int take = 10,
-  //   String? search,
-  // }) async {
-  //   if (kDebugMode) {
-  //     print("skip=$skip , take=$take");
-  //   }
-
-  //   try {
-  //     final Map<String, dynamic> queryParams = {'skip': skip, 'take': take};
-
-  //     // Correction du paramètre de recherche
-  //     if (search != null && search.isNotEmpty) {
-  //       queryParams['search'] = search;
-  //     }
-
-  //     final response = await ApiDioService().authenticatedRequest(
-  //       () async => await _dio.get(
-  //         'stock-movements/pieces',
-  //         queryParameters: queryParams,
-  //         options: Options(headers: await ApiDioService().getAuthHeaders()),
-  //       ),
-  //     );
-
-  //     if (ApiDioService.isSuccess(response)) {
-  //       return (response.data);
-  //     } else {
-  //       throw Exception(
-  //         'Erreur lors du chargement des pièces: ${response.data.toString()}',
-  //       );
-  //     }
-  //   } on DioException catch (dioError) {
-  //     if (kDebugMode) {
-  //       print('erreur loading pieces = ${dioError.response?.data.toString()}');
-  //     }
-  //     throw _handleDioError(
-  //       dioError,
-  //       'Erreur lors du chargement des mouvements de stock',
-  //     );
-  //   } catch (e) {
-  //     throw Exception(
-  //       'Erreur inattendue lors du chargement des mouvements de stock: $e',
-  //     );
-  //   }
-  // }
 
   Future<StockMovement> createMovement(Map<String, dynamic> data) async {
     debugPrint(data.toString());
@@ -110,7 +63,7 @@ class StockMovementService {
         return StockMovement.fromJson(response.data['data']);
       } else {
         throw Exception(
-          'Erreur lors de la création du mouvement de stock: ${response.statusCode}',
+          'Erreur réseau lors de la création du mouvement de stock: ${response.statusCode}',
         );
       }
     } on DioException catch (dioError) {

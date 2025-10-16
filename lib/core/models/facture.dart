@@ -144,6 +144,8 @@ class Client {
   final String lastName;
   final String? email;
   final String? phone;
+  final String? address;
+  final String? city;
 
   Client({
     required this.id,
@@ -151,6 +153,8 @@ class Client {
     required this.lastName,
     this.email,
     this.phone,
+    this.address,
+    this.city,
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -160,6 +164,8 @@ class Client {
       lastName: json['lastName'] ?? '',
       email: json['email'],
       phone: json['phone'],
+      address: json['address'],
+      city: json['city'],
     );
   }
 

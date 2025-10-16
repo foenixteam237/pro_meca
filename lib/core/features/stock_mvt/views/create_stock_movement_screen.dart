@@ -78,7 +78,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   String? _phoneError;
 
   bool _isLoading = false;
-  bool _showNewClientForm = false;
+  bool? _showNewClientForm = false;
 
   @override
   void initState() {
@@ -243,7 +243,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
               currentStock: pieceData['stock'],
             ),
             quantity: pieceData['quantity'],
-            sellingPriceAtMovement: pieceData['unitPrice'] ?? 0,
+            sellingPriceAtMovement: pieceData['unitPrice'],
             stockAfterMovement: _movementType == 'IN'
                 ? pieceData['stock'] + pieceData['quantity']
                 : pieceData['stock'] - pieceData['quantity'],
@@ -312,13 +312,15 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
       _selectedClient = client;
       _clientSearchController.text = client.fullName;
       _searchClientResults = [];
-      _showNewClientForm = false;
+      _showNewClientForm = null;
 
       // Pré-remplir les champs du client
       _clientFirstNameController.text = client.firstName;
       _clientLastNameController.text = client.lastName;
       _phoneCtrl.text = client.phone ?? '';
       _clientEmailController.text = client.email ?? '';
+      _clientAddressController.text = client.address ?? '';
+      _clientCityController.text = client.city ?? '';
     });
   }
 
@@ -420,15 +422,15 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                   'pieceId': mvt.piece.id,
                   'description': mvt.piece.name,
                   'quantity': mvt.quantity,
-                  'unitPrice': mvt.sellingPriceAtMovement,
+                  'unitPrice': mvt.sellingPriceAtMovement ?? 0,
                 },
               )
               .toList(),
         };
 
         // Décommentez et adaptez cette partie selon votre API
-        // final facture = await _factureService.createFacture(factureData);
-        // factureId = facture.id;
+        final facture = await _factureService.createFacture(factureData);
+        factureId = facture.id;
       }
 
       // Créer les mouvements de stock
@@ -442,7 +444,10 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           if (_descriptionController.text.isNotEmpty)
             'description': _descriptionController.text,
           if (factureId != null) 'factureId': factureId,
-          'sellingPriceAtMovement': mvt.sellingPriceAtMovement,
+          if (mvt.sellingPriceAtMovement != null)
+            'sellingPriceAtMovement': mvt.sellingPriceAtMovement,
+          if (mvt.stockAfterMovement != null)
+            'stockAfterMovement': mvt.stockAfterMovement,
         };
 
         lastCreatedMvt = await _stockMovementService.createMovement(
@@ -546,7 +551,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   double get _totalAmount {
     return _mvtStocks.fold(
       0.0,
-      (sum, mvt) => sum + (mvt.quantity * mvt.sellingPriceAtMovement),
+      (sum, mvt) => sum + (mvt.quantity * (mvt.sellingPriceAtMovement ?? 0)),
     );
   }
 
@@ -646,7 +651,12 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                               if (value == null || value.isEmpty) {
                                 return 'La date est obligatoire';
                               }
-                              return null;
+                              try {
+                                DateTime.parse(value);
+                                return null;
+                              } catch (e) {
+                                return 'Date invalide';
+                              }
                             },
                           ),
                           const SizedBox(height: 12),
@@ -915,7 +925,9 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                 // ),
                 Chip(
                   label: Text(
-                    'Total: ${(mvt.quantity * mvt.sellingPriceAtMovement).toStringAsFixed(0)} FCFA',
+                    mvt.sellingPriceAtMovement != null
+                        ? 'Total: ${(mvt.quantity * mvt.sellingPriceAtMovement!).toStringAsFixed(0)} FCFA'
+                        : 'Total: N/A',
                     style: TextStyle(color: textColor),
                   ),
                   backgroundColor: chipBgBaseColor.withValues(alpha: 0.4),
@@ -944,7 +956,12 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.search),
+                : IconButton(
+                    onPressed: () {
+                      return _searchClient(_clientSearchController.text);
+                    },
+                    icon: Icon(Icons.search),
+                  ),
           ),
           onChanged: _searchClient,
         ),
@@ -975,19 +992,39 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
             _clientSearchController.text.isNotEmpty)
           ListTile(
             leading: const Icon(Icons.person_add),
-            title: const Text('Créer un nouveau client'),
+            title: _selectedClient == null
+                ? Text('Créer un nouveau client')
+                : _selectedClient!.fullName.toLowerCase().contains(
+                    _clientSearchController.text.toLowerCase(),
+                  )
+                ? Text(
+                    '${_showNewClientForm == null ? "Continuer avec" : "Afficher"} ${_selectedClient!.fullName}',
+                    style: TextStyle(overflow: TextOverflow.ellipsis),
+                  )
+                : Text('Créer un nouveau client'),
             onTap: () {
               setState(() {
-                _showNewClientForm = true;
-                _clientFirstNameController.text = _clientSearchController.text;
-                _clientLastNameController.text = '';
-                _phoneCtrl.text = '';
+                if (_selectedClient == null) {
+                  setNewClient();
+                } else {
+                  if (_selectedClient!.fullName.toLowerCase().contains(
+                    _clientSearchController.text.toLowerCase(),
+                  )) {
+                    _showNewClientForm = _showNewClientForm == false
+                        ? null
+                        : false;
+                  } else {
+                    _selectedClient = null;
+                    setNewClient();
+                  }
+                }
               });
             },
           ),
 
         // Formulaire nouveau client
-        if (_showNewClientForm || _selectedClient == null) ...[
+        if (_showNewClientForm == true ||
+            _showNewClientForm == null /* || _selectedClient == null */ ) ...[
           const SizedBox(height: 16),
           const Text(
             'Informations du Client',
@@ -998,6 +1035,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
             children: [
               Expanded(
                 child: TextFormField(
+                  enabled: _showNewClientForm == true,
                   controller: _clientFirstNameController,
                   decoration: const InputDecoration(
                     labelText: 'Prénom *',
@@ -1014,6 +1052,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: TextFormField(
+                  enabled: _showNewClientForm == true,
                   controller: _clientLastNameController,
                   decoration: const InputDecoration(
                     labelText: 'Nom',
@@ -1029,6 +1068,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           _buildPhoneInput(),
           const SizedBox(height: 12),
           TextFormField(
+            enabled: _showNewClientForm == true,
             controller: _clientEmailController,
             decoration: InputDecoration(
               labelText: 'Email',
@@ -1060,6 +1100,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
             children: [
               Expanded(
                 child: TextFormField(
+                  enabled: _showNewClientForm == true,
                   controller: _clientAddressController,
                   decoration: const InputDecoration(
                     labelText: 'Adresse',
@@ -1070,6 +1111,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: TextFormField(
+                  enabled: _showNewClientForm == true,
                   controller: _clientCityController,
                   decoration: const InputDecoration(
                     labelText: 'Ville',
@@ -1080,7 +1122,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          if (_showNewClientForm)
+          if (_showNewClientForm == true)
             ElevatedButton(
               onPressed: _createNewClient,
               child: const Text('Créer le client'),
@@ -1121,6 +1163,15 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                   ),
                   readOnly: true,
                   onTap: () => _selectDate(context, _factureDateController),
+                  validator: (value) {
+                    try {
+                      if (value == null) return 'Date invalide';
+                      DateTime.parse(value);
+                      return null;
+                    } catch (e) {
+                      return 'Date invalide';
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -1138,6 +1189,15 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                     _factureDueDateController,
                     lastDate: DateTime(3200),
                   ),
+                  validator: (value) {
+                    try {
+                      if (value == null) return 'Date invalide';
+                      DateTime.parse(value);
+                      return null;
+                    } catch (e) {
+                      return 'Date invalide';
+                    }
+                  },
                 ),
               ),
             ],
@@ -1158,6 +1218,21 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     );
   }
 
+  void setNewClient() {
+    String prenom = _clientSearchController.text.isNotEmpty
+        ? _clientSearchController.text.split(' ')[0]
+        : '';
+    _showNewClientForm = true;
+    _clientFirstNameController.text = prenom;
+    _clientLastNameController.text = _clientSearchController.text
+        .substring(prenom.length)
+        .trim();
+    _phoneCtrl.text = '';
+    _clientEmailController.text = '';
+    _clientAddressController.text = '';
+    _clientCityController.text = '';
+  }
+
   Widget _buildPhoneInput() {
     return Row(
       children: [
@@ -1169,6 +1244,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                 border: Border.all(color: Colors.grey),
               ),
               child: CountryCodePicker(
+                enabled: _showNewClientForm == true,
                 initialSelection: 'CM',
                 favorite: ['CM', 'TD', 'CE'],
                 onChanged: (country) {
@@ -1195,6 +1271,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
         SizedBox(width: 10),
         Expanded(
           child: TextFormField(
+            enabled: _showNewClientForm == true,
             controller: _phoneCtrl,
             keyboardType: TextInputType.phone,
             onChanged: (phone) => setState(() {

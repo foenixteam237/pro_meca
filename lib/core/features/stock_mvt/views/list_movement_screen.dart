@@ -36,7 +36,7 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
     {'label': 'Ce mois', 'days': 30},
     {'label': 'Ce trimestre', 'days': 90},
     {'label': 'Cette année', 'days': 365},
-    {'label': 'Personnalisée', 'days': null},
+    // {'label': 'Personnalisée', 'days': null},
   ];
 
   final List<String> _types = ['Tous', 'IN', 'OUT'];
@@ -392,16 +392,29 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
             color: movement.typeColor,
           ),
         ),
-        title: Text(movement.piece.name),
+        title: Text(
+          movement.piece.name,
+          style: TextStyle(overflow: TextOverflow.ellipsis),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Réf: ${movement.piece.reference}'),
-            Text('Catégorie: ${movement.piece.category}'),
+            Text(
+              'Réf: ${movement.piece.reference}',
+              style: TextStyle(overflow: TextOverflow.ellipsis),
+            ),
+            Text(
+              'Catégorie: ${movement.piece.category}',
+              style: TextStyle(overflow: TextOverflow.ellipsis),
+            ),
             Text('Quantité: ${movement.quantity}'),
-            Text('Stock après: ${movement.stockAfterMovement}'),
+            if (movement.stockAfterMovement != null)
+              Text('Stock après: ${movement.stockAfterMovement}'),
             if (movement.facture != null)
-              Text('Facture: ${movement.facture!.reference}'),
+              Text(
+                'Facture: ${movement.facture!.reference}',
+                style: TextStyle(overflow: TextOverflow.ellipsis),
+              ),
           ],
         ),
         trailing: Column(
@@ -416,7 +429,11 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
               ),
             ),
             Text(_formatDate(movement.date)),
-            Text('${movement.sellingPriceAtMovement} FCFA'),
+            Text(
+              movement.sellingPriceAtMovement != null
+                  ? '${movement.sellingPriceAtMovement} FCFA'
+                  : 'Prix: N/A',
+            ),
           ],
         ),
         onTap: () => _showMovementDetails(movement),

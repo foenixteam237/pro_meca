@@ -1,6 +1,7 @@
 // stock_movement_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/stock_movement.dart';
+import 'package:pro_meca/core/utils/formatting.dart';
 
 class StockMovementDetailScreen extends StatelessWidget {
   final StockMovement movement;
@@ -34,11 +35,15 @@ class StockMovementDetailScreen extends StatelessWidget {
               _buildInfoRow('Date', _formatDate(movement.date)),
               _buildInfoRow(
                 'Prix de vente',
-                '${movement.sellingPriceAtMovement} FCFA',
+                movement.sellingPriceAtMovement != null
+                    ? '${formatAmount(movement.sellingPriceAtMovement)} FCFA'
+                    : 'N/A',
               ),
               _buildInfoRow(
                 'Solde après mouvement',
-                movement.stockAfterMovement.toString(),
+                movement.stockAfterMovement != null
+                    ? movement.stockAfterMovement.toString()
+                    : 'N/A',
               ),
             ]),
 
@@ -89,7 +94,10 @@ class StockMovementDetailScreen extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: valueColor),
+              style: TextStyle(
+                color: valueColor,
+                overflow: TextOverflow.ellipsis,
+              ),
               textAlign: TextAlign.right,
             ),
           ),
@@ -99,6 +107,6 @@ class StockMovementDetailScreen extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}:${date.second.toString().padLeft(2, '0')}';
   }
 }
