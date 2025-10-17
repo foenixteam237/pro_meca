@@ -33,7 +33,7 @@ class Facture {
   final double totalTTC;
   final String status;
   final Client client;
-  final Visite visite;
+  final Visite? visite;
   final List<InvoiceLine> lines;
   final String? notes;
   final String? totalTTCWord;
@@ -52,7 +52,7 @@ class Facture {
     required this.totalTTC,
     required this.status,
     required this.client,
-    required this.visite,
+    this.visite,
     required this.lines,
     this.notes,
     this.totalTTCWord,
@@ -81,7 +81,9 @@ class Facture {
       totalTTC: _parseDecimal(json['totalTTC']),
       status: json['status'] ?? 'DRAFT',
       client: Client.fromJson(json['client'] ?? {}),
-      visite: Visite.fromJson(json['visite'] ?? {}),
+      visite: json['visite'] == null
+          ? null
+          : Visite.fromJson(json['visite'] ?? {}),
       lines: (json['lines'] as List? ?? [])
           .map((item) => InvoiceLine.fromJson(item))
           .toList(),

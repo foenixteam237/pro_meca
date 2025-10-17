@@ -37,7 +37,7 @@ class FactureService {
         );
       }
     } on DioException catch (dioError) {
-      throw _handleDioError(dioError, 'Erreur lors du chargement des factures');
+      throw _handleDioError(dioError, 'Erreur de chargement des factures');
     } catch (e) {
       throw Exception('Erreur inattendue lors du chargement des factures: $e');
     }
@@ -107,15 +107,17 @@ class FactureService {
     }
   }
 
-  Future<Uint8List> generateWordFactureBytes(
-    String visiteId, {
+  Future<Uint8List> generateWordFactureBytes({
+    String visiteId = '',
     int tva = 1,
     int ir = 0,
   }) async {
     try {
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.get(
-          '/factures/word/visite/$visiteId/$tva/$ir',
+          visiteId.isNotEmpty
+              ? '/factures/word/visite/$visiteId/$tva/$ir'
+              : '/factures/word/$tva/$ir',
           options: Options(
             headers: await ApiDioService().getAuthHeaders(),
             responseType:

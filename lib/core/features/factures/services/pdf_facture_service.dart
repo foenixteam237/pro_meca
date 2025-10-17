@@ -142,29 +142,30 @@ class PdfFactureService {
                     ],
                   ),
                 ),
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('VÉHICULE', style: titleStyle),
-                      pw.SizedBox(height: 8),
-                      pw.Text(
-                        _escapeText(facture.visite.vehicle.licensePlate),
-                        style: normalStyle,
-                      ),
-                      if (facture.visite.vehicle.model != null)
+                if (facture.visite != null)
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('VÉHICULE', style: titleStyle),
+                        pw.SizedBox(height: 8),
                         pw.Text(
-                          'Modèle: ${_escapeText(facture.visite.vehicle.model!)}',
-                          style: smallStyle,
+                          _escapeText(facture.visite!.vehicle.licensePlate),
+                          style: normalStyle,
                         ),
-                      if (facture.visite.vehicle.marque != null)
-                        pw.Text(
-                          'Marque: ${_escapeText(facture.visite.vehicle.marque!)}',
-                          style: smallStyle,
-                        ),
-                    ],
+                        if (facture.visite!.vehicle.model != null)
+                          pw.Text(
+                            'Modèle: ${_escapeText(facture.visite!.vehicle.model!)}',
+                            style: smallStyle,
+                          ),
+                        if (facture.visite!.vehicle.marque != null)
+                          pw.Text(
+                            'Marque: ${_escapeText(facture.visite!.vehicle.marque!)}',
+                            style: smallStyle,
+                          ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
 

@@ -151,8 +151,7 @@ class _FactureListScreenState extends State<FactureListScreen> {
       _filteredFactures = _factures.where((facture) {
         final matchesSearch =
             facture.reference.toLowerCase().contains(query) ||
-            facture.client.fullName.toLowerCase().contains(query) ||
-            facture.visite.vehicle.licensePlate.toLowerCase().contains(query);
+            facture.client.fullName.toLowerCase().contains(query);
 
         final matchesStatus =
             _selectedStatus == null ||
@@ -413,7 +412,7 @@ class _FactureListScreenState extends State<FactureListScreen> {
       // Télécharger les bytes du fichier Word depuis le serveur
       final Uint8List wordBytes = await _factureService
           .generateWordFactureBytes(
-            facture.visite.id,
+            visiteId: facture.visite != null ? facture.visite!.id : '',
             tva: result['tva']! ? 1 : 0,
             ir: result['ir']! ? 1 : 0,
           );
@@ -675,7 +674,7 @@ class _FactureListScreenState extends State<FactureListScreen> {
               children: [
                 Text(
                   '${_getTotalAmount()} FCFA',
-                  style: AppStyles.titleMedium(context)!.copyWith(
+                  style: AppStyles.titleMedium(context).copyWith(
                     color: appColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
@@ -760,7 +759,7 @@ class _FactureListScreenState extends State<FactureListScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: facture.statusColor.withOpacity(0.2),
+            color: facture.statusColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(Icons.receipt, color: facture.statusColor),
@@ -781,11 +780,13 @@ class _FactureListScreenState extends State<FactureListScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              facture.visite.vehicle.licensePlate,
-              style: const TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 4),
+            if (facture.visite != null) ...[
+              Text(
+                facture.visite!.vehicle.licensePlate,
+                style: const TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+            ],
             Row(
               children: [
                 Container(
@@ -849,7 +850,11 @@ class _FactureListScreenState extends State<FactureListScreen> {
                 ),
               ),
               DataCell(Text(facture.client.fullName)),
-              DataCell(Text(facture.visite.vehicle.licensePlate)),
+              DataCell(
+                (facture.visite != null)
+                    ? Text(facture.visite!.vehicle.licensePlate)
+                    : Text('N/A'),
+              ),
               DataCell(Text('${facture.totalTTC.toStringAsFixed(0)} FCFA')),
               DataCell(
                 Container(

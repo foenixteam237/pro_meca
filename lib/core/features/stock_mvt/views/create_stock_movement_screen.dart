@@ -33,7 +33,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Données du mouvement
-  List<StockMovement> _mvtStocks = [];
+  final List<StockMovement> _mvtStocks = [];
   String _movementType = 'OUT';
   DateTime _mvtDate = DateTime.now();
   final TextEditingController _descriptionController = TextEditingController();
@@ -60,8 +60,8 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   final TextEditingController _clientCityController = TextEditingController();
 
   // Formulaire facture
-  final TextEditingController _factureReferenceController =
-      TextEditingController();
+  // final TextEditingController _factureReferenceController =
+  //     TextEditingController();
   final TextEditingController _factureDateController = TextEditingController();
   final TextEditingController _factureDueDateController =
       TextEditingController();
@@ -80,6 +80,11 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   bool _isLoading = false;
   bool? _showNewClientForm = false;
 
+  final DateFormat _dateFormat = DateFormat('yyyy-MM-ddTHH:mm:ss+01:00');
+
+  bool _includeTVA = true;
+  bool _includeIR = false;
+
   @override
   void initState() {
     super.initState();
@@ -88,7 +93,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     _factureDueDateController.text = DateFormat(
       "y-M-d",
     ).format(DateTime.now().add(Duration(days: 30)));
-    _generateFactureReference();
+    // _generateFactureReference();
   }
 
   String _parsePhoneNumber(String phone) {
@@ -110,12 +115,12 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     return natPhone;
   }
 
-  void _generateFactureReference() {
-    final now = DateTime.now();
-    final reference =
-        'FACT-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.millisecond}';
-    _factureReferenceController.text = reference;
-  }
+  // void _generateFactureReference() {
+  //   final now = DateTime.now();
+  //   final reference =
+  //       'FACT-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.millisecond}';
+  //   _factureReferenceController.text = reference;
+  // }
 
   Future<bool> _checkEmail() async {
     if (_emailCheckResult == true) {
@@ -380,8 +385,101 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     }
   }
 
+  // Méthode pour valider et parser les dates en toute sécurité
+  DateTime? _safeParseDate(String dateString, {bool allowFuture = false}) {
+    if (dateString.isEmpty) return null;
+
+    try {
+      final date = DateTime.parse(dateString);
+
+      // Vérifier que c'est une date valide (éviter les dates comme 2023-02-30)
+      if (date.year < 2000 || date.year > 2100) return null;
+
+      // Vérifier que la date n'est pas dans le futur (sauf si autorisé)
+      if (!allowFuture && date.isAfter(DateTime.now())) {
+        return null;
+      }
+
+      return date;
+    } catch (e) {
+      debugPrint('Erreur parsing date: $e');
+      return null;
+    }
+  }
+
+  // Méthode pour valider toutes les dates avant envoi
+  bool _validateDates() {
+    // Valider la date du mouvement
+    final movementDate = _safeParseDate(_dateController.text);
+    if (movementDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Date du mouvement invalide')),
+      );
+      return false;
+    }
+
+    // Valider la date de facture si création de facture
+    if (_createFacture) {
+      final factureDate = _safeParseDate(
+        _factureDateController.text,
+        allowFuture: true,
+      );
+      if (factureDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Date de facture invalide')),
+        );
+        return false;
+      }
+
+      // Valider la date d'échéance si renseignée
+      if (_factureDueDateController.text.isNotEmpty) {
+        final dueDate = _safeParseDate(
+          _factureDueDateController.text,
+          allowFuture: true,
+        );
+        if (dueDate == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Date d\'échéance invalide')),
+          );
+          return false;
+        }
+
+        // Vérifier que l'échéance est après la date de facture
+        if (dueDate.isBefore(factureDate)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('L\'échéance doit être après la date de facture'),
+            ),
+          );
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   Future<void> _createMovement() async {
+    DateTime camerounDate = DateTime.now().toUtc().add(
+      const Duration(hours: 1),
+    ); // GMT+1
     if (!_formKey.currentState!.validate()) return;
+
+    if (!_validateDates()) {
+      return;
+    }
+
+    // Vérifier que toutes les pièces sont sélectionnées
+    for (final mvt in _mvtStocks) {
+      if (mvt.piece.id == null || mvt.piece.id!.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veuillez sélectionner une pièce pour chaque ligne'),
+          ),
+        );
+        return;
+      }
+    }
 
     if (_mvtStocks.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -402,20 +500,24 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     setState(() => _isLoading = true);
 
     try {
-      String? factureId;
+      Map<String, dynamic>? factureData;
 
       // Créer la facture si demandé
       if (_createFacture && _selectedClient != null) {
-        final factureData = {
-          'reference': _factureReferenceController.text,
-          'date': DateTime.parse(_factureDateController.text).toIso8601String(),
-          'dueDate': _factureDueDateController.text.isNotEmpty
-              ? DateTime.parse(_factureDueDateController.text).toIso8601String()
-              : null,
+        final factureDate = _safeParseDate(
+          _factureDateController.text,
+          allowFuture: true,
+        )!;
+        final dueDate = _factureDueDateController.text.isNotEmpty
+            ? _safeParseDate(_factureDueDateController.text, allowFuture: true)
+            : null;
+        factureData = {
+          // 'reference': _factureReferenceController.text,
+          'date': _dateFormat.format(factureDate),
+          if (dueDate != null) 'dueDate': _dateFormat.format(dueDate),
           'clientId': _selectedClient!.id,
-          'notes': _factureNotesController.text.isEmpty
-              ? null
-              : _factureNotesController.text,
+          if (_factureNotesController.text.isNotEmpty)
+            'notes': _factureNotesController.text,
           'lines': _mvtStocks
               .map(
                 (mvt) => {
@@ -426,12 +528,12 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                 },
               )
               .toList(),
+          'includeTVA': _includeTVA,
+          'includeIR': _includeIR,
         };
-
-        // Décommentez et adaptez cette partie selon votre API
-        final facture = await _factureService.createFacture(factureData);
-        factureId = facture.id;
       }
+
+      String? factureId;
 
       // Créer les mouvements de stock
       StockMovement? lastCreatedMvt;
@@ -440,10 +542,13 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           'pieceId': mvt.piece.id,
           'type': _movementType,
           'quantity': mvt.quantity,
-          'date': '${_mvtDate.toUtc().toIso8601String().split('.')[0]}Z',
+          'date': '${_mvtDate.toIso8601String().split('.')[0]}Z',
           if (_descriptionController.text.isNotEmpty)
             'description': _descriptionController.text,
-          if (factureId != null) 'factureId': factureId,
+          if (factureId != null)
+            'factureId': factureId
+          else if (factureData != null)
+            'facture': factureData,
           if (mvt.sellingPriceAtMovement != null)
             'sellingPriceAtMovement': mvt.sellingPriceAtMovement,
           if (mvt.stockAfterMovement != null)
@@ -453,6 +558,12 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
         lastCreatedMvt = await _stockMovementService.createMovement(
           movementData,
         );
+
+        if (lastCreatedMvt.facture != null &&
+            lastCreatedMvt.facture!.id.isNotEmpty &&
+            factureId == null) {
+          factureId = lastCreatedMvt.facture?.id;
+        }
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -486,7 +597,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           children: [
             Text('Référence: ${facture.reference}'),
             Text('Client: ${facture.client.fullName}'),
-            Text('Total: ${facture.totalTTC.toStringAsFixed(0)} FCFA'),
+            Text('Total HT: ${facture.totalHT.toStringAsFixed(0)} FCFA'),
             const SizedBox(height: 16),
             const Text('Voulez-vous générer le PDF de la facture ?'),
           ],
@@ -854,6 +965,26 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
     );
   }
 
+  Widget _buildToggleSwitch({
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required String label,
+    required IconData icon,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: value ? Colors.green : Colors.grey),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Theme.of(context).primaryColor,
+        ),
+      ],
+    );
+  }
+
   Widget _buildPieceItem(int index, StockMovement mvt) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -1137,20 +1268,20 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          TextFormField(
-            controller: _factureReferenceController,
-            decoration: const InputDecoration(
-              labelText: 'Référence facture',
-              border: OutlineInputBorder(),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'La référence est obligatoire';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 12),
+          // TextFormField(
+          //   controller: _factureReferenceController,
+          //   decoration: const InputDecoration(
+          //     labelText: 'Référence facture',
+          //     border: OutlineInputBorder(),
+          //   ),
+          //   validator: (value) {
+          //     if (value == null || value.isEmpty) {
+          //       return 'La référence est obligatoire';
+          //     }
+          //     return null;
+          //   },
+          // ),
+          // const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -1179,7 +1310,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                 child: TextFormField(
                   controller: _factureDueDateController,
                   decoration: const InputDecoration(
-                    labelText: 'Échéance (optionnel)',
+                    labelText: 'Échéance (optionnelle)',
                     border: OutlineInputBorder(),
                     suffixIcon: Icon(Icons.calendar_today),
                   ),
@@ -1198,6 +1329,28 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
                       return 'Date invalide';
                     }
                   },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Container(
+                child: _buildToggleSwitch(
+                  value: _includeTVA,
+                  onChanged: (value) => setState(() => _includeTVA = value),
+                  label: 'TVA',
+                  icon: Icons.attach_money,
+                ),
+              ),
+              Container(
+                child: _buildToggleSwitch(
+                  value: _includeIR,
+                  onChanged: (value) => setState(() => _includeIR = value),
+                  label: 'IR',
+                  icon: Icons.percent_outlined,
                 ),
               ),
             ],

@@ -361,30 +361,31 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
                 ],
               ),
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'VÉHICULE',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      color: Colors.grey,
+            if (facture.visite != null)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'VÉHICULE',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    facture.visite.vehicle.licensePlate,
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  if (facture.visite.vehicle.model != null)
-                    Text('Modèle: ${facture.visite.vehicle.model}'),
-                  if (facture.visite.vehicle.marque != null)
-                    Text('Marque: ${facture.visite.vehicle.marque}'),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      facture.visite!.vehicle.licensePlate,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    if (facture.visite!.vehicle.model != null)
+                      Text('Modèle: ${facture.visite!.vehicle.model}'),
+                    if (facture.visite!.vehicle.marque != null)
+                      Text('Marque: ${facture.visite!.vehicle.marque}'),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
