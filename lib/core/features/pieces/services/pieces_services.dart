@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
@@ -104,6 +103,135 @@ class PiecesService {
     } catch (e) {
       debugPrint('Erreur inattendue modèles: ${e.toString()}');
       return [];
+    }
+  }
+
+  /// Créer une nouvelle catégorie
+  Future<bool> createCategory(
+    FormData categoryData,
+    BuildContext context,
+  ) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.post(
+          '/categories/create',
+          data: categoryData,
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Catégorie créée avec succès")));
+        return true;
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Erreur lors de la création")));
+        return false;
+      }
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? e.message ?? 'Erreur inconnue';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Impossible de créer la catégorie: $errorMessage"),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return false;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur inattendue: ${e.toString()}")),
+      );
+      debugPrint('Erreur: ${e.toString()}');
+      return false;
+    }
+  }
+
+  /// Modifier une catégorie existante
+  Future<bool> updateCategory(
+    String categoryId,
+    FormData categoryData,
+    BuildContext context,
+  ) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.put(
+          '/categories/$categoryId',
+          data: categoryData,
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (ApiDioService.isSuccess(response)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Catégorie modifiée avec succès")),
+        );
+        return true;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur lors de la modification")),
+        );
+        return false;
+      }
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? e.message ?? 'Erreur inconnue';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Impossible de modifier la catégorie: $errorMessage"),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return false;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur inattendue: ${e.toString()}")),
+      );
+      debugPrint('Erreur: ${e.toString()}');
+      return false;
+    }
+  }
+
+  /// Supprimer une catégorie
+  Future<bool> deleteCategory(String categoryId, BuildContext context) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.delete(
+          '/categories/$categoryId',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 204) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Catégorie supprimée avec succès")),
+        );
+        return true;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur lors de la suppression")),
+        );
+        return false;
+      }
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data['message'] ?? e.message ?? 'Erreur inconnue';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Impossible de supprimer la catégorie: $errorMessage"),
+        ),
+      );
+      debugPrint('Erreur Dio: ${e.response?.statusCode}: ${e.response?.data}');
+      return false;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur inattendue: ${e.toString()}")),
+      );
+      debugPrint('Erreur: ${e.toString()}');
+      return false;
     }
   }
 

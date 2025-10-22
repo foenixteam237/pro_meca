@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_meca/core/features/pieces/views/category_form.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -62,6 +63,87 @@ class _CategoriesPageState extends State<CategoriesPage> {
     });
   }
 
+  void _showCategoryForm({PieceCategorie? category}) {
+    WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) => [
+        WoltModalSheetPage(
+          topBar: Container(
+            padding: const EdgeInsets.all(10),
+            alignment: Alignment.center,
+            child: Text(
+              category == null ? "Nouvelle Catégorie" : "Modifier Catégorie",
+              textAlign: TextAlign.center,
+              style: AppStyles.titleLarge(context),
+            ),
+          ),
+          trailingNavBarWidget: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+          ),
+          child: CategoryForm(
+            category: category,
+            onSuccess: _loadCategorie, // Recharger la liste après succès
+          ),
+        ),
+      ],
+      modalTypeBuilder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        return screenWidth > 700
+            ? WoltModalType.alertDialog()
+            : WoltModalType.sideSheet();
+      },
+      onModalDismissedWithBarrierTap: () => Navigator.pop(context),
+    );
+  }
+
+  void _deleteCategory(PieceCategorie category) async {
+    // Vérifier s'il y a des pièces associées
+    if (category.count > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Impossible de supprimer: ${category.count} pièce(s) associée(s)",
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Demander confirmation
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirmer la suppression"),
+        content: Text(
+          "Êtes-vous sûr de vouloir supprimer la catégorie \"${category.name}\" ?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await PiecesService().deleteCategory(
+        category.id,
+        context,
+      );
+      if (success) {
+        _loadCategorie(); // Recharger la liste
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayList = _isLoading
@@ -84,7 +166,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Catégories', style: AppStyles.titleLarge(context)),
-                  Icon(Icons.add_box, color: appColors.primary),
+                  IconButton(
+                    icon: Icon(Icons.add_box, color: appColors.primary),
+                    onPressed: () => _showCategoryForm(), // Nouvelle méthode
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -120,6 +205,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
                             pContext: widget.parentContext,
                             category: category!,
                             getToken: _accessToken,
+                            onEdit: (category) =>
+                                _showCategoryForm(category: category),
+                            onDelete: (category) => _deleteCategory(category),
                           );
                         } else {
                           return const Center(

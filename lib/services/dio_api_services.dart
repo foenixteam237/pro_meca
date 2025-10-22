@@ -91,7 +91,7 @@ class ApiDioService {
     try {
       final response = await _dio
           .get('/ping')
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         // Vérification directe si response.data est une chaîne
         if (response.data is String) {
