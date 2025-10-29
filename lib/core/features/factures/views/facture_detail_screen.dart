@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:number_to_words_english/number_to_words_english.dart';
@@ -449,48 +448,44 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
                     ),
                   ],
                 ),
-                ...facture.lines
-                    .map(
-                      (line) => TableRow(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Text(line.description),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              line.quantity.toStringAsFixed(2),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 5,
-                            ),
-                            child: Text(
-                              line.unitPrice.toStringAsFixed(0),
-                              textAlign: TextAlign.right,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 5,
-                            ),
-                            child: Text(
-                              line.totalHT.toStringAsFixed(0),
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
+                ...facture.lines.map(
+                  (line) => TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(line.description),
                       ),
-                    )
-                    .toList(),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          line.quantity.toStringAsFixed(2),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 5,
+                        ),
+                        child: Text(
+                          line.unitPrice.toStringAsFixed(0),
+                          textAlign: TextAlign.right,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 5,
+                        ),
+                        child: Text(
+                          line.totalHT.toStringAsFixed(0),
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],

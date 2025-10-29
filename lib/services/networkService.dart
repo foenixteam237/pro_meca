@@ -29,3 +29,8 @@ class NetworkService {
     return Connectivity().onConnectivityChanged;
   }
 }
+
+
+/***
+ * 
+ */

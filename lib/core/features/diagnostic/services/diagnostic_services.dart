@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/models/diagnostic_update.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
+import 'package:pro_meca/core/models/report.dart';
 import 'package:pro_meca/core/models/type_intervention.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 
@@ -191,8 +192,6 @@ class DiagnosticServices {
     required BuildContext context,
   }) async {
     try {
-
-      print(jsonEncode(report));
       final response = await ApiDioService().authenticatedRequest(
         () async => await _dio.post(
           '/reports/create',
@@ -232,6 +231,88 @@ class DiagnosticServices {
           content: Text(
             "Erreur lors de la création du rapport: ${e.toString()}",
           ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return false;
+    }
+  }
+
+  Future<Report> fetchReportByInterventionId(String interventionId) async {
+    try {
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.get(
+          '/reports/int/$interventionId',
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      print(response.data);
+      if (response.statusCode == 200) {
+        final data = response.data;
+        return Report.fromJson(data['data']);
+      } else {
+        throw Exception(
+          "Erreur API: ${response.statusCode} - ${response.statusMessage}",
+        );
+      }
+    } on DioException catch (e) {
+      throw Exception("Erreur Dio: ${e.message}");
+    } catch (e) {
+      throw Exception("Erreur inconnue: $e");
+    }
+  }
+
+  Future<bool> validateIntervention({
+    required BuildContext context,
+    required Map<String, dynamic> report,
+  }) async {
+    try {
+      debugPrint('Validation du rapport: ${jsonEncode(report)}');
+      final response = await ApiDioService().authenticatedRequest(
+        () async => await _dio.post(
+          '/reports/validate',
+          data: jsonEncode(report),
+          options: Options(headers: await ApiDioService().getAuthHeaders()),
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        if (kDebugMode) {
+          print(
+            'Échec de la validation de l\'intervention : ${response.statusCode} - ${response.data}',
+          );
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Erreur lors de la validation: ${response.statusCode}",
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        return false;
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('Erreur Dio lors de la validation: ${e.message}');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur réseau: ${e.message}"),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erreur inconnue lors de la validation: $e');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur: ${e.toString()}"),
           duration: const Duration(seconds: 3),
         ),
       );

@@ -34,6 +34,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
 
   // Données du mouvement
   final List<StockMovement> _mvtStocks = [];
+
   String _movementType = 'OUT';
   DateTime _mvtDate = DateTime.now();
   final TextEditingController _descriptionController = TextEditingController();
@@ -460,9 +461,7 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
   }
 
   Future<void> _createMovement() async {
-    DateTime camerounDate = DateTime.now().toUtc().add(
-      const Duration(hours: 1),
-    ); // GMT+1
+    DateTime.now().toUtc().add(const Duration(hours: 1)); // GMT+1
     if (!_formKey.currentState!.validate()) return;
 
     if (!_validateDates()) {
@@ -554,7 +553,6 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           if (mvt.stockAfterMovement != null)
             'stockAfterMovement': mvt.stockAfterMovement,
         };
-
         lastCreatedMvt = await _stockMovementService.createMovement(
           movementData,
         );
@@ -609,8 +607,6 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
               // Naviguer vers l'écran de détail de la facture pour générer le PDF
               Navigator.push(
                 context,

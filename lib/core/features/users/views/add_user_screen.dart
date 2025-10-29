@@ -738,10 +738,11 @@ class _AddUserScreenState extends State<AddUserScreen> {
   Widget _buildHeader(AppAdaptiveColors appColors) {
     return Row(
       children: [
-        IconButton(
-          icon: Icon(Icons.arrow_back, color: appColors.primary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        if (widget.isEditing)
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: appColors.primary),
+            onPressed: () => Navigator.pop(context),
+          ),
         const SizedBox(width: 16),
         Text(
           widget.user == null
@@ -1232,8 +1233,9 @@ class _AddUserScreenState extends State<AddUserScreen> {
           ),
           validator: (value) {
             if (value!.isEmpty) return null;
-            if (value.isNotEmpty && value.length < 6)
+            if (value.isNotEmpty && value.length < 6) {
               return '6 caractères minimum';
+            }
             if (_passwordCriteria.isEmpty ||
                 _passwordCriteria.values.contains(false)) {
               return "Mot de passe non conforme.";

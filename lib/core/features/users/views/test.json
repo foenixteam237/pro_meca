@@ -1,0 +1,21 @@
+{
+    "success": true,
+    "data": {
+        "id": "c3a02e91-e009-4301-ae92-0edbeaa175a6",
+        "pieceId": "0a627105-b193-44c2-8f6f-79e6f09ee4c6",
+        "type": "IN",
+        "quantity": 1,
+        "date": "2025-10-20T14:08:23.000Z",
+        "description": "Ajoute",
+        "userId": null,
+        "sellingPriceAtMovement": null,
+        "stockAfterMovement": null,
+        "factureId": null,
+        "companyId": "e9e1e62c-ccda-4074-8a7e-64388c5518f2",
+        "createdAt": "2025-10-20T13:41:45.107Z",
+        "updatedAt": "2025-10-20T13:41:45.107Z",
+        "deletedAt": null,
+        "facture": null
+    },
+    "message": "Entrée de 1 PIÈCE 3 - COMPANY 1 enregistrée avec succès."
+}

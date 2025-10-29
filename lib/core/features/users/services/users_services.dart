@@ -293,7 +293,7 @@ class UserService {
         throw Exception('${response.statusCode} - $errorMsg');
       }
     } on DioException catch (e) {
-      debugPrint("Erreur détaillée Dio: ${e}");
+      debugPrint("Erreur détaillée Dio: $e");
       debugPrint("Type d'erreur: ${e.type}");
       debugPrint("Message: ${e.message}");
       if (e.response != null) {

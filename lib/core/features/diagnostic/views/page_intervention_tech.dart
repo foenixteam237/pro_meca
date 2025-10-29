@@ -4,7 +4,6 @@ import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/views/intervention_detail.dart';
 import 'package:pro_meca/core/features/diagnostic/views/technician_report.dart';
 import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_info_section.dart';
-import 'package:pro_meca/core/models/diagnostic_update.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
 import 'package:pro_meca/core/models/visite.dart';
 import 'package:pro_meca/core/utils/responsive.dart';
@@ -37,7 +36,6 @@ class _InterventionPageState extends State<InterventionPage> {
   @override
   Widget build(BuildContext context) {
     appColors ??= Provider.of<AppAdaptiveColors>(context);
-    final Diagnostic diagnostic = widget.visite.diagnostics!.first;
     final List<MaintenanceTask> main = [];
     widget.visite.intervention!.map((e) {
       if (e.status != "ATTENTE_INTERVENTION") {
@@ -98,6 +96,7 @@ class _InterventionPageState extends State<InterventionPage> {
                                     visite: widget.visite,
                                     accessToken: widget.accessToken,
                                     maintenanceTask: intervention,
+                                    isTech: true,
                                   ),
                                 ),
                               );
@@ -113,10 +112,13 @@ class _InterventionPageState extends State<InterventionPage> {
                       style: AppStyles.bodyMedium(context),
                     ),
                   ),
+            //Pour une mise à jour future
+
+            /*
             Text(
               'Liste des interventions terminées',
               style: AppStyles.titleMedium(context),
-            ),
+            ),*/
           ],
         ),
       ),

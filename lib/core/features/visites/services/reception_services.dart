@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/commonUi/validationScreen.dart';
 import 'package:pro_meca/core/features/diagnostic/views/diagnosticScreen.dart';
-import 'package:pro_meca/core/models/client.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
 import 'package:pro_meca/services/dio_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -208,7 +205,8 @@ class ReceptionServices {
 
       switch (response.statusCode) {
         case 201:
-          bool shouldNavigateToDiagnostic =
+      /*
+         bool shouldNavigateToDiagnosticS =
               await showDialog<bool>(
                 // ignore: use_build_context_synchronously
                 context: context,
@@ -234,6 +232,7 @@ class ReceptionServices {
                 ),
               ) ??
               false;
+         bool shouldNavigateToDiagnostic = false;
           if (shouldNavigateToDiagnostic) {
             try {
               final responseData = response.data;
@@ -298,13 +297,23 @@ class ReceptionServices {
             }
           } else {
             // Rediriger vers la page ConfirmationScreen
+            Navigator.push(
+              // ignore: use_build_context_synchronously
+              context,
+              MaterialPageRoute(
+                builder: (context) => ConfirmationScreen(
+                  message: "Votre véhicule a été enregistré avec succès",
+                ),
+              ),
+            );
 
+            /*
             showPieceSelectionModal(
               context,
               ConfirmationScreen(
                 message: "Votre véhicule a été enregistré avec succès",
               ),
-            );
+            );*/
             /*Navigator.push(
               // ignore: use_build_context_synchronously
               context,
@@ -314,7 +323,16 @@ class ReceptionServices {
                 ),
               ),
             );*/
-          }
+          }*/
+          Navigator.push(
+            // ignore: use_build_context_synchronously
+            context,
+            MaterialPageRoute(
+              builder: (context) => ConfirmationScreen(
+                message: "Votre véhicule a été enregistré avec succès",
+              ),
+            ),
+          );
           return response.statusCode;
         case 400:
           print(response.data["message"]);
@@ -541,11 +559,8 @@ class ReceptionServices {
           error: 'Statut HTTP ${resVisite.statusCode}',
         );
       }
-
-      final Map<String, dynamic> visiteJson =
-          resVisite.data as Map<String, dynamic>;
-
-      return Visite.fromJson(visiteJson);
+      debugPrint(resVisite.data);
+      return Visite.fromVisiteJson(resVisite.data, Vehicle.fromJson(resVisite.data['vehicle']));
     } on DioException catch (e) {
       debugPrint('Erreur réseau: ${e.message}');
       if (e.response != null) {

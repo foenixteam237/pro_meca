@@ -129,10 +129,9 @@ class InterventionDetailPage extends StatelessWidget {
         Text(label, style: AppStyles.titleMedium(context)),
         Text(
           value,
-          style: AppStyles.titleMedium(context).copyWith(
-            fontSize: 14,
-            overflow: TextOverflow.ellipsis
-          ),
+          style: AppStyles.titleMedium(
+            context,
+          ).copyWith(fontSize: 14, overflow: TextOverflow.ellipsis),
         ),
       ],
     );
@@ -178,7 +177,6 @@ class InterventionDetailPage extends StatelessWidget {
     );
   }
 
-
   Color _getPriorityColor(int priorite) {
     switch (priorite) {
       case 1:
@@ -192,72 +190,15 @@ class InterventionDetailPage extends StatelessWidget {
     }
   }
 
-  void _showChangerStatutDialog(BuildContext context) {
-    final List<String> statuts = [
-      'En cours',
-      'En attente',
-      'Suspendue',
-      'En révision',
-      'Terminée',
-    ];
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Changer le statut'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: statuts.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(statuts[index]),
-                  leading: Radio<String>(
-                    value: statuts[index],
-                    groupValue:
-                        null, // Vous pouvez gérer l'état sélectionné ici
-                    onChanged: (String? value) {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Statut changé vers: $value'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    },
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Statut changé vers: ${statuts[index]}'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _showTerminerDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Terminer l\'intervention', textAlign: TextAlign.center,),
+          title: const Text(
+            'Terminer l\'intervention',
+            textAlign: TextAlign.center,
+          ),
           content: const Text(
             'Êtes-vous sûr de vouloir marquer cette intervention comme terminée ?',
             textAlign: TextAlign.center,
@@ -267,17 +208,19 @@ class InterventionDetailPage extends StatelessWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Annuler'),
             ),
-            TextButton(onPressed: (){
-              Navigator.of(context).pop();
-              // Logique pour terminer l'intervention
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Intervention marquée comme terminée'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }, child: const Text("Confirmer"))
-
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Logique pour terminer l'intervention
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Intervention marquée comme terminée'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              child: const Text("Confirmer"),
+            ),
           ],
         );
       },

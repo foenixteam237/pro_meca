@@ -292,7 +292,7 @@ class User {
       ]);
 
       if (technicianProfile?.certifications != null) {
-        for (var cert in technicianProfile!.certifications!) {
+        for (var cert in technicianProfile!.certifications) {
           formData.fields.add(
             MapEntry('technicianProfile[certifications][]', cert),
           );

@@ -3,6 +3,7 @@ import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
 import 'package:pro_meca/core/features/diagnostic/services/diagnostic_services.dart';
+import 'package:pro_meca/core/features/diagnostic/views/technician_report.dart';
 import 'package:pro_meca/core/features/diagnostic/widgets/build_intervention_widget.dart';
 import 'package:pro_meca/core/features/diagnostic/widgets/build_vehicle_info_section.dart';
 import 'package:pro_meca/core/models/maintenance_task.dart';
@@ -20,55 +21,50 @@ class ValidationInterventionScreen extends StatefulWidget {
   final bool isAdmin;
   final String accessToken;
   final Visite visite;
+  final bool fromAVIN;
+  final VoidCallback onValidated; // ← Callback pour rafraîchir
+
   const ValidationInterventionScreen({
     super.key,
     required this.visiteId,
     required this.isAdmin,
     required this.accessToken,
     required this.visite,
+    required this.fromAVIN,
+    required this.onValidated,
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _ValidationInterventionScreenState createState() =>
       _ValidationInterventionScreenState();
 }
 
 class _ValidationInterventionScreenState
     extends State<ValidationInterventionScreen> {
-  late List<MaintenanceTask> tasks =
-      []; // Initialisé comme liste vide par défaut
-  final Map<String, bool> interventionStatuses = {};
-  bool isConfirming = false;
-  int validatedCount = 0;
-  bool isLoading = true; // Pour le chargement initial des interventions
-  bool hasError = false; // Pour gérer les erreurs
+  List<MaintenanceTask> tasks = [];
+  final Set<String> _selectedIds = {};
+  bool isLoading = true;
+  bool hasError = false;
+  bool isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchData(widget.visiteId);
+    _fetchData();
   }
 
-  Future<void> _fetchData(String visiteId) async {
+  Future<void> _fetchData() async {
     setState(() {
       isLoading = true;
       hasError = false;
     });
+
     try {
       final fetchedTasks = await DiagnosticServices().fetchIntervention(
-        visiteId,
+        widget.visiteId,
       );
-      print(
-        'Données récupérées: $fetchedTasks',
-      ); // Log pour vérifier les données
       setState(() {
         tasks = fetchedTasks;
-        interventionStatuses.clear(); // Réinitialiser pour éviter les doublons
-
-        for (var task in tasks) {
-          interventionStatuses[task.id] = false;
-        }
         isLoading = false;
       });
     } catch (e) {
@@ -76,78 +72,57 @@ class _ValidationInterventionScreenState
         isLoading = false;
         hasError = true;
       });
-      print('Erreur lors du fetch des données: $e');
+      print('Erreur fetch: $e');
     }
   }
 
-  Future<void> updateInterventionStatus(
-    String interventionId,
-    bool hasBeenOrdered,
-  ) async {
+  void _toggleSelection(String id) {
+    setState(() {
+      _selectedIds.contains(id)
+          ? _selectedIds.remove(id)
+          : _selectedIds.add(id);
+    });
+  }
+
+  Future<void> _validateSelectedInterventions() async {
+    if (_selectedIds.isEmpty || isSubmitting) return;
+
+    setState(() => isSubmitting = true);
+
+    final report = {"interventionIds": _selectedIds.toList()};
+
     try {
-      await DiagnosticServices().updateInterventionStatus(
-        interventionId,
-        hasBeenOrdered,
+      final success = await DiagnosticServices().validateIntervention(
+        context: context,
+        report: report,
       );
-      setState(() {
-        interventionStatuses[interventionId] = hasBeenOrdered;
-        validatedCount++;
-      });
-    } on DioException catch (e) {
-      print("Erreur Dio lors de la mise à jour: $e");
-      setState(() {
-        validatedCount++; // Avancer la progression malgré l'erreur
-      });
-    } catch (e) {
-      print("Erreur inattendue: $e");
-      setState(() {
-        validatedCount++; // Avancer la progression malgré l'erreur
-      });
-    }
-  }
 
-  Future<void> _confirmInterventions() async {
-    final appColors = Provider.of<AppAdaptiveColors>(context, listen: false);
-    if (isConfirming) return;
-    setState(() {
-      isConfirming = true;
-      validatedCount = 0;
-    });
-
-    for (var task in tasks) {
-      await updateInterventionStatus(
-        task.id,
-        interventionStatuses[task.id] ?? false,
-      );
-    }
-
-    if (mounted) {
-      setState(() {
-        isConfirming = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Toutes les interventions ont été validées avec succès !',
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${_selectedIds.length} intervention(s) validée(s) !',
+            ),
+            backgroundColor: AppColors.primary,
           ),
-          backgroundColor: AppColors.primary,
-          duration: Duration(seconds: 2),
-        ),
-      );
-      Navigator.pop(context);
-    }
-  }
+        );
 
-  void _toggleStatus(String id, bool isValidated) {
-    setState(() {
-      interventionStatuses[id] = isValidated;
-    });
+        widget.onValidated(); // ← Appelle le callback
+        Navigator.pop(context); // ← Retour fluide
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => isSubmitting = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final appColors = Provider.of<AppAdaptiveColors>(context);
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -170,127 +145,137 @@ class _ValidationInterventionScreenState
               widget.accessToken,
             ),
           ),
-          Expanded(
-            child: isLoading
-                ? Shimmer.fromColors(
-                    baseColor: isDarkTheme
-                        ? Colors.grey[700]!
-                        : Colors.grey[300]!,
-                    highlightColor: isDarkTheme
-                        ? Colors.grey[600]!
-                        : Colors.grey[100]!,
-                    child: ListView.builder(
-                      padding: EdgeInsets.all(16.0),
-                      itemCount: 3, // Simule 3 éléments de chargement
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(top: 10),
-                          height: 100,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blue.shade100),
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.white,
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : hasError
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Erreur lors du chargement des interventions.',
-                          style: TextStyle(fontSize: 16, color: Colors.red),
-                        ),
-                        SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => _fetchData(widget.visiteId),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: appColors.primary,
-                          ),
-                          child: Text(
-                            'Réessayer',
-                            style: AppStyles.buttonText(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : tasks.isEmpty
-                ? Center(child: Text('Aucune intervention trouvée.'))
-                : ListView.builder(
-                    padding: EdgeInsets.all(16.0),
-                    itemCount: tasks.length,
-                    itemBuilder: (context, index) {
-                      final task = tasks[index];
-                      final isValidated =
-                          interventionStatuses[task.id] ?? false;
-                      if (widget.isAdmin) {
-                        return InterventionCard(
-                          title: task.title,
-                          technician: task.technician ?? 'N/A',
-                          status: isValidated ? 'Validée' : 'Annulée',
-                          priority: task.priority.toString(),
-                          appColors: appColors,
-                          imageUrl:
-                              'https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0011_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024',
-                          taskId: task.id,
-                          isValidated: isValidated,
-                          onStatusChanged: (id, validated) =>
-                              _toggleStatus(id, validated),
-                        );
-                      } else if (task.hasBeenOrdered == true) {
-                        return interventionItem(task, context);
-                      }
-                      return null;
+          Expanded(child: _buildBody(isDark)),
+          if (widget.fromAVIN) _buildBottomButtons(appColors),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(bool isDark) {
+    if (isLoading) {
+      return Shimmer.fromColors(
+        baseColor: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+        highlightColor: isDark ? Colors.grey[600]! : Colors.grey[100]!,
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: 3,
+          itemBuilder: (_, __) => Container(
+            margin: const EdgeInsets.only(top: 10),
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.shade100),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Erreur de chargement',
+              style: TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: Text('Réessayer', style: AppStyles.buttonText(context)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (tasks.isEmpty) {
+      return const Center(child: Text('Aucune intervention trouvée.'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+        final task = tasks[index];
+        final isSelected = _selectedIds.contains(task.id);
+
+        if (widget.isAdmin) {
+          return InterventionCard(
+            task: task,
+            isSelected: isSelected,
+            onTap: () => _toggleSelection(task.id),
+            onOpenReport: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TechnicianReport(
+                    visite: widget.visite,
+                    accessToken: widget.accessToken,
+                    maintenanceTask: task,
+                    isTech: false,
+                    onReportValidated: () {
+                      widget.onValidated(); // ← Rafraîchit la liste
+                      Navigator.pop(context);
                     },
                   ),
+                ),
+              );
+            },
+          );
+        } else if (task.hasBeenOrdered == true) {
+          return interventionItem(task, context);
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildBottomButtons(AppAdaptiveColors appColors) {
+    final canValidate = _selectedIds.isNotEmpty && !isSubmitting;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler'),
+            ),
           ),
-          if (widget.isAdmin)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: isConfirming
-                  ? SizedBox(
-                      height: 50,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          LinearProgressIndicator(
-                            value: tasks.isEmpty
-                                ? 0
-                                : validatedCount / tasks.length,
-                            backgroundColor: Colors.grey.shade300,
-                            color: appColors.primary,
-                            minHeight: 50,
-                          ),
-                          Text(
-                            validatedCount > 0 && validatedCount <= tasks.length
-                                ? '${tasks[validatedCount - 1].title} validé avec succès'
-                                : 'Validation en cours...',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: canValidate ? _validateSelectedInterventions : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appColors.primary,
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
                       ),
                     )
-                  : ElevatedButton(
-                      onPressed: _confirmInterventions,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: appColors.primary,
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                      child: Text(
-                        'Confirmé',
-                        style: AppStyles.buttonText(context),
-                      ),
+                  : Text(
+                      'Valider ${_selectedIds.length} intervention${_selectedIds.length > 1 ? 's' : ''}',
+                      style: AppStyles.buttonText(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
             ),
+          ),
         ],
       ),
     );
@@ -298,111 +283,80 @@ class _ValidationInterventionScreenState
 }
 
 class InterventionCard extends StatelessWidget {
-  final String title;
-  final String technician;
-  final String status;
-  final String priority;
-  final String imageUrl;
-  final AppAdaptiveColors appColors;
-  final String taskId;
-  final bool isValidated;
-  final Function(String, bool) onStatusChanged;
+  final MaintenanceTask task;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final VoidCallback onOpenReport;
 
   const InterventionCard({
     super.key,
-    required this.title,
-    required this.technician,
-    required this.status,
-    required this.priority,
-    required this.imageUrl,
-    required this.appColors,
-    required this.taskId,
-    required this.isValidated,
-    required this.onStatusChanged,
+    required this.task,
+    required this.isSelected,
+    required this.onTap,
+    required this.onOpenReport,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(top: 10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.blue.shade100),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              imageUrl,
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
+    return GestureDetector(
+      onTap: onOpenReport,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(top: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.1) : null,
+          border: Border.all(color: Colors.blue.shade100),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Checkbox(
+              value: isSelected,
+              onChanged: (_) => onTap(),
+              activeColor: AppColors.primary,
+            ),
+            const SizedBox(width: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                'https://tmna.aemassets.toyota.com/is/image/toyota/toyota/vehicles/2025/crownsignia/gallery/CRS_MY25_0011_V001_desktop.png?fmt=jpeg&fit=crop&qlt=90&wid=1024',
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Image.asset(
                   "assets/images/moteur.jpg",
-                  width: 70,
-                  height: 70,
+                  width: 60,
+                  height: 60,
                   fit: BoxFit.cover,
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
-                Text(
-                  "Priorité: $priority",
-                  style: TextStyle(color: Colors.orange, fontSize: 13),
-                ),
-                Text(
-                  "Technicien: $technician",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: !isValidated
-                      ? Colors.red
-                      : Colors.grey.shade400,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: () {
-                  onStatusChanged(taskId, false);
-                },
-                child: Icon(Icons.delete, color: AppAdaptiveColors.red_fade),
               ),
-              SizedBox(height: 8),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isValidated
-                      ? AppColors.primary
-                      : Colors.grey.shade400,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
-                ),
-                onPressed: () {
-                  onStatusChanged(taskId, true);
-                },
-                child: Icon(Icons.check, color: AppAdaptiveColors.red_fade),
+                  Text(
+                    "Priorité: ${task.priority}",
+                    style: const TextStyle(color: Colors.orange, fontSize: 13),
+                  ),
+                  Text(
+                    "Technicien: ${task.technician ?? 'N/A'}",
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+            const Icon(Icons.description, color: Colors.blue),
+          ],
+        ),
       ),
     );
   }

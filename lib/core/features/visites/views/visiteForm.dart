@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
+import 'package:pro_meca/core/features/factures/services/facture_services.dart';
 import 'package:pro_meca/core/features/visites/services/reception_services.dart';
 import 'package:pro_meca/core/models/client.dart';
 import 'package:pro_meca/core/models/vehicle.dart';
@@ -15,6 +17,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/app_colors.dart';
 import '../../../constants/app_styles.dart';
 import '../../../utils/responsive.dart';
+import '../../../utils/validations.dart';
+import '../../stock_mvt/services/stock_movement_service.dart';
 
 class ClientVehicleFormPage extends StatefulWidget {
   final String idBrand;
@@ -38,6 +42,13 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
   final ImagePicker _picker = ImagePicker();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String clientId = "";
+  bool _phoneValid = true;
+  bool? _phoneCheckResult;
+  bool _phoneChecking = false;
+  String _selectedCountryCode = '+237';
+  String _selectedCountryIso = 'cm';
+  String? _phoneError;
+  final StockMovementService _stockMovementService = StockMovementService();
 
   //Variable temporaire pour stocker les ids si client ou vehicle a été enregistré
   String tmpgVehicleId = "";
@@ -68,7 +79,54 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
     super.initState();
     _controllerInit();
   }
+  String _parsePhoneNumber(String phone) {
+    String natPhone = '';
+    if (phone.startsWith('+')) {
+      final parts = phone.split('_');
+      if (parts.isNotEmpty) {
+        _selectedCountryCode = parts[0];
+        natPhone = parts.length > 1
+            ? parts[1]
+            : phone.substring(_selectedCountryCode.length);
+      } else {
+        natPhone = phone;
+      }
+    } else {
+      natPhone = phone.contains("_") ? phone.split('_')[1] : phone;
+    }
 
+    return natPhone;
+  }
+
+  Future<bool> _checkPhone() async {
+    if (_phoneCheckResult == true) {
+      return true;
+    }
+    if (controllers['phone']!.text.isEmpty) {
+      setState(() => _phoneCheckResult = null);
+      return false;
+    }
+
+    setState(() => _phoneChecking = true);
+    try {
+      final exists = await _stockMovementService.checkPhoneExists(
+        "${_selectedCountryCode}_${controllers['phone']!.text}",
+      );
+
+      setState(() {
+        _phoneValid = !exists;
+        _phoneCheckResult = !exists;
+      });
+    } catch (e) {
+      setState(() {
+        _phoneValid = false;
+        _phoneCheckResult = false;
+      });
+    } finally {
+      setState(() => _phoneChecking = false);
+    }
+    return _phoneValid;
+  }
   Future<void> _selectImageSource({bool isVehicleImage = true}) async {
     final action = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -193,11 +251,26 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
         updatedAt: DateTime.now(),
       );
 
+      final clientData = {
+        'firstName': controllers['firstName']!.text,
+        ...(controllers['lastName']!.text.isEmpty
+            ? {}
+            : {'lastName': controllers['lastName']!.text}),
+        ...(controllers['phone']!.text.isEmpty
+            ? {}
+            : {'phone': '${_selectedCountryCode}_${controllers['phone']!.text}'}),
+        ...(controllers['email']!.text.isEmpty
+            ? {}
+            : {'email': controllers['email']!.text}),
+      };
+      FormData formData = FormData();
+
+      formData.fields.add(MapEntry('data', jsonEncode(clientData)));
+
       if (widget.vehicle?.client?.id == null) {
-        clientId = await ReceptionServices().createClient(
-          client.toMap(),
-          context,
-        );
+
+        final newClient = await FactureService().createClient(formData);
+        clientId = newClient.id;
       }
 
       if (widget.vehicle?.client?.id != null) {
@@ -312,7 +385,82 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
     controllers.forEach((_, c) => c.dispose());
     super.dispose();
   }
-
+  Widget _buildPhoneInput() {
+    return Row(
+      children: [
+        Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey),
+              ),
+              child: CountryCodePicker(
+                initialSelection: 'CM',
+                favorite: ['CM', 'TD', 'CE'],
+                onChanged: (country) {
+                  setState(() {
+                    _selectedCountryCode = country.dialCode!;
+                    _selectedCountryIso = country.code!.toLowerCase();
+                    if (_phoneError != null) _phoneError = null;
+                  });
+                },
+                dialogBackgroundColor: Colors.transparent,
+                boxDecoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      // color: Colors.black.withOpacity(0.1),
+                      blurRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: TextFormField(
+            controller: controllers['phone'],
+            keyboardType: TextInputType.phone,
+            onChanged: (phone) => setState(() {
+              _phoneValid = validatePhone(phone, _selectedCountryIso);
+              _phoneCheckResult = null;
+            }),
+            onEditingComplete: _checkPhone,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+            ],
+            decoration: InputDecoration(
+              labelText: 'Téléphone',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              suffixIcon: _phoneChecking
+                  ? const SizedBox(
+                width: 15,
+                height: 15,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+                  : Icon(
+                _phoneValid ? Icons.check_circle : Icons.error,
+                color: _phoneValid ? Colors.green : Colors.red,
+              ),
+              errorText: _phoneValid ? null : 'Invalide ou déjà utilisé',
+            ),
+            validator: (value) {
+              if (value!.isEmpty) return 'Champ requis';
+              if (!validatePhone(controllers['phone']!.text, _selectedCountryIso)) {
+                return 'Téléphone invalide';
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final appColor = Provider.of<AppAdaptiveColors>(context);
@@ -375,14 +523,7 @@ class _ClientVehicleFormPageState extends State<ClientVehicleFormPage> {
                         ? 'Email invalide'
                         : null,
                   ),
-                  _buildStyledField(
-                    hint: "Téléphone",
-                    controller: controllers['phone']!,
-                    icon: Icons.phone_outlined,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) =>
-                    value!.isEmpty ? 'Champ obligatoire' : null,
-                  ),
+                  _buildPhoneInput(),
 
                   // Détails véhicule
                   _buildSectionTitle("Détail du véhicule"),

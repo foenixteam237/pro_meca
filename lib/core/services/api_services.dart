@@ -8,8 +8,6 @@ import 'package:pro_meca/core/models/modele.dart';
 import 'package:pro_meca/core/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/client.dart';
-
 class ApiService {
   String get apiUrl {
     return dotenv.env['API_URL'] ?? '';

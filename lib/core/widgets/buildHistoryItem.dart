@@ -255,6 +255,10 @@ void _showNextPageOther(
                   isAdmin: isAdmin,
                   accessToken: accessToken,
                   visite: visite,
+                  fromAVIN: true,
+                  onValidated: () async {
+                    //await _loadVisites(); // ← Rafraîchit la liste
+                  },
                 ),
               ),
             );
@@ -279,6 +283,10 @@ void _showNextPageOther(
                   isAdmin: isAdmin,
                   accessToken: accessToken,
                   visite: visite,
+                  fromAVIN: false,
+                  onValidated: () async {
+                    // await _loadVisites(); // ← Rafraîchit la liste
+                  },
                 ),
               ),
             );

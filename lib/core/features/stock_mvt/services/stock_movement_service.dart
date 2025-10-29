@@ -58,7 +58,7 @@ class StockMovementService {
           options: Options(headers: await ApiDioService().getAuthHeaders()),
         ),
       );
-
+      debugPrint(response.toString());
       if (ApiDioService.isSuccess(response)) {
         return StockMovement.fromJson(response.data['data']);
       } else {

@@ -40,9 +40,12 @@ Widget buildVehicleInfoSection(
           ),
         ],
       ),
-      Text(
-        "${visite.vehicle!.client!.firstName} ${visite.vehicle!.client!.lastName}",
-        style: AppStyles.bodyMedium(context).copyWith(fontSize: 14),
+      Expanded(
+        child: Text(
+          "${visite.vehicle!.client!.firstName} ${visite.vehicle!.client!.lastName}",
+          style: AppStyles.bodyMedium(context).copyWith(fontSize: 14),
+          textAlign: TextAlign.right,
+        ),
       ),
     ],
   );
