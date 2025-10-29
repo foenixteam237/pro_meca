@@ -265,7 +265,9 @@ class _StockMovementScreenState extends State<StockMovementScreen> {
   void _createNewMovement() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreateStockMovementScreen()),
+      MaterialPageRoute(
+        builder: (context) => CreateStockMovementScreen(parentContext: context),
+      ),
     ).then((_) => _loadMovements());
   }
 

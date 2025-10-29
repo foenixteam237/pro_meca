@@ -20,7 +20,8 @@ import 'package:pro_meca/core/utils/validations.dart';
 import 'package:provider/provider.dart';
 
 class CreateStockMovementScreen extends StatefulWidget {
-  const CreateStockMovementScreen({super.key});
+  final BuildContext parentContext;
+  const CreateStockMovementScreen({super.key, required this.parentContext});
 
   @override
   State<CreateStockMovementScreen> createState() =>
@@ -609,11 +610,12 @@ class _CreateStockMovementScreenState extends State<CreateStockMovementScreen> {
             onPressed: () {
               // Naviguer vers l'écran de détail de la facture pour générer le PDF
               Navigator.push(
-                context,
+                widget.parentContext,
                 MaterialPageRoute(
                   builder: (context) => FactureDetailScreen(facture: facture),
                 ),
               );
+              Navigator.pop(context);
             },
             child: const Text('Générer PDF'),
           ),
