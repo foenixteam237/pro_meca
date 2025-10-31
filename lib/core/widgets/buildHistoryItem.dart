@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pro_meca/core/features/diagnostic/views/validation_diagnostic_screen.dart';
 import 'package:pro_meca/core/features/diagnostic/views/validation_intervention.dart';
+import 'package:pro_meca/core/features/reports/views/view_report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_colors.dart';
@@ -102,6 +103,8 @@ String _statut(String statut) {
       return "Attente intervention";
     case 'ATTENTE_PIECE':
       return "Attente pièces";
+    case 'ATTENTE_SORTIE':
+      return "Attente sortie";
     case 'ENCOURS':
       return "En cours";
     default:
@@ -147,6 +150,7 @@ enum InterventionStatus {
   ongoing("ONGOING"),
   attentePiece("ATTENTE_PIECE"),
   attenteMateriel("ATTENTE_MATERIEL"),
+  attenteSortie("ATTENTE_SORTIE"),
   attenteMaterielExterne("ATTENTE_MATERIEL_EXTERNE"),
   attenteValidationIntervention("ATTENTE_VALIDATION_INTERVENTION"),
   validated("VALIDATED"),
@@ -201,6 +205,8 @@ void _showNextPageOther(
         return 8;
       case InterventionStatus.cancelled:
         return 9;
+      case InterventionStatus.attenteSortie:
+        return 10;
     }
   }
 
@@ -274,6 +280,14 @@ void _showNextPageOther(
               ),
             );
             break;
+          case InterventionStatus.validated:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VisiteReportScreen(visiteId: visite.id),
+              ),
+            );
+            break;
           case InterventionStatus.attenteCommandeClient:
             Navigator.push(
               context,
@@ -318,6 +332,7 @@ void _showNextPageOther(
           case InterventionStatus.ongoing:
           case InterventionStatus.attentePiece:
           case InterventionStatus.attenteMateriel:
+          case InterventionStatus.attenteSortie:
           case InterventionStatus.attenteMaterielExterne:
             Navigator.push(
               context,
@@ -332,7 +347,7 @@ void _showNextPageOther(
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  "Pas d'action disponible pour cette intervention.",
+                  "Pas d'action disponible pour cette intervention. Ou vous n'avez pas les droits nécessaires.",
                 ),
                 duration: const Duration(seconds: 3),
               ),
@@ -344,7 +359,7 @@ void _showNextPageOther(
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  "Pas d'action disponible pour cette intervention.",
+                  "Pas d'action disponible pour cette intervention. Ou vous n'avez pas les droits nécessaires.",
                 ),
                 duration: const Duration(seconds: 3),
               ),

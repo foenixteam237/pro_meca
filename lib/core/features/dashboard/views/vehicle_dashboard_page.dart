@@ -27,7 +27,7 @@ enum VisitStatus {
   attenteValidationDiagnostic("avdia"),
   attenteValidationInterventionAdmin("avin"),
   attenteValidationIntervention("avin"),
-  termine("term"),
+  termine("asor"),
   attenteIntervention("aint"); // Assuming "aint" means "ATTENTE_INTERVENTION"
 
   final String value;
@@ -39,6 +39,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
   bool _isLoading = true;
   String accessToken = "";
   Map<String, int> statVD = {"total": 0};
+  Map<String, int> statV = {"total": 0};
   Map<String, int> statVI = {"total": 0};
   Map<String, int> statT = {"total": 0};
   Map<String, int> statIT = {"total": 0};
@@ -77,18 +78,21 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
           : await ReceptionServices().fetchVisitesWithVehicleStatusAndUser(
               VisitStatus.attenteValidationIntervention.value,
             );
+      final List<Visite> statt = await ReceptionServices()
+          .fetchVisitesWithVehicleStatus(VisitStatus.termine.value);
+      final List<Visite> statvd = await ReceptionServices()
+          .fetchVisitesWithVehicleStatus(
+            VisitStatus.attenteValidationDiagnostic.value,
+          );
+      final List<Visite> statvi2 = await ReceptionServices()
+          .fetchVisitesWithVehicleStatus(VisitStatus.attenteDiagnostic.value);
       //print(statvi.length);
       setState(() {
         _visites = visites;
-        statVD = Visite.getVehicleStatsByStatus(
-          visites,
-          VisitStatus.attenteDiagnostic.value,
-        );
+        statVD = {"total": statvd.length};
+        statV = {"total": statvi2.length};
         statVI = {"total": statvi.length};
-        statT = Visite.getVehicleStatsByStatus(
-          visites,
-          VisitStatus.termine.value,
-        );
+        statT = {"total": statt.length};
         statIT = {"total": statit.length};
         _isLoading = false;
       });
@@ -203,15 +207,15 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                     MaterialPageRoute(
                       builder: (context) => VisiteListByStatus(
                         contextParent: widget.context,
-                        status: "term",
-                        name: 'Véhicules terinés',
+                        status: "asor",
+                        name: 'VEA de sortie',
                       ),
                     ),
                   ),
                   child: buildSmallCard(
                     context,
                     icon: Icons.directions_car_filled,
-                    title: AppLocalizations.of(context).finished,
+                    title: "En attente de sortie",
                     today: 10,
                     month: 4,
                     total: statT['total']!,
@@ -256,7 +260,7 @@ class _VehicleDashboardPageState extends State<VehicleDashboardPage> {
                             );
                           },
                           AppLocalizations.of(context).waitingDiagnotics,
-                          statVD['total']!,
+                          statV['total']!,
                         ),
                   _buildStatusGrid(context, _visites),
                   Padding(

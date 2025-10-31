@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:pro_meca/core/models/brand.dart';
@@ -74,7 +75,7 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     // Vous pouvez aussi ajouter une navigation vers l'écran de login ici
-    // Ex: Navigator.pushReplacementNamed(context, '/login');
+    //Navigator.pushReplacementNamed(context, '/login');
   }
 
   // Méthode générique pour les requêtes avec gestion automatique des tokens

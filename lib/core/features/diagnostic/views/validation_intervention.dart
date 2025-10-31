@@ -230,7 +230,7 @@ class _ValidationInterventionScreenState
             },
           );
         } else if (task.hasBeenOrdered == true) {
-          return interventionItem(task, context);
+          return interventionItem(task, context, () {});
         }
         return const SizedBox.shrink();
       },

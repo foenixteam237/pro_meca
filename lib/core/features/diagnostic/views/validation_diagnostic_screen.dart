@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:pro_meca/core/constants/app_adaptive_colors.dart';
 import 'package:pro_meca/core/constants/app_styles.dart';
@@ -104,6 +106,7 @@ class _ValidationDiagnosticScreenState
   void _addMainTask(MaintenanceTask main) {
     setState(() {
       mains.add(main);
+      index = mains.length;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Intervention ${main.title} ajoutée avec succès'),
@@ -150,7 +153,7 @@ class _ValidationDiagnosticScreenState
         replaceExisting: false,
         visiteId: widget.idVisite,
       );
-      print(main.toJson());
+      print(jsonEncode(main.toJson()));
       final isCreate = await DiagnosticServices().createMaintenanceTask(
         main.toJson(),
       );
@@ -164,6 +167,16 @@ class _ValidationDiagnosticScreenState
           ),
         );
         Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Echec de la validation du diagnostic, veuillez réessayer.\n Si le problème persiste,essayez de vos reconnecter ou contactez un administrateur.',
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
       setState(() {
@@ -226,12 +239,12 @@ class _ValidationDiagnosticScreenState
                     children: [
                       if (photos != null && photos!.isNotEmpty)
                         ...photos!.map(
-                              (photo) => VehicleImageCard(photo.logo, header),
+                          (photo) => VehicleImageCard(photo.logo, header),
                         )
                       else
                         ...List.generate(
                           4,
-                              (index) => VehicleImageCard(
+                          (index) => VehicleImageCard(
                             "assets/images/moteur.jpg",
                             header,
                           ),
@@ -300,10 +313,11 @@ class _ValidationDiagnosticScreenState
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: mains.map((inter) {
-                  index++;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
-                    child: interventionItem(inter, context),
+                    child: interventionItem(inter, context, () {
+                      _removeMainTask(index - 1);
+                    }),
                   );
                 }).toList(),
               ),

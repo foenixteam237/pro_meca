@@ -34,6 +34,7 @@ class ReportService {
       return GlobalReport.fromJson(response.data);
     } on DioException catch (e) {
       final errorMessage = e.response?.data?['message'] ?? e.message;
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

@@ -123,7 +123,7 @@ class _PieceSelectionModalState extends State<PieceSelectionModal> {
     if (!_formKey.currentState!.validate()) return;
 
     final pieceData = {
-      'id': _selectedPiece!.id,
+      'pieceId': _selectedPiece!.id,
       'name': _selectedPiece!.name,
       'unitPrice': _selectedPiece!.sellingPrice,
       'reference': _selectedPiece!.reference,

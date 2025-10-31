@@ -121,12 +121,10 @@ class DiagnosticServices {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
-        print("Erreur ${response.statusCode}");
-        return false;
+        throw Exception("Erreur API: ${response.statusCode}");
       }
     } on DioException catch (e) {
-      print(e);
-      return false;
+      throw Exception("Erreur API: ${e.message}");
     } catch (e) {
       print(e);
       return false;

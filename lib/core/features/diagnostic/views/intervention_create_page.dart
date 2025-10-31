@@ -158,7 +158,7 @@ class _InterventionFormState extends State<InterventionForm> {
     setState(() {
       // Vérifier si la pièce existe déjà en comparant les ID
       int existingIndex = piecesList.indexWhere(
-        (piece) => piece['id'] == pieceData['id'],
+        (piece) => piece['pieceId'] == pieceData['pieceId'],
       );
 
       if (existingIndex != -1) {

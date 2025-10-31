@@ -5,7 +5,11 @@ import 'package:provider/provider.dart';
 
 import '../../../constants/app_styles.dart';
 
-Widget interventionItem(MaintenanceTask main, BuildContext context) {
+Widget interventionItem(
+  MaintenanceTask main,
+  BuildContext context,
+  void Function() removeMainTask,
+) {
   final appColors = Provider.of<AppAdaptiveColors>(context);
   return Container(
     padding: const EdgeInsets.all(12),
@@ -30,10 +34,7 @@ Widget interventionItem(MaintenanceTask main, BuildContext context) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                main.title,
-                style: AppStyles.bodyMedium(context),
-              ),
+              Text(main.title, style: AppStyles.bodyMedium(context)),
               Text(
                 "Priorité: ${main.priority}",
                 style: AppStyles.bodySmall(context),
@@ -54,9 +55,7 @@ Widget interventionItem(MaintenanceTask main, BuildContext context) {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {
-                //removeMainTask;
-              },
+              onPressed: removeMainTask,
               child: Icon(Icons.delete, color: AppAdaptiveColors.red_fade),
             ),
             ElevatedButton(
